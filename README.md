@@ -126,16 +126,24 @@ Bez credentials backend loguje jasny stub i zapisuje `stub-gcal-…` — aplikac
 
 ### Google OAuth — instrukcja (konsola Google Cloud)
 
-Client ID **nie da się** utworzyć w pełni non-interactively (wymaga zgody OAuth consent).
+Client ID **nie da się** utworzyć w pełni non-interactively (Google nie udostępnia publicznego API do tworzenia Web OAuth Client). Consent screen (brand „BizChat”) już istnieje w projekcie.
 
-1. Otwórz [Google Cloud Console](https://console.cloud.google.com/) → projekt `bizchat-504420`
-2. **APIs & Services → OAuth consent screen** → External → nazwa „BizChat”, e-mail support
-3. Scopes: `openid`, `email`, `profile`
-4. **Credentials → Create credentials → OAuth client ID → Web application**
-5. Authorized redirect URIs: `https://<URL-API>/api/auth/google/callback`
-6. Authorized JavaScript origins: `https://<URL-PANEL>`
-7. Skopiuj Client ID + Secret do env Cloud Run: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`
-8. Redeploy backendu
+1. Otwórz bezpośrednio: [Utwórz OAuth client](https://console.cloud.google.com/apis/credentials/oauthclient?project=bizchat-504420)
+2. Typ: **Web application**, nazwa: `BizChat Panel`
+3. **Authorized JavaScript origins**:
+   - `https://bizchat-panel-702906501614.europe-central2.run.app`
+4. **Authorized redirect URIs**:
+   - `https://bizchat-api-702906501614.europe-central2.run.app/api/auth/google/callback`
+5. Utwórz → skopiuj **Client ID** i **Client secret**
+6. Ustaw env na Cloud Run API i wypchnij nową revision:
+
+```bash
+gcloud run services update bizchat-api \
+  --project=bizchat-504420 --region=europe-central2 \
+  --update-env-vars="GOOGLE_OAUTH_CLIENT_ID=PASTE_ID,GOOGLE_OAUTH_CLIENT_SECRET=PASTE_SECRET,PUBLIC_API_URL=https://bizchat-api-702906501614.europe-central2.run.app,PUBLIC_FRONTEND_URL=https://bizchat-panel-702906501614.europe-central2.run.app"
+```
+
+7. Weryfikacja: `curl -s https://bizchat-api-702906501614.europe-central2.run.app/api/auth/config` → `"google_oauth_enabled":true`
 
 ## Deploy (Google Cloud Run — scale-to-zero)
 
