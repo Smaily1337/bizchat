@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from enum import Enum
 
 import httpx
@@ -24,15 +25,39 @@ class Intent(str, Enum):
     unknown = "unknown"
 
 
-GREETING_KEYWORDS = {
+# Exact / near-exact short greetings (slang included)
+GREETING_EXACT = {
     "cześć",
     "czesc",
+    "cześć!",
+    "czesc!",
     "hej",
+    "hej!",
+    "hejka",
+    "heja",
     "hello",
     "hi",
+    "yo",
+    "elo",
+    "eloo",
+    "elooo",
+    "siema",
+    "siemka",
+    "siemanko",
+    "witam",
+    "witaj",
     "dzień dobry",
     "dzien dobry",
-    "siema",
+    "dobry",
+    "dobry wieczór",
+    "dobry wieczor",
+    "good morning",
+    "hey",
+}
+
+GREETING_KEYWORDS = GREETING_EXACT | {
+    "dzień dobry",
+    "dzien dobry",
 }
 BOOKING_KEYWORDS = {
     "rezerwuj",
@@ -51,7 +76,12 @@ FEEDBACK_KEYWORDS = {"opinia", "ocena", "feedback", "recenzja"}
 
 
 def detect_intent_keywords(text: str) -> Intent:
-    lowered = text.lower().strip()
+    lowered = text.lower().strip().strip("!?.🙂😊👋")
+    # Normalize repeated letters in slang: elooo → elo, hejjj → hej
+    collapsed = re.sub(r"(.)\1{2,}", r"\1\1", lowered)
+
+    if collapsed in GREETING_EXACT or lowered in GREETING_EXACT:
+        return Intent.greeting
     if any(k in lowered for k in GREETING_KEYWORDS):
         return Intent.greeting
     if any(k in lowered for k in CANCEL_KEYWORDS):

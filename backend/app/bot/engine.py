@@ -129,10 +129,16 @@ class CoreBotEngine:
         intent: Intent,
     ) -> str:
         if intent == Intent.greeting:
+            name = (customer.name or "").strip()
+            hello = f"Hej{(' ' + name) if name and name.lower() not in {'klient', 'messenger'} else ''}!"
             return (
-                "Cześć! Jestem asystentem BizChat. Mogę umówić wizytę, "
-                "sprawdzić Twoje terminy albo odpowiedzieć na pytania. "
-                "Napisz np. „umów wizytę”."
+                f"{hello} 👋 Tu asystent salonu.\n\n"
+                "Mogę:\n"
+                "• umówić wizytę\n"
+                "• pokazać Twoje terminy\n"
+                "• anulować wizytę\n"
+                "• odpowiedzieć na pytania (cennik, godziny)\n\n"
+                "Napisz np. „umów wizytę” albo zadaj pytanie."
             )
 
         if intent == Intent.booking:
@@ -162,8 +168,12 @@ class CoreBotEngine:
             return faq_answer
 
         return (
-            f"Otrzymałem: „{inbound.text}”. Napisz pytanie (FAQ), "
-            "„umów wizytę”, „moje wizyty” lub „anuluj wizytę”."
+            "Nie jestem pewien, o co chodzi 🤔\n\n"
+            "Napisz jedną z opcji:\n"
+            "• umów wizytę\n"
+            "• moje wizyty\n"
+            "• anuluj wizytę\n"
+            "• albo pytanie, np. „jaki jest cennik?”"
         )
 
     async def _handle_booking(
