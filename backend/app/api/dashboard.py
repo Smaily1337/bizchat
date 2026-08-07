@@ -16,6 +16,13 @@ from app.models.enums import Channel, FeedbackRoute
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
+def _as_utc(dt: datetime) -> datetime:
+    """Normalize DB datetimes (SQLite often naive) to UTC-aware for comparisons."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
 class DashboardSummary(BaseModel):
     business_id: str
     appointments_today: int
@@ -151,7 +158,7 @@ async def dashboard_analytics(
     channels: dict[str, int] = defaultdict(int)
 
     for a in appts:
-        d = a.start_at.astimezone(timezone.utc).date()
+        d = _as_utc(a.start_at).date()
         if a.status == AppointmentStatus.cancelled:
             buckets[d]["cancelled"] += 1
         elif a.status == AppointmentStatus.no_show:
@@ -182,7 +189,7 @@ async def dashboard_analytics(
     today_busy = sum(
         1
         for a in appts
-        if day_start <= a.start_at <= day_end
+        if day_start <= _as_utc(a.start_at) <= day_end
         and a.status
         in {
             AppointmentStatus.pending,

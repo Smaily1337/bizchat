@@ -120,13 +120,19 @@ export function DashboardPage() {
   useEffect(() => {
     const from = weekStart.toISOString();
     const to = addDays(weekStart, 7).toISOString();
-    void Promise.all([
-      appointmentsApi.list({ from_at: from, to_at: to }),
-      dashboardApi.summary(),
-      dashboardApi.analytics(7),
-    ])
-      .then(([list, sum, anal]) => {
+    // Load calendar appointments independently so a charts API failure
+    // never blanks the whole schedule ("Load failed").
+    void appointmentsApi
+      .list({ from_at: from, to_at: to })
+      .then((list) => {
         setAppointments(list);
+        setError(null);
+      })
+      .catch((e: Error) => setError(e.message));
+
+    void dashboardApi
+      .summary()
+      .then((sum) => {
         setSummary({
           appointments_today: sum.appointments_today,
           pending_count: sum.pending_count,
@@ -136,10 +142,13 @@ export function DashboardPage() {
           alerts_open: sum.alerts_open ?? 0,
           avg_score: sum.avg_score ?? null,
         });
-        setAnalytics(anal);
-        setError(null);
       })
-      .catch((e: Error) => setError(e.message));
+      .catch(() => undefined);
+
+    void dashboardApi
+      .analytics(7)
+      .then((anal) => setAnalytics(anal))
+      .catch(() => undefined);
   }, [weekStart]);
 
   const events = useMemo(
