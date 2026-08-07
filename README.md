@@ -167,12 +167,15 @@ gcloud run deploy bizchat-api \
   --add-volume-mount=volume=data,mount-path=/data \
   --set-env-vars="DATABASE_URL=sqlite+aiosqlite:////data/bizchat.db,ENVIRONMENT=production,DEBUG=false,AUTO_MIGRATE=true,AUTO_SEED=true,..."
 
-# Panel (po poznaniu URL API)
+# Panel (Cloud Build + image deploy)
+IMAGE=europe-central2-docker.pkg.dev/bizchat-504420/cloud-run-source-deploy/bizchat-panel
+gcloud builds submit --project=bizchat-504420 \
+  --config=cloudbuild.panel.yaml \
+  --substitutions=_VITE_API_URL=https://bizchat-api-702906501614.europe-central2.run.app,_IMAGE=$IMAGE
 gcloud run deploy bizchat-panel \
-  --project=bizchat-504420 --region=europe-central2 --source=. \
-  --dockerfile=frontend/Dockerfile \
-  --allow-unauthenticated --max-instances=1 --min-instances=0 \
-  --set-build-env-vars=VITE_API_URL=https://bizchat-api-....run.app
+  --project=bizchat-504420 --region=europe-central2 \
+  --image=$IMAGE:latest \
+  --allow-unauthenticated --max-instances=1 --min-instances=0
 ```
 
 Demo login po seedzie: `owner@bizchat.local` / `changeme` (salon).  
