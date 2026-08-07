@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     meta_verify_token: str = "bizchat-verify"
     meta_app_secret: str = ""
     meta_page_access_token: str = ""
+    # When Meta webhook has no ?business_id=, bind traffic to this salon (UUID).
+    meta_default_business_id: str = ""
 
     widget_jwt_secret: str = "change-me-widget-secret"
 

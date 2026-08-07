@@ -53,7 +53,13 @@ async def meta_webhook(
             raise HTTPException(status_code=403, detail="Invalid signature")
 
     payload = json.loads(body)
-    adapter = MetaAdapter(business_id=business_id)
+    resolved_business_id = business_id
+    if resolved_business_id is None and settings.meta_default_business_id:
+        try:
+            resolved_business_id = UUID(settings.meta_default_business_id)
+        except ValueError:
+            resolved_business_id = None
+    adapter = MetaAdapter(business_id=resolved_business_id)
     engine = CoreBotEngine(db, adapter)
 
     inbound_list = adapter.to_inbound(payload)
