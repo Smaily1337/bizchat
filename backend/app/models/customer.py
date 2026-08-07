@@ -28,6 +28,7 @@ class Customer(Base, TimestampMixin):
     )
     name: Mapped[Optional[str]] = mapped_column(String(255))
     phone: Mapped[Optional[str]] = mapped_column(String(64))
+    email: Mapped[Optional[str]] = mapped_column(String(255))
     external_ids: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
 
     business: Mapped[Business] = relationship(back_populates="customers")

@@ -38,6 +38,8 @@ export function AppointmentsPage() {
     status: "confirmed",
     notes: "",
     new_customer_name: "",
+    new_customer_phone: "",
+    new_customer_email: "",
   });
 
   async function reload() {
@@ -71,6 +73,8 @@ export function AppointmentsPage() {
       status: "confirmed",
       notes: "",
       new_customer_name: "",
+      new_customer_phone: "",
+      new_customer_email: "",
     });
     setShowForm(true);
   }
@@ -85,6 +89,8 @@ export function AppointmentsPage() {
       status: a.status,
       notes: a.notes || "",
       new_customer_name: "",
+      new_customer_phone: "",
+      new_customer_email: "",
     });
     setShowForm(true);
   }
@@ -101,7 +107,11 @@ export function AppointmentsPage() {
             setError("Podaj imię i nazwisko nowego klienta");
             return;
           }
-          const c = await customersApi.create({ name });
+          const c = await customersApi.create({
+            name,
+            phone: form.new_customer_phone.trim() || undefined,
+            email: form.new_customer_email.trim() || undefined,
+          });
           customerId = c.id;
         } else if (!customerId) {
           setError("Wybierz klienta z listy");
@@ -195,7 +205,12 @@ export function AppointmentsPage() {
                     className="!py-1.5"
                     onClick={() => {
                       setClientMode("existing");
-                      setForm((f) => ({ ...f, new_customer_name: "" }));
+                      setForm((f) => ({
+                        ...f,
+                        new_customer_name: "",
+                        new_customer_phone: "",
+                        new_customer_email: "",
+                      }));
                     }}
                     disabled={customers.length === 0}
                   >
@@ -232,20 +247,54 @@ export function AppointmentsPage() {
                     </GlassSelect>
                   </label>
                 ) : (
-                  <label className="block space-y-1 text-sm">
-                    <span className="text-[var(--muted)]">Imię i nazwisko</span>
-                    <GlassInput
-                      value={form.new_customer_name}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          new_customer_name: e.target.value,
-                        }))
-                      }
-                      placeholder="np. Anna Kowalska"
-                      required
-                    />
-                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block space-y-1 text-sm sm:col-span-2">
+                      <span className="text-[var(--muted)]">Imię i nazwisko</span>
+                      <GlassInput
+                        value={form.new_customer_name}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            new_customer_name: e.target.value,
+                          }))
+                        }
+                        placeholder="np. Anna Kowalska"
+                        required
+                      />
+                    </label>
+                    <label className="block space-y-1 text-sm">
+                      <span className="text-[var(--muted)]">
+                        Telefon (opcjonalnie)
+                      </span>
+                      <GlassInput
+                        type="tel"
+                        value={form.new_customer_phone}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            new_customer_phone: e.target.value,
+                          }))
+                        }
+                        placeholder="np. +48 123 456 789"
+                      />
+                    </label>
+                    <label className="block space-y-1 text-sm">
+                      <span className="text-[var(--muted)]">
+                        E-mail (opcjonalnie)
+                      </span>
+                      <GlassInput
+                        type="email"
+                        value={form.new_customer_email}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            new_customer_email: e.target.value,
+                          }))
+                        }
+                        placeholder="np. anna@example.com"
+                      />
+                    </label>
+                  </div>
                 )}
               </div>
             )}

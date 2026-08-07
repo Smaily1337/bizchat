@@ -81,7 +81,7 @@ export const servicesApi = {
 
 export const customersApi = {
   list: () => apiFetch<Customer[]>("/api/customers"),
-  create: (body: { name?: string; phone?: string }) =>
+  create: (body: { name?: string; phone?: string; email?: string }) =>
     apiFetch<Customer>("/api/customers", {
       method: "POST",
       body: JSON.stringify(body),

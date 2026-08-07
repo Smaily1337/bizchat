@@ -48,6 +48,7 @@ export type Customer = {
   business_id: string;
   name: string | null;
   phone: string | null;
+  email: string | null;
 };
 
 export type Appointment = {

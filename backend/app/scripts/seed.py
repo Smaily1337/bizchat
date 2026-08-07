@@ -184,18 +184,21 @@ async def seed() -> None:
                 business_id=business.id,
                 name="Anna Kowalska",
                 phone="+48123123123",
+                email="anna.kowalska@example.com",
                 external_ids={},
             ),
             Customer(
                 business_id=business.id,
                 name="Marta Nowak",
                 phone="+48456456456",
+                email="marta.nowak@example.com",
                 external_ids={},
             ),
             Customer(
                 business_id=business.id,
                 name="Jakub Wiśniewski",
                 phone="+48789789789",
+                email="jakub.wisniewski@example.com",
                 external_ids={},
             ),
         ]

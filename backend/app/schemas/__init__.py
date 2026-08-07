@@ -103,6 +103,7 @@ class CustomerOut(ORMModel):
     business_id: UUID
     name: Optional[str] = None
     phone: Optional[str] = None
+    email: Optional[str] = None
     external_ids: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
@@ -111,11 +112,13 @@ class CustomerOut(ORMModel):
 class CustomerCreate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
+    email: Optional[str] = None
 
 
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
+    email: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------

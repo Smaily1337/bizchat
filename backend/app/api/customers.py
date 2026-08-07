@@ -34,6 +34,7 @@ async def create_customer(
         business_id=owner.business_id,
         name=body.name,
         phone=body.phone,
+        email=body.email,
         external_ids={},
     )
     db.add(customer)
