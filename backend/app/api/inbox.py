@@ -11,10 +11,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import CurrentOwner, DbSession
+from app.bot.adapters.meta import MetaAdapter
+from app.bot.adapters.telegram import TelegramAdapter
+from app.bot.adapters.widget import WidgetAdapter
 from app.models import Conversation, Customer, Message
 from app.models.enums import Channel, ConversationState, MessageRole
 from app.models.mixins import utc_now
-from app.schemas import ORMModel
+from app.schemas import ORMModel, OutboundMessage
 from app.services.events import hub
 
 router = APIRouter(prefix="/api/inbox", tags=["inbox"])
@@ -132,6 +135,19 @@ async def reply_as_owner(
     conv.updated_at = utc_now()
     await db.flush()
     await db.refresh(msg)
+
+    # Deliver owner reply to the customer on the original channel
+    outbound = OutboundMessage(
+        channel=conv.channel,
+        external_thread_id=conv.external_thread_id,
+        text=text,
+    )
+    if conv.channel in {Channel.messenger, Channel.instagram}:
+        await MetaAdapter(business_id=owner.business_id).send_outbound(outbound)
+    elif conv.channel == Channel.telegram:
+        await TelegramAdapter(business_id=owner.business_id).send_outbound(outbound)
+    elif conv.channel == Channel.widget:
+        await WidgetAdapter(business_id=owner.business_id).send_outbound(outbound)
 
     await hub.publish(
         owner.business_id,

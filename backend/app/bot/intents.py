@@ -44,6 +44,7 @@ GREETING_EXACT = {
     "siema",
     "siemka",
     "siemanko",
+    "siemano",
     "witam",
     "witaj",
     "dzień dobry",

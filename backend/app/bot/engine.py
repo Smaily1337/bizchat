@@ -446,7 +446,10 @@ class CoreBotEngine:
         for customer in result.scalars().all():
             ext = customer.external_ids or {}
             if ext.get(channel_key) == inbound.external_user_id:
-                if inbound.display_name and not customer.name:
+                if inbound.display_name and (
+                    not customer.name
+                    or customer.name.strip().lower() in {"klient", "client", "user"}
+                ):
                     customer.name = inbound.display_name
                 return customer
 

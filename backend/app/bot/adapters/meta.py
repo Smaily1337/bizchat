@@ -16,6 +16,41 @@ from app.schemas import InboundMessage, OutboundMessage
 logger = logging.getLogger(__name__)
 
 
+async def fetch_messenger_profile_name(psid: str) -> str | None:
+    """Resolve Facebook/Messenger display name for a Page-Scoped ID."""
+    token = settings.meta_page_access_token
+    if not token or not psid:
+        return None
+    url = f"https://graph.facebook.com/v21.0/{psid}"
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(
+                url,
+                params={
+                    "fields": "name,first_name,last_name",
+                    "access_token": token,
+                },
+            )
+            if resp.is_error:
+                logger.info(
+                    "Meta profile fetch failed psid=%s status=%s body=%s",
+                    psid,
+                    resp.status_code,
+                    resp.text[:200],
+                )
+                return None
+            data = resp.json()
+            name = (data.get("name") or "").strip()
+            if name:
+                return name
+            parts = [data.get("first_name") or "", data.get("last_name") or ""]
+            joined = " ".join(p for p in parts if p).strip()
+            return joined or None
+    except Exception as exc:  # noqa: BLE001
+        logger.info("Meta profile fetch error psid=%s: %s", psid, exc)
+        return None
+
+
 class MetaAdapter(ChannelAdapter):
     def __init__(self, business_id: UUID | None = None) -> None:
         self.business_id = business_id
@@ -23,7 +58,6 @@ class MetaAdapter(ChannelAdapter):
     def to_inbound(self, payload: dict[str, Any]) -> list[InboundMessage]:
         messages: list[InboundMessage] = []
         for entry in payload.get("entry") or []:
-            # Messenger: messaging; Instagram often mirrors messaging
             for event in entry.get("messaging") or []:
                 inbound = self._parse_messaging_event(event, Channel.messenger)
                 if inbound:
@@ -34,7 +68,6 @@ class MetaAdapter(ChannelAdapter):
                 if inbound:
                     messages.append(inbound)
 
-            # Instagram-specific changes shape (simplified)
             for change in entry.get("changes") or []:
                 value = change.get("value") or {}
                 for ig_msg in value.get("messages") or []:

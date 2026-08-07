@@ -10,7 +10,7 @@ from uuid import UUID
 from fastapi import APIRouter, Header, HTTPException, Query, Request, Response
 
 from app.api.deps import DbSession
-from app.bot.adapters.meta import MetaAdapter
+from app.bot.adapters.meta import MetaAdapter, fetch_messenger_profile_name
 from app.bot.engine import CoreBotEngine
 from app.config import settings
 
@@ -64,6 +64,10 @@ async def meta_webhook(
 
     inbound_list = adapter.to_inbound(payload)
     for inbound in inbound_list:
+        if not inbound.display_name and inbound.external_user_id:
+            inbound.display_name = await fetch_messenger_profile_name(
+                inbound.external_user_id
+            )
         await engine.handle(inbound)
 
     return {"ok": True, "handled": len(inbound_list)}
