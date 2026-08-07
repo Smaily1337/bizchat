@@ -22,7 +22,10 @@ BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 async def _sqlite_prepare() -> None:
     async with engine.begin() as conn:
-        await conn.execute(text("PRAGMA journal_mode=WAL"))
+        # DELETE journal — WAL/-shm breaks on GCS FUSE (Cloud Run volume).
+        await conn.execute(text("PRAGMA journal_mode=DELETE"))
+        await conn.execute(text("PRAGMA synchronous=FULL"))
+        await conn.execute(text("PRAGMA temp_store=MEMORY"))
         await conn.execute(text("PRAGMA foreign_keys=ON"))
         await conn.run_sync(Base.metadata.create_all)
 

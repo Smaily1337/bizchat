@@ -98,4 +98,11 @@ class MetaAdapter(ChannelAdapter):
                     "messaging_type": "RESPONSE",
                 },
             )
-            resp.raise_for_status()
+            if resp.is_error:
+                logger.error(
+                    "Meta send failed recipient=%s status=%s body=%s",
+                    message.external_thread_id,
+                    resp.status_code,
+                    resp.text[:500],
+                )
+                return
