@@ -29,7 +29,7 @@
         <a href="#jak-to-dziala">Jak to działa</a>
         <a href="#demo">Demo</a>
       </nav>
-      <a class="btn btn-primary btn-sm" id="nav-login" href="#demo">Zaloguj się do panelu</a>
+      <a class="btn btn-primary btn-sm" id="nav-login" href="https://bizchat-panel-702906501614.europe-central2.run.app/login">Zaloguj się do panelu</a>
     </header>
 
     <main id="top">
@@ -47,7 +47,7 @@
             Mniej telefonów, mniej pustych okienek, więcej czasu dla klientów.
           </p>
           <div class="hero-cta">
-            <a class="btn btn-primary" id="hero-login" href="#demo">Zaloguj się do panelu</a>
+            <a class="btn btn-primary" id="hero-login" href="https://bizchat-panel-702906501614.europe-central2.run.app/login">Zaloguj się do panelu</a>
             <a class="btn btn-ghost" href="#jak-to-dziala">Zobacz, jak to działa</a>
           </div>
           <ul class="hero-badges">
@@ -281,9 +281,8 @@
             <p class="eyebrow">Wypróbuj demo</p>
             <h2>Zaloguj się do panelu admina</h2>
             <p>
-              Panel demo uruchamiasz lokalnie — wystarczy <code>docker compose up</code> w
-              repozytorium (szczegóły w README). Po starcie panel działa pod adresem
-              <code>http://localhost:5173</code>.
+              Panel demo jest już w chmurze (Google Cloud Run). Zaloguj się danymi poniżej
+              albo użyj formularza obok — przekierujemy Cię prosto do panelu.
             </p>
             <div class="demo-creds glass">
               <p class="demo-creds-title">Dane demo</p>
@@ -291,8 +290,8 @@
               <p><span>Hasło</span> <code>changeme</code></p>
             </div>
             <p class="fineprint">
-              Ta strona jest statyczna (GitHub Pages) — formularz obok nie loguje, tylko
-              przekierowuje do lokalnie uruchomionego panelu.
+              Formularz przekazuje e-mail i hasło we fragmencie URL (#…), żeby panel
+              zalogował Cię automatycznie — dane nie opuszczają przeglądarki.
             </p>
           </div>
 
@@ -308,7 +307,7 @@
               <input type="password" name="password" value="changeme" autocomplete="current-password" />
             </label>
             <button type="submit" class="btn btn-primary btn-block">Przejdź do panelu</button>
-            <p class="login-hint">Przekierujemy Cię do panelu uruchomionego lokalnie.</p>
+            <p class="login-hint">Przekierujemy Cię do panelu demo w chmurze.</p>
           </form>
         </div>
       </section>

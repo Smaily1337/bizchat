@@ -1,7 +1,5 @@
-// Adres panelu admina BizChat.
-// Strona jest statyczna (GitHub Pages) — podmień na adres własnej instancji,
-// np. "https://panel.twojadomena.pl/login".
-const PANEL_URL = "http://localhost:5173/login";
+// Adres panelu admina BizChat (Cloud Run).
+const PANEL_URL = "https://bizchat-panel-702906501614.europe-central2.run.app/login";
 
 // Formularz logowania przekazuje dane do panelu we fragmencie URL (#…),
 // który nigdy nie opuszcza przeglądarki — panel loguje się automatycznie
