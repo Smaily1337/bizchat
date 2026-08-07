@@ -30,6 +30,7 @@ from app.schemas import (
 )
 from app.services.notifications import (
     build_context,
+    channel_from_booking,
     get_or_create_settings,
     render_template,
     send_notification,
@@ -213,7 +214,13 @@ async def send_manual_notification(
         raise HTTPException(status_code=400, detail="Treść wiadomości jest pusta")
 
     cfg = await get_or_create_settings(db, owner.business_id)
-    channel = body.channel or cfg.default_channel
+    # Prefer explicit channel → else channel used to book → else settings default
+    if body.channel is not None:
+        channel = body.channel
+    elif appointment is not None:
+        channel = channel_from_booking(appointment.channel, cfg.default_channel)
+    else:
+        channel = cfg.default_channel
 
     log = await send_notification(
         db,

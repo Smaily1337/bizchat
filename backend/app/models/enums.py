@@ -50,6 +50,8 @@ class NotificationChannel(str, enum.Enum):
     sms = "sms"
     email = "email"
     telegram = "telegram"
+    messenger = "messenger"
+    instagram = "instagram"
     widget = "widget"
 
 

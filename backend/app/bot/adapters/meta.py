@@ -110,7 +110,8 @@ class MetaAdapter(ChannelAdapter):
             raw_payload=event,
         )
 
-    async def send_outbound(self, message: OutboundMessage) -> None:
+    async def send_outbound(self, message: OutboundMessage) -> bool:
+        """Send a Messenger/IG message. Returns True on success."""
         token = settings.meta_page_access_token
         if not token:
             logger.info(
@@ -118,7 +119,7 @@ class MetaAdapter(ChannelAdapter):
                 message.external_thread_id,
                 message.text,
             )
-            return
+            return False
 
         url = "https://graph.facebook.com/v21.0/me/messages"
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -138,4 +139,5 @@ class MetaAdapter(ChannelAdapter):
                     resp.status_code,
                     resp.text[:500],
                 )
-                return
+                return False
+            return True

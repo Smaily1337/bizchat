@@ -56,13 +56,14 @@ class WidgetAdapter(ChannelAdapter):
             )
         ]
 
-    async def send_outbound(self, message: OutboundMessage) -> None:
+    async def send_outbound(self, message: OutboundMessage) -> bool:
         # Widget replies are returned synchronously in the HTTP response.
         logger.debug(
             "Widget outbound buffered thread=%s text=%r",
             message.external_thread_id,
             message.text,
         )
+        return True
 
     @staticmethod
     def create_session_token(

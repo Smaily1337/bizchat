@@ -172,7 +172,13 @@ export type DashboardAnalytics = {
   feedback_avg: number | null;
 };
 
-export type NotificationChannel = "sms" | "email" | "telegram" | "widget";
+export type NotificationChannel =
+  | "sms"
+  | "email"
+  | "telegram"
+  | "messenger"
+  | "instagram"
+  | "widget";
 export type NotificationKind = "reminder" | "custom" | "waitlist" | "feedback";
 export type NotificationStatus = "sent" | "failed";
 

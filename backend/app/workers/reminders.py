@@ -26,7 +26,11 @@ from app.models import (
     NotificationTemplate,
     Service,
 )
-from app.services.notifications import get_or_create_settings, send_notification
+from app.services.notifications import (
+    channel_from_booking,
+    get_or_create_settings,
+    send_notification,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +135,9 @@ async def process_reminders_once() -> int:
                     customer=customer,
                     appointment=appt,
                     service=service,
-                    channel=cfg.default_channel,
+                    channel=channel_from_booking(
+                        appt.channel, cfg.default_channel
+                    ),
                     kind=NotificationKind.reminder,
                     body=body,
                     lead_time_min=current_lead,

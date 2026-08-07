@@ -155,16 +155,27 @@ export function AppointmentsPage() {
       const reminder =
         templates.find((t) => t.kind === "reminder" && t.is_default) ||
         templates.find((t) => t.kind === "reminder");
-      await notificationsApi.send({
+      // Backend maps booking channel → delivery (Messenger/Telegram/…);
+      // don't force SMS when the client booked via chat.
+      const log = await notificationsApi.send({
         appointment_id: a.id,
         template_id: reminder?.id,
         body: reminder ? undefined : FALLBACK_REMINDER,
       });
-      push({
-        title: "Przypomnienie wysłane",
-        message: `Do: ${a.customer_name || "klient"} — szczegóły w zakładce Powiadomienia.`,
-        tone: "canary",
-      });
+      const via = log.channel || a.channel || "kanał rezerwacji";
+      if (log.status === "failed") {
+        push({
+          title: "Wysyłka nieudana",
+          message: log.error || `Kanał: ${via}`,
+          tone: "danger",
+        });
+      } else {
+        push({
+          title: "Przypomnienie wysłane",
+          message: `Do: ${a.customer_name || "klient"} przez ${via}`,
+          tone: "canary",
+        });
+      }
     } catch (err) {
       push({
         title: "Nie udało się wysłać",

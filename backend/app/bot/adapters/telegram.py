@@ -51,7 +51,7 @@ class TelegramAdapter(ChannelAdapter):
             )
         ]
 
-    async def send_outbound(self, message: OutboundMessage) -> None:
+    async def send_outbound(self, message: OutboundMessage) -> bool:
         token = settings.telegram_bot_token
         if not token:
             logger.info(
@@ -59,7 +59,7 @@ class TelegramAdapter(ChannelAdapter):
                 message.external_thread_id,
                 message.text,
             )
-            return
+            return False
 
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -70,4 +70,7 @@ class TelegramAdapter(ChannelAdapter):
                     "text": message.text,
                 },
             )
-            resp.raise_for_status()
+            if resp.is_error:
+                logger.error("Telegram send failed: %s", resp.text[:300])
+                return False
+            return True

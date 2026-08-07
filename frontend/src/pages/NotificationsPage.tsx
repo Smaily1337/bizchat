@@ -17,6 +17,8 @@ const CHANNEL_LABEL: Record<NotificationChannel, string> = {
   sms: "SMS",
   email: "E-mail",
   telegram: "Telegram",
+  messenger: "Messenger",
+  instagram: "Instagram",
   widget: "Widget",
 };
 

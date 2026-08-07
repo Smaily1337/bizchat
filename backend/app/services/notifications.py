@@ -11,6 +11,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.adapters.meta import MetaAdapter
 from app.config import settings
 from app.models import (
     Appointment,
@@ -23,6 +24,8 @@ from app.models import (
     NotificationStatus,
     Service,
 )
+from app.models.enums import Channel
+from app.schemas import OutboundMessage
 from app.services.events import hub
 
 logger = logging.getLogger(__name__)
@@ -33,8 +36,33 @@ CHANNEL_LABELS = {
     NotificationChannel.sms: "SMS",
     NotificationChannel.email: "E-mail",
     NotificationChannel.telegram: "Telegram",
+    NotificationChannel.messenger: "Messenger",
+    NotificationChannel.instagram: "Instagram",
     NotificationChannel.widget: "Widget",
 }
+
+
+def channel_from_booking(
+    booking_channel: Channel | str | None,
+    fallback: NotificationChannel = NotificationChannel.sms,
+) -> NotificationChannel:
+    """Map appointment booking channel → notification delivery channel."""
+    if booking_channel is None:
+        return fallback
+    value = (
+        booking_channel.value
+        if hasattr(booking_channel, "value")
+        else str(booking_channel)
+    )
+    mapping = {
+        Channel.telegram.value: NotificationChannel.telegram,
+        Channel.messenger.value: NotificationChannel.messenger,
+        Channel.instagram.value: NotificationChannel.instagram,
+        Channel.widget.value: NotificationChannel.widget,
+        # Panel / unknown → keep configured default
+        Channel.admin.value: fallback,
+    }
+    return mapping.get(value, fallback)
 
 
 async def get_or_create_settings(
@@ -75,7 +103,10 @@ def build_context(
         "cena": f"{service.price} PLN" if service else "",
     }
     if appointment is not None:
-        local = appointment.start_at.astimezone(tz)
+        start = appointment.start_at
+        if start.tzinfo is None:
+            start = start.replace(tzinfo=timezone.utc)
+        local = start.astimezone(tz)
         ctx["data"] = local.strftime("%d.%m.%Y")
         ctx["godzina"] = local.strftime("%H:%M")
     return ctx
@@ -94,8 +125,10 @@ async def _deliver(
     text: str,
 ) -> tuple[NotificationStatus, str, str | None]:
     """Try to deliver a message. Returns (status, provider, error)."""
+    ext = (customer.external_ids or {}) if customer else {}
+
     if channel == NotificationChannel.telegram and settings.telegram_bot_token:
-        chat_id = (customer.external_ids or {}).get("telegram") if customer else None
+        chat_id = ext.get("telegram")
         if chat_id:
             try:
                 async with httpx.AsyncClient(timeout=10) as client:
@@ -108,7 +141,59 @@ async def _deliver(
             except Exception as exc:  # network/API failure → log, do not crash
                 logger.warning("Telegram send failed: %s", exc)
                 return NotificationStatus.failed, "telegram", str(exc)[:490]
-    # SMS / e-mail / widget (and Telegram without credentials) — mock provider
+        return (
+            NotificationStatus.failed,
+            "telegram",
+            "Brak telegram ID klienta — nie da się wysłać na Telegram.",
+        )
+
+    if channel in {NotificationChannel.messenger, NotificationChannel.instagram}:
+        if not settings.meta_page_access_token:
+            return (
+                NotificationStatus.failed,
+                "meta",
+                "Brak META_PAGE_ACCESS_TOKEN — nie da się wysłać na Messengera.",
+            )
+        psid = ext.get("messenger") or ext.get("instagram")
+        if not psid:
+            return (
+                NotificationStatus.failed,
+                "meta",
+                "Brak ID klienta z Messengera/Instagrama.",
+            )
+        try:
+            ok = await MetaAdapter().send_outbound(
+                OutboundMessage(
+                    channel=Channel.messenger
+                    if channel == NotificationChannel.messenger
+                    else Channel.instagram,
+                    external_thread_id=str(psid),
+                    text=text,
+                )
+            )
+            if ok:
+                return NotificationStatus.sent, "meta", None
+            return (
+                NotificationStatus.failed,
+                "meta",
+                "Meta API odrzuciło wiadomość (sprawdź token / okno 24h).",
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Meta notify failed: %s", exc)
+            return NotificationStatus.failed, "meta", str(exc)[:490]
+
+    if channel == NotificationChannel.email:
+        email = (customer.email if customer else None) or None
+        if not email:
+            return (
+                NotificationStatus.failed,
+                "email",
+                "Klient nie ma adresu e-mail.",
+            )
+        logger.info("[email→%s] %s", email, text)
+        return NotificationStatus.sent, "mock-email", None
+
+    # SMS / widget without live provider — mock (logged)
     logger.info("[mock:%s] %s", channel.value, text)
     return NotificationStatus.sent, "mock", None
 

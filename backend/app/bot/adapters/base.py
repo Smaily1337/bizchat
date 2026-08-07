@@ -16,5 +16,5 @@ class ChannelAdapter(ABC):
         """Parse provider webhook payload into zero or more InboundMessage."""
 
     @abstractmethod
-    async def send_outbound(self, message: OutboundMessage) -> None:
-        """Deliver a reply via the channel API (may be stubbed)."""
+    async def send_outbound(self, message: OutboundMessage) -> bool:
+        """Deliver a reply via the channel API (may be stubbed). True = sent."""
