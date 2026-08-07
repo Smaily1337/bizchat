@@ -63,3 +63,9 @@ class NotificationKind(str, enum.Enum):
 class NotificationStatus(str, enum.Enum):
     sent = "sent"
     failed = "failed"
+
+
+class UserRole(str, enum.Enum):
+    owner = "owner"
+    admin = "admin"
+    pracownik = "pracownik"

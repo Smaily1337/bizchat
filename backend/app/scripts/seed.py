@@ -33,6 +33,7 @@ from app.models.enums import (
     NotificationChannel,
     NotificationKind,
     NotificationStatus,
+    UserRole,
 )
 
 
@@ -139,6 +140,10 @@ async def seed() -> None:
         owner = Owner(
             email="owner@bizchat.local",
             password_hash=hash_password("changeme"),
+            name="Demo Owner",
+            role=UserRole.owner,
+            email_verified=True,
+            is_active=True,
             business_id=business.id,
         )
         session.add(owner)

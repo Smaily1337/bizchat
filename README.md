@@ -117,14 +117,54 @@ Zobacz [widget/README.md](widget/README.md).
 
 Bez credentials backend loguje jasny stub i zapisuje `stub-gcal-…` — aplikacja działa normalnie.
 
-## Deploy (produkcja)
+## Auth i role
 
-1. Ustaw silne `SECRET_KEY`, `WIDGET_JWT_SECRET`, hasła DB
-2. `CORS_ORIGINS` = domena panelu
-3. `ENVIRONMENT=production`, `DEBUG=false`
-4. `docker compose up --build -d` za reverse proxy (HTTPS)
-5. Uzupełnij tokeny Telegram/Meta gdy łączysz kanały na żywo
-6. Frontend build: `VITE_API_URL=https://api.twojadomena.pl`
+- Rejestracja właściciela (`POST /api/auth/register`) + weryfikacja e-mail
+- Google OAuth (`/api/auth/google/start`) — wymaga `GOOGLE_OAUTH_CLIENT_ID` / `SECRET`
+- Role: `owner` / `admin` / `pracownik` — panel **Użytkownicy** (CRUD, reset hasła)
+- Bez SMTP: linki weryfikacyjne lecą do logów (console mailer / Cloud Logging)
+
+### Google OAuth — instrukcja (konsola Google Cloud)
+
+Client ID **nie da się** utworzyć w pełni non-interactively (wymaga zgody OAuth consent).
+
+1. Otwórz [Google Cloud Console](https://console.cloud.google.com/) → projekt `bizchat-504420`
+2. **APIs & Services → OAuth consent screen** → External → nazwa „BizChat”, e-mail support
+3. Scopes: `openid`, `email`, `profile`
+4. **Credentials → Create credentials → OAuth client ID → Web application**
+5. Authorized redirect URIs: `https://<URL-API>/api/auth/google/callback`
+6. Authorized JavaScript origins: `https://<URL-PANEL>`
+7. Skopiuj Client ID + Secret do env Cloud Run: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`
+8. Redeploy backendu
+
+## Deploy (Google Cloud Run — scale-to-zero)
+
+Backend używa **SQLite na volume GCS** (bez Cloud SQL / VM). Panel i API: Cloud Run, `--max-instances=1`, `--allow-unauthenticated`.
+
+```bash
+# Bucket na plik SQLite
+gcloud storage buckets create gs://bizchat-sqlite-504420 \
+  --project=bizchat-504420 --location=europe-central2 --uniform-bucket-level-access
+
+# API
+gcloud run deploy bizchat-api \
+  --project=bizchat-504420 --region=europe-central2 --source=./backend \
+  --allow-unauthenticated --max-instances=1 --min-instances=0 \
+  --add-volume=name=data,type=cloud-storage,bucket=bizchat-sqlite-504420 \
+  --add-volume-mount=volume=data,mount-path=/data \
+  --set-env-vars="DATABASE_URL=sqlite+aiosqlite:////data/bizchat.db,ENVIRONMENT=production,DEBUG=false,AUTO_MIGRATE=true,AUTO_SEED=true,..."
+
+# Panel (po poznaniu URL API)
+gcloud run deploy bizchat-panel \
+  --project=bizchat-504420 --region=europe-central2 --source=. \
+  --dockerfile=frontend/Dockerfile \
+  --allow-unauthenticated --max-instances=1 --min-instances=0 \
+  --set-build-env-vars=VITE_API_URL=https://bizchat-api-....run.app
+```
+
+Demo login po seedzie: `owner@bizchat.local` / `changeme`
+
+Alternatywa lokalna / VPS: `docker compose up --build -d` + silne sekrety i `CORS_ORIGINS`.
 
 ## Ograniczenia v1 (OK)
 

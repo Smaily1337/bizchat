@@ -12,6 +12,7 @@ from app.models.enums import (
     NotificationChannel,
     NotificationKind,
     NotificationStatus,
+    UserRole,
     WaitlistStatus,
 )
 
@@ -39,6 +40,11 @@ class OwnerOut(ORMModel):
     id: UUID
     email: str
     business_id: UUID
+    name: Optional[str] = None
+    role: UserRole = UserRole.owner
+    email_verified: bool = False
+    is_active: bool = True
+    created_at: Optional[datetime] = None
 
 
 # ---------------------------------------------------------------------------

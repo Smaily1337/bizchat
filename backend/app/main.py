@@ -25,6 +25,7 @@ from app.api import (
     knowledge,
     notifications,
     services,
+    users,
     ws,
 )
 from app.api.feedback_waitlist import feedback_router, waitlist_router
@@ -37,6 +38,10 @@ from app.workers.reminders import reminder_loop
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    if settings.auto_migrate or settings.auto_seed:
+        from app.scripts.bootstrap import bootstrap
+
+        await bootstrap()
     reminders_task = asyncio.create_task(reminder_loop())
     yield
     reminders_task.cancel()
@@ -61,6 +66,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(users.router)
 app.include_router(appointments.router)
 app.include_router(calendar.router)
 app.include_router(dashboard.router)

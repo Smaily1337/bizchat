@@ -13,6 +13,7 @@ from app.models.enums import (
     NotificationChannel,
     NotificationKind,
     NotificationStatus,
+    UserRole,
     WaitlistStatus,
 )
 from app.models.feedback import CancellationEvent, Feedback
@@ -46,6 +47,7 @@ __all__ = [
     "Owner",
     "Service",
     "TimeOff",
+    "UserRole",
     "WaitlistEntry",
     "WaitlistStatus",
     "WorkingHours",

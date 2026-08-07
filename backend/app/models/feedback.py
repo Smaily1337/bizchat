@@ -4,11 +4,11 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.db.types import GUID, str_enum
 from app.models.enums import FeedbackRoute
 from app.models.mixins import TimestampMixin
 
@@ -19,18 +19,16 @@ if TYPE_CHECKING:
 class Feedback(Base, TimestampMixin):
     __tablename__ = "feedbacks"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     appointment_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID,
         ForeignKey("appointments.id", ondelete="CASCADE"),
         unique=True,
     )
     score: Mapped[int] = mapped_column(Integer, nullable=False)
     comment: Mapped[Optional[str]] = mapped_column(Text)
     routed_to: Mapped[FeedbackRoute] = mapped_column(
-        Enum(FeedbackRoute, name="feedback_route_enum", native_enum=True),
+        str_enum(FeedbackRoute, "feedback_route_enum"),
         default=FeedbackRoute.none,
     )
 
@@ -40,11 +38,9 @@ class Feedback(Base, TimestampMixin):
 class CancellationEvent(Base):
     __tablename__ = "cancellation_events"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     appointment_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID,
         ForeignKey("appointments.id", ondelete="CASCADE"),
         unique=True,
     )

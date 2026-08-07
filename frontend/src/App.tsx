@@ -13,6 +13,8 @@ import { InboxPage } from "@/pages/InboxPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { UsersPage } from "@/pages/UsersPage";
+import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
 
 function RealtimeBridge() {
   const { token } = useAuth();
@@ -38,6 +40,7 @@ export default function App() {
       <ToastProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/" element={<DashboardPage />} />
@@ -45,6 +48,7 @@ export default function App() {
               <Route path="/inbox" element={<InboxPage />} />
               <Route path="/hours" element={<HoursPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/users" element={<UsersPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/channels" element={<ChannelsPage />} />

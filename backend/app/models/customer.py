@@ -4,10 +4,10 @@ import uuid
 from typing import TYPE_CHECKING, Any, Optional
 
 from sqlalchemy import ForeignKey, Index, String
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.db.types import GUID, JSONType
 from app.models.mixins import TimestampMixin
 
 if TYPE_CHECKING:
@@ -20,16 +20,14 @@ class Customer(Base, TimestampMixin):
     __tablename__ = "customers"
     __table_args__ = (Index("ix_customers_business_id", "business_id"),)
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     name: Mapped[Optional[str]] = mapped_column(String(255))
     phone: Mapped[Optional[str]] = mapped_column(String(64))
     email: Mapped[Optional[str]] = mapped_column(String(255))
-    external_ids: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    external_ids: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
 
     business: Mapped[Business] = relationship(back_populates="customers")
     conversations: Mapped[list[Conversation]] = relationship(

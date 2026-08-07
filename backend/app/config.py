@@ -21,6 +21,22 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://bizchat:bizchat@localhost:5432/bizchat"
     )
 
+    # Public URLs (used in verification / OAuth redirects)
+    public_api_url: str = "http://localhost:8000"
+    public_frontend_url: str = "http://localhost:5173"
+
+    # Google OAuth (login) — separate from Calendar OAuth
+    google_oauth_client_id: str = ""
+    google_oauth_client_secret: str = ""
+
+    # SMTP (optional). Empty host → console mailer (logs to stdout).
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "BizChat <noreply@bizchat.local>"
+    smtp_tls: bool = True
+
     telegram_bot_token: str = ""
     telegram_webhook_secret: str = ""
 
@@ -38,9 +54,20 @@ class Settings(BaseSettings):
     google_refresh_token: str = ""
     google_service_account_json: str = ""
 
+    auto_migrate: bool = True
+    auto_seed: bool = True
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def is_sqlite(self) -> bool:
+        return self.database_url.startswith("sqlite")
+
+    @property
+    def google_oauth_configured(self) -> bool:
+        return bool(self.google_oauth_client_id and self.google_oauth_client_secret)
 
 
 @lru_cache

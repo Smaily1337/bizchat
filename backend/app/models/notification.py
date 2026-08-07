@@ -4,11 +4,11 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.db.types import GUID, JSONType, str_enum
 from app.models.enums import NotificationChannel, NotificationKind, NotificationStatus
 from app.models.mixins import TimestampMixin
 
@@ -22,14 +22,12 @@ class NotificationTemplate(Base, TimestampMixin):
 
     __tablename__ = "notification_templates"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     kind: Mapped[NotificationKind] = mapped_column(
-        Enum(NotificationKind, name="notification_kind_enum", native_enum=True),
+        str_enum(NotificationKind, "notification_kind_enum"),
         default=NotificationKind.custom,
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -42,25 +40,18 @@ class NotificationSettings(Base, TimestampMixin):
 
     __tablename__ = "notification_settings"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID,
         ForeignKey("businesses.id", ondelete="CASCADE"),
         unique=True,
     )
     reminders_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     # Minutes before appointment start, e.g. [1440, 120, 30]
-    lead_times_min: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+    lead_times_min: Mapped[list[Any]] = mapped_column(JSONType, default=list)
     max_per_appointment: Mapped[int] = mapped_column(Integer, default=3)
     default_channel: Mapped[NotificationChannel] = mapped_column(
-        Enum(
-            NotificationChannel,
-            name="notification_channel_enum",
-            native_enum=True,
-            create_type=False,
-        ),
+        str_enum(NotificationChannel, "notification_channel_enum"),
         default=NotificationChannel.sms,
     )
 
@@ -77,38 +68,26 @@ class NotificationLog(Base, TimestampMixin):
         ),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     appointment_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("appointments.id", ondelete="SET NULL")
+        GUID, ForeignKey("appointments.id", ondelete="SET NULL")
     )
     customer_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="SET NULL")
+        GUID, ForeignKey("customers.id", ondelete="SET NULL")
     )
     channel: Mapped[NotificationChannel] = mapped_column(
-        Enum(
-            NotificationChannel,
-            name="notification_channel_enum",
-            native_enum=True,
-            create_type=False,
-        ),
+        str_enum(NotificationChannel, "notification_channel_enum"),
         default=NotificationChannel.sms,
     )
     kind: Mapped[NotificationKind] = mapped_column(
-        Enum(
-            NotificationKind,
-            name="notification_kind_enum",
-            native_enum=True,
-            create_type=False,
-        ),
+        str_enum(NotificationKind, "notification_kind_enum"),
         default=NotificationKind.custom,
     )
     status: Mapped[NotificationStatus] = mapped_column(
-        Enum(NotificationStatus, name="notification_status_enum", native_enum=True),
+        str_enum(NotificationStatus, "notification_status_enum"),
         default=NotificationStatus.sent,
     )
     body: Mapped[str] = mapped_column(Text, nullable=False)

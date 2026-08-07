@@ -20,10 +20,17 @@ export type WaitlistStatus =
   | "expired"
   | "cancelled";
 
+export type UserRole = "owner" | "admin" | "pracownik";
+
 export type Owner = {
   id: string;
   email: string;
   business_id: string;
+  name?: string | null;
+  role: UserRole;
+  email_verified: boolean;
+  is_active: boolean;
+  created_at?: string | null;
 };
 
 export type Business = {

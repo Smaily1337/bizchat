@@ -7,10 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { authApi } from "@/api";
+import { authApi, businessApi } from "@/api";
 import { ApiError, getToken, setToken } from "@/api/client";
 import type { Business, Owner } from "@/api/types";
-import { businessApi } from "@/api";
 
 type AuthState = {
   token: string | null;
@@ -18,8 +17,10 @@ type AuthState = {
   business: Business | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  acceptToken: (token: string) => Promise<void>;
   logout: () => void;
   refreshBusiness: () => Promise<void>;
+  resendVerification: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -65,6 +66,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
   }, []);
 
+  const acceptToken = useCallback(async (tok: string) => {
+    setToken(tok);
+    setTokenState(tok);
+    setLoading(true);
+    await loadSession(tok);
+  }, [loadSession]);
+
   const logout = useCallback(() => {
     setToken(null);
     setTokenState(null);
@@ -77,6 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBusiness(biz);
   }, []);
 
+  const resendVerification = useCallback(async () => {
+    await authApi.resendVerification();
+  }, []);
+
   const value = useMemo(
     () => ({
       token,
@@ -84,10 +96,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       business,
       loading,
       login,
+      acceptToken,
       logout,
       refreshBusiness,
+      resendVerification,
     }),
-    [token, owner, business, loading, login, logout, refreshBusiness],
+    [
+      token,
+      owner,
+      business,
+      loading,
+      login,
+      acceptToken,
+      logout,
+      refreshBusiness,
+      resendVerification,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -4,11 +4,11 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.db.types import GUID, JSONType, str_enum
 from app.models.enums import AppointmentStatus, Channel, WaitlistStatus
 from app.models.mixins import TimestampMixin
 
@@ -25,26 +25,24 @@ class Appointment(Base, TimestampMixin):
         Index("ix_appointments_customer_id", "customer_id"),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     customer_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="CASCADE")
+        GUID, ForeignKey("customers.id", ondelete="CASCADE")
     )
     service_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("services.id", ondelete="RESTRICT")
+        GUID, ForeignKey("services.id", ondelete="RESTRICT")
     )
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status: Mapped[AppointmentStatus] = mapped_column(
-        Enum(AppointmentStatus, name="appointment_status_enum", native_enum=True),
+        str_enum(AppointmentStatus, "appointment_status_enum"),
         default=AppointmentStatus.pending,
     )
     channel: Mapped[Channel] = mapped_column(
-        Enum(Channel, name="channel_enum", native_enum=True, create_type=False),
+        str_enum(Channel, "channel_enum"),
         default=Channel.admin,
     )
     gcal_event_id: Mapped[Optional[str]] = mapped_column(String(255))
@@ -63,21 +61,19 @@ class Appointment(Base, TimestampMixin):
 class WaitlistEntry(Base, TimestampMixin):
     __tablename__ = "waitlist_entries"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     customer_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="CASCADE")
+        GUID, ForeignKey("customers.id", ondelete="CASCADE")
     )
     service_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("services.id", ondelete="CASCADE")
+        GUID, ForeignKey("services.id", ondelete="CASCADE")
     )
-    preferred_windows: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+    preferred_windows: Mapped[list[Any]] = mapped_column(JSONType, default=list)
     status: Mapped[WaitlistStatus] = mapped_column(
-        Enum(WaitlistStatus, name="waitlist_status_enum", native_enum=True),
+        str_enum(WaitlistStatus, "waitlist_status_enum"),
         default=WaitlistStatus.active,
     )
 

@@ -25,7 +25,67 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  register: (body: {
+    email: string;
+    password: string;
+    name?: string;
+    business_name: string;
+  }) =>
+    apiFetch<{ access_token: string }>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   me: () => apiFetch<Owner>("/api/auth/me"),
+  config: () =>
+    apiFetch<{ google_oauth_enabled: boolean; registration_enabled: boolean }>(
+      "/api/auth/config",
+    ),
+  verifyEmail: (token: string) =>
+    apiFetch<{ message: string }>(
+      `/api/auth/verify-email?token=${encodeURIComponent(token)}`,
+      { method: "POST" },
+    ),
+  resendVerification: () =>
+    apiFetch<{ message: string }>("/api/auth/resend-verification", {
+      method: "POST",
+    }),
+};
+
+export const usersApi = {
+  list: () => apiFetch<Owner[]>("/api/users"),
+  create: (body: {
+    email: string;
+    password: string;
+    name?: string;
+    role: string;
+  }) =>
+    apiFetch<Owner>("/api/users", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  update: (
+    id: string,
+    body: Partial<{
+      email: string;
+      name: string | null;
+      role: string;
+      is_active: boolean;
+    }>,
+  ) =>
+    apiFetch<Owner>(`/api/users/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  resetPassword: (id: string, password?: string) =>
+    apiFetch<{ message: string; temporary_password: string | null }>(
+      `/api/users/${id}/reset-password`,
+      {
+        method: "POST",
+        body: JSON.stringify(password ? { password } : {}),
+      },
+    ),
+  remove: (id: string) =>
+    apiFetch<void>(`/api/users/${id}`, { method: "DELETE" }),
 };
 
 export const businessApi = {

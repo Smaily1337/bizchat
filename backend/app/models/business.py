@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Optional
 
 from sqlalchemy import (
+    Boolean,
     DateTime,
     ForeignKey,
     Integer,
@@ -15,10 +16,11 @@ from sqlalchemy import (
     Time,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.db.types import GUID, JSONType, str_enum
+from app.models.enums import UserRole
 from app.models.mixins import TimestampMixin
 
 if TYPE_CHECKING:
@@ -30,13 +32,11 @@ if TYPE_CHECKING:
 class Business(Base, TimestampMixin):
     __tablename__ = "businesses"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     timezone: Mapped[str] = mapped_column(String(64), default="Europe/Warsaw")
     google_calendar_id: Mapped[Optional[str]] = mapped_column(String(255))
-    settings: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    settings: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
 
     owners: Mapped[list[Owner]] = relationship(back_populates="business")
     services: Mapped[list[Service]] = relationship(back_populates="business")
@@ -51,15 +51,25 @@ class Business(Base, TimestampMixin):
 
 
 class Owner(Base, TimestampMixin):
+    """Panel user (owner / admin / pracownik) for a business."""
+
     __tablename__ = "owners"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False, default="")
+    name: Mapped[Optional[str]] = mapped_column(String(255))
+    role: Mapped[UserRole] = mapped_column(
+        str_enum(UserRole, "user_role_enum"),
+        default=UserRole.owner,
+        nullable=False,
+    )
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    email_verification_token: Mapped[Optional[str]] = mapped_column(String(128))
+    google_sub: Mapped[Optional[str]] = mapped_column(String(255), unique=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
 
     business: Mapped[Business] = relationship(back_populates="owners")
@@ -68,11 +78,9 @@ class Owner(Base, TimestampMixin):
 class Service(Base, TimestampMixin):
     __tablename__ = "services"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     duration_min: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -94,11 +102,9 @@ class WorkingHours(Base):
         ),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     weekday: Mapped[int] = mapped_column(Integer, nullable=False)  # 0=Mon … 6=Sun
     start_time: Mapped[time] = mapped_column(Time, nullable=False)
@@ -110,11 +116,9 @@ class WorkingHours(Base):
 class TimeOff(Base, TimestampMixin):
     __tablename__ = "time_off"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
+        GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
