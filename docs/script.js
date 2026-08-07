@@ -32,3 +32,39 @@ document.querySelectorAll(".reveal").forEach((el, i) => {
   el.style.transitionDelay = `${Math.min(i % 6, 3) * 70}ms`;
   observer.observe(el);
 });
+
+// Micro-interaction: liczniki statystyk odliczają, gdy sekcja wjedzie na ekran.
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function animateCounter(el) {
+  const target = Number(el.dataset.target || "0");
+  const prefix = el.dataset.prefix || "";
+  const suffix = el.dataset.suffix || "";
+  if (reducedMotion) {
+    el.textContent = `${prefix}${target}${suffix}`;
+    return;
+  }
+  const duration = 1400;
+  const start = performance.now();
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  function frame(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    el.textContent = `${prefix}${Math.round(target * easeOut(progress))}${suffix}`;
+    if (progress < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+const counterObserver = new IntersectionObserver(
+  (entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        counterObserver.unobserve(entry.target);
+      }
+    }
+  },
+  { threshold: 0.6 }
+);
+
+document.querySelectorAll(".counter").forEach((el) => counterObserver.observe(el));
