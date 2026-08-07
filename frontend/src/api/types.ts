@@ -1,0 +1,204 @@
+export type AppointmentStatus =
+  | "pending"
+  | "confirmed"
+  | "cancelled"
+  | "completed"
+  | "no_show";
+
+export type Channel =
+  | "telegram"
+  | "messenger"
+  | "instagram"
+  | "widget"
+  | "admin";
+
+export type FeedbackRoute = "google" | "alert" | "none";
+export type WaitlistStatus =
+  | "active"
+  | "offered"
+  | "booked"
+  | "expired"
+  | "cancelled";
+
+export type Owner = {
+  id: string;
+  email: string;
+  business_id: string;
+};
+
+export type Business = {
+  id: string;
+  name: string;
+  timezone: string;
+  google_calendar_id: string | null;
+  settings: Record<string, unknown>;
+};
+
+export type Service = {
+  id: string;
+  business_id: string;
+  name: string;
+  duration_min: number;
+  price: string | number;
+  description: string | null;
+};
+
+export type Customer = {
+  id: string;
+  business_id: string;
+  name: string | null;
+  phone: string | null;
+};
+
+export type Appointment = {
+  id: string;
+  business_id: string;
+  customer_id: string;
+  service_id: string;
+  start_at: string;
+  end_at: string;
+  status: AppointmentStatus;
+  channel: Channel;
+  notes: string | null;
+  customer_name?: string | null;
+  service_name?: string | null;
+};
+
+export type WorkingHours = {
+  id: string;
+  business_id: string;
+  weekday: number;
+  start_time: string;
+  end_time: string;
+};
+
+export type TimeOff = {
+  id: string;
+  business_id: string;
+  start_at: string;
+  end_at: string;
+  reason: string | null;
+};
+
+export type KnowledgeItem = {
+  id: string;
+  business_id: string;
+  category: string | null;
+  question: string;
+  answer: string;
+};
+
+export type Feedback = {
+  id: string;
+  appointment_id: string;
+  score: number;
+  comment: string | null;
+  routed_to: FeedbackRoute;
+  customer_name?: string | null;
+  service_name?: string | null;
+  start_at?: string | null;
+  created_at: string;
+};
+
+export type WaitlistEntry = {
+  id: string;
+  business_id: string;
+  customer_id: string;
+  service_id: string;
+  status: WaitlistStatus;
+  customer_name?: string | null;
+  service_name?: string | null;
+  created_at: string;
+};
+
+export type DashboardSummary = {
+  business_id: string;
+  appointments_today: number;
+  customers_total: number;
+  pending_count: number;
+  cancelled_7d?: number;
+  no_show_7d?: number;
+  alerts_open?: number;
+  avg_score?: number | null;
+};
+
+export type DayBucket = {
+  day: string;
+  confirmed: number;
+  cancelled: number;
+  no_show: number;
+  completed: number;
+};
+
+export type ChannelBucket = {
+  channel: string;
+  count: number;
+};
+
+export type DashboardAnalytics = {
+  days: DayBucket[];
+  by_channel: ChannelBucket[];
+  gaps_today: number;
+  feedback_avg: number | null;
+};
+
+export type NotificationChannel = "sms" | "email" | "telegram" | "widget";
+export type NotificationKind = "reminder" | "custom" | "waitlist" | "feedback";
+export type NotificationStatus = "sent" | "failed";
+
+export type NotificationTemplate = {
+  id: string;
+  business_id: string;
+  kind: NotificationKind;
+  name: string;
+  body: string;
+  is_default: boolean;
+  updated_at: string;
+};
+
+export type NotificationSettings = {
+  id: string;
+  business_id: string;
+  reminders_enabled: boolean;
+  lead_times_min: number[];
+  max_per_appointment: number;
+  default_channel: NotificationChannel;
+};
+
+export type NotificationLogEntry = {
+  id: string;
+  business_id: string;
+  appointment_id: string | null;
+  customer_id: string | null;
+  channel: NotificationChannel;
+  kind: NotificationKind;
+  status: NotificationStatus;
+  body: string;
+  error: string | null;
+  provider: string;
+  lead_time_min: number | null;
+  sent_at: string | null;
+  created_at: string;
+  customer_name?: string | null;
+  service_name?: string | null;
+};
+
+export type Conversation = {
+  id: string;
+  customer_id: string;
+  customer_name: string | null;
+  channel: Channel;
+  state: string;
+  external_thread_id: string;
+  updated_at: string;
+  last_message: string | null;
+  last_role: string | null;
+};
+
+export type InboxMessage = {
+  id: string;
+  conversation_id: string;
+  role: "customer" | "bot" | "owner" | "system";
+  content: string;
+  created_at: string;
+};

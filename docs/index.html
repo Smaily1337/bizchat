@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BizChat — bot rezerwacyjny 24/7 dla salonów i gabinetów</title>
+    <meta
+      name="description"
+      content="BizChat odciąża recepcję: chatbot omnichannel (Telegram, Messenger, Instagram, widget WWW) rezerwuje wizyty 24/7, a panel admina daje pełną kontrolę nad kalendarzem."
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/bizchat.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="nav glass">
+      <a class="nav-brand" href="#top">
+        <img src="assets/bizchat.svg" alt="Logo BizChat" width="30" height="30" />
+        <span>BizChat</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#funkcje">Funkcje</a>
+        <a href="#jak-to-dziala">Jak to działa</a>
+        <a href="#demo">Demo</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" id="nav-login" href="#demo">Zaloguj się do panelu</a>
+    </header>
+
+    <main id="top">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Inteligentny system rezerwacyjny</p>
+          <h1>
+            Twoja recepcja śpi.<br />
+            <span class="accent">BizChat</span> rezerwuje.
+          </h1>
+          <p class="lead">
+            Chatbot omnichannel przyjmuje rezerwacje 24/7 na Telegramie, Messengerze, Instagramie
+            i stronie WWW — a Ty zarządzasz wszystkim z jednego, eleganckiego panelu.
+            Mniej telefonów, mniej pustych okienek, więcej czasu dla klientów.
+          </p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" id="hero-login" href="#demo">Zaloguj się do panelu</a>
+            <a class="btn btn-ghost" href="#jak-to-dziala">Zobacz, jak to działa</a>
+          </div>
+          <ul class="hero-badges">
+            <li>Telegram</li>
+            <li>Messenger</li>
+            <li>Instagram</li>
+            <li>Widget WWW</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual reveal" aria-hidden="true">
+          <div class="chat-mock glass">
+            <div class="chat-mock-head">
+              <span class="dot"></span>
+              <span>Bot BizChat • online</span>
+            </div>
+            <div class="chat-bubble in">Cześć! Chcę umówić strzyżenie na jutro po 16:00.</div>
+            <div class="chat-bubble out">
+              Jasne! Jutro mam wolne: <strong>16:30</strong>, <strong>17:15</strong> i
+              <strong>18:00</strong>. Który termin pasuje?
+            </div>
+            <div class="chat-bubble in">17:15 poproszę 💇</div>
+            <div class="chat-bubble out">
+              Zarezerwowane ✅ Strzyżenie, jutro 17:15. Przypomnę Ci 2h przed wizytą.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FUNKCJE -->
+      <section class="section" id="funkcje">
+        <div class="section-head reveal">
+          <p class="eyebrow">Funkcje</p>
+          <h2>Wszystko, czego potrzebuje salon lub gabinet</h2>
+        </div>
+        <div class="grid features">
+          <article class="card glass reveal">
+            <div class="card-icon">💬</div>
+            <h3>Bot omnichannel</h3>
+            <p>
+              Jeden bot, cztery kanały: Telegram, Messenger, Instagram i widget na Twojej stronie.
+              Odpowiada na pytania (FAQ) i prowadzi rezerwację krok po kroku.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <div class="card-icon">📅</div>
+            <h3>Kalendarz + Google Calendar</h3>
+            <p>
+              Widok dnia i tygodnia, godziny otwarcia, urlopy oraz dwukierunkowa synchronizacja
+              wizyt z Google Calendar.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <div class="card-icon">🔔</div>
+            <h3>Powiadomienia i przypomnienia</h3>
+            <p>
+              Automatyczne przypomnienia 24h / 2h / 30 min przed wizytą, własne szablony wiadomości
+              i ręczna wysyłka jednym kliknięciem.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <div class="card-icon">⏳</div>
+            <h3>Smart waitlist</h3>
+            <p>
+              Ktoś odwołał wizytę? Bot sam proponuje zwolniony termin osobom z kolejki oczekujących
+              — puste okienka zapełniają się same.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <div class="card-icon">⭐</div>
+            <h3>Feedback po wizycie</h3>
+            <p>
+              Bot zbiera oceny i opinie po każdej wizycie. Niskie oceny trafiają do Ciebie jako
+              alert, zanim staną się publiczną recenzją.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <div class="card-icon">📊</div>
+            <h3>Analityka</h3>
+            <p>
+              Dashboard z podsumowaniem: liczba wizyt, obłożenie, najpopularniejsze usługi i
+              skuteczność bota — wszystko w jednym miejscu.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- JAK TO DZIAŁA -->
+      <section class="section" id="jak-to-dziala">
+        <div class="section-head reveal">
+          <p class="eyebrow">Jak to działa</p>
+          <h2>Od wiadomości do wizyty w kilka sekund</h2>
+        </div>
+        <ol class="steps">
+          <li class="step glass reveal">
+            <span class="step-num">1</span>
+            <h3>Klient pisze</h3>
+            <p>
+              Na dowolnym kanale — Telegram, Messenger, Instagram lub czat na stronie. O każdej
+              porze, także po godzinach.
+            </p>
+          </li>
+          <li class="step glass reveal">
+            <span class="step-num">2</span>
+            <h3>Bot proponuje terminy</h3>
+            <p>
+              Sprawdza kalendarz, godziny otwarcia i urlopy, po czym podaje realnie dostępne sloty.
+              Odpowiada też na pytania o cennik i usługi.
+            </p>
+          </li>
+          <li class="step glass reveal">
+            <span class="step-num">3</span>
+            <h3>Rezerwacja potwierdzona</h3>
+            <p>
+              Wizyta ląduje w panelu i w Google Calendar, a klient dostaje potwierdzenie i
+              automatyczne przypomnienia.
+            </p>
+          </li>
+          <li class="step glass reveal">
+            <span class="step-num">4</span>
+            <h3>Ty masz kontrolę</h3>
+            <p>
+              W panelu admina zarządzasz wizytami, usługami, powiadomieniami, kolejką oczekujących
+              i opiniami — bez telefonu przy uchu.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- DEMO / LOGOWANIE -->
+      <section class="section" id="demo">
+        <div class="demo-wrap">
+          <div class="demo-copy reveal">
+            <p class="eyebrow">Wypróbuj demo</p>
+            <h2>Zaloguj się do panelu admina</h2>
+            <p>
+              Panel demo uruchamiasz lokalnie — wystarczy <code>docker compose up</code> w
+              repozytorium (szczegóły w README). Po starcie panel działa pod adresem
+              <code>http://localhost:5173</code>.
+            </p>
+            <div class="demo-creds glass">
+              <p class="demo-creds-title">Dane demo</p>
+              <p><span>Login</span> <code>owner@bizchat.local</code></p>
+              <p><span>Hasło</span> <code>changeme</code></p>
+            </div>
+            <p class="fineprint">
+              Ta strona jest statyczna (GitHub Pages) — formularz obok nie loguje, tylko
+              przekierowuje do lokalnie uruchomionego panelu.
+            </p>
+          </div>
+
+          <form class="login-card glass reveal" id="login-form" novalidate>
+            <img src="assets/bizchat.svg" alt="" width="40" height="40" />
+            <h3>Panel BizChat</h3>
+            <label>
+              E-mail
+              <input type="email" name="email" value="owner@bizchat.local" autocomplete="username" />
+            </label>
+            <label>
+              Hasło
+              <input type="password" name="password" value="changeme" autocomplete="current-password" />
+            </label>
+            <button type="submit" class="btn btn-primary btn-block">Przejdź do panelu</button>
+            <p class="login-hint">Przekierujemy Cię do panelu uruchomionego lokalnie.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="assets/bizchat.svg" alt="" width="24" height="24" />
+          <span>BizChat</span>
+        </div>
+        <p class="footer-tagline">Inteligentne rezerwacje dla salonów i gabinetów.</p>
+        <nav class="footer-links">
+          <a href="#funkcje">Funkcje</a>
+          <a href="#jak-to-dziala">Jak to działa</a>
+          <a href="#demo">Demo</a>
+        </nav>
+        <p class="footer-copy">© 2026 BizChat. Projekt demonstracyjny.</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
