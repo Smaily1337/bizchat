@@ -3,11 +3,16 @@
 // np. "https://panel.twojadomena.pl/login".
 const PANEL_URL = "http://localhost:5173/login";
 
-// Wszystkie CTA „Zaloguj się do panelu" prowadzą do sekcji demo,
-// a formularz logowania przekierowuje do PANEL_URL.
+// Formularz logowania przekazuje dane do panelu we fragmencie URL (#…),
+// który nigdy nie opuszcza przeglądarki — panel loguje się automatycznie
+// i od razu przenosi do środka.
 document.getElementById("login-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  window.location.href = PANEL_URL;
+  const form = event.currentTarget;
+  const email = form.elements.email.value.trim();
+  const password = form.elements.password.value;
+  const hash = `#email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+  window.location.href = PANEL_URL + hash;
 });
 
 // Micro-interaction: sekcje wjeżdżają przy scrollowaniu.
