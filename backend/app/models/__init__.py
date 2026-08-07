@@ -1,5 +1,6 @@
 """SQLAlchemy models — import side-effects register metadata for Alembic."""
 
+from app.models.analytics import PageView
 from app.models.appointment import Appointment, WaitlistEntry
 from app.models.business import Business, Owner, Service, TimeOff, WorkingHours
 from app.models.conversation import Conversation, Message
@@ -45,6 +46,7 @@ __all__ = [
     "NotificationStatus",
     "NotificationTemplate",
     "Owner",
+    "PageView",
     "Service",
     "TimeOff",
     "UserRole",

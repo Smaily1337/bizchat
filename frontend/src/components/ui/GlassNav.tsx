@@ -9,6 +9,7 @@ const baseNavItems = [
   { to: "/hours", label: "Godziny" },
   { to: "/settings", label: "Ustawienia" },
   { to: "/users", label: "Użytkownicy", roles: ["owner", "admin"] as const },
+  { to: "/platform", label: "Platforma", platformAdmin: true },
   { to: "/feedback", label: "Feedback" },
   { to: "/notifications", label: "Powiadomienia" },
   { to: "/channels", label: "Kanały" },
@@ -17,6 +18,9 @@ const baseNavItems = [
 export function GlassNav() {
   const { business, owner, logout, resendVerification } = useAuth();
   const navItems = baseNavItems.filter((item) => {
+    if ("platformAdmin" in item && item.platformAdmin) {
+      return Boolean(owner?.is_platform_admin);
+    }
     if (!("roles" in item) || !item.roles) return true;
     return owner?.role && (item.roles as readonly string[]).includes(owner.role);
   });
@@ -66,7 +70,11 @@ export function GlassNav() {
         <div className="flex items-center gap-3">
           <span className="hidden max-w-[160px] truncate text-xs text-[var(--muted)] sm:inline">
             {owner?.email}
-            {owner?.role ? ` · ${owner.role}` : ""}
+            {owner?.is_platform_admin
+              ? " · platforma"
+              : owner?.role
+                ? ` · ${owner.role}`
+                : ""}
           </span>
           <GlassButton variant="ghost" className="!px-3 !py-1.5" onClick={logout}>
             Wyloguj

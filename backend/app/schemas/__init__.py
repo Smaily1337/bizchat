@@ -44,6 +44,7 @@ class OwnerOut(ORMModel):
     role: UserRole = UserRole.owner
     email_verified: bool = False
     is_active: bool = True
+    is_platform_admin: bool = False
     created_at: Optional[datetime] = None
 
 

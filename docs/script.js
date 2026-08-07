@@ -1,5 +1,43 @@
 // Adres panelu admina BizChat (Cloud Run).
 const PANEL_URL = "https://bizchat-panel-702906501614.europe-central2.run.app/login";
+// Publiczne API — lekki tracking pageview (bez Google Analytics).
+const API_URL = "https://bizchat-api-702906501614.europe-central2.run.app";
+
+function trackPageview() {
+  try {
+    const key = "bizchat_sid";
+    let sessionId = localStorage.getItem(key);
+    if (!sessionId) {
+      sessionId =
+        Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem(key, sessionId);
+    }
+    const payload = JSON.stringify({
+      path: window.location.pathname || "/",
+      referrer: document.referrer || null,
+      session_id: sessionId,
+    });
+    const url = `${API_URL}/api/analytics/pageview`;
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(
+        url,
+        new Blob([payload], { type: "application/json" }),
+      );
+    } else {
+      fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+        mode: "cors",
+      }).catch(() => {});
+    }
+  } catch (_) {
+    /* ignore */
+  }
+}
+
+trackPageview();
 
 // Formularz logowania przekazuje dane do panelu we fragmencie URL (#…),
 // który nigdy nie opuszcza przeglądarki — panel loguje się automatycznie

@@ -44,7 +44,8 @@ npm run dev
 | Health | http://localhost:8000/health |
 | Widget demo | otwórz `widget/index.html` |
 
-**Demo login:** `owner@bizchat.local` / `changeme`
+**Demo login (salon):** `owner@bizchat.local` / `changeme`  
+**Platform admin (superadmin):** `admin@bizchat.local` / `changeme` → panel `/platform`
 
 ## Docker (pełny stack)
 
@@ -67,6 +68,7 @@ docker compose up --build
 - **Feedback** — opinie + alerty (score ≤2) + waitlist FIFO
 - **Powiadomienia** — ręczna wysyłka do klienta (szablon lub własna treść), automatyczne przypomnienia (24h/2h/30min + własne czasy, limit na wizytę, kanał SMS/e-mail/Telegram/Widget — mock bez providera), edytowalne szablony z podglądem „jak zobaczy klient", log wysyłek; przycisk „Powiadom" przy każdej wizycie
 - **Kanały** — wskazówki webhooków + snippet widgetu
+- **Platforma** (`/platform`) — tylko `is_platform_admin`: konta wszystkich firm, lista businesses, statystyki pageview landingu
 
 ## API (wybrane)
 
@@ -84,6 +86,9 @@ docker compose up --build
 | GET/POST | `/api/waitlist` |
 | GET | `/api/availability` |
 | GET | `/api/dashboard/summary` |
+| GET/POST/PATCH | `/api/platform/accounts`, `/api/platform/businesses` (platform admin) |
+| GET | `/api/platform/stats/pageviews` (platform admin) |
+| POST | `/api/analytics/pageview` (publiczny, rate-limit) |
 | GET/PUT | `/api/notifications/settings` |
 | CRUD | `/api/notifications/templates` |
 | POST | `/api/notifications/send`, `/api/notifications/preview` |
@@ -170,7 +175,16 @@ gcloud run deploy bizchat-panel \
   --set-build-env-vars=VITE_API_URL=https://bizchat-api-....run.app
 ```
 
-Demo login po seedzie: `owner@bizchat.local` / `changeme`
+Demo login po seedzie: `owner@bizchat.local` / `changeme` (salon).  
+Platform admin: `admin@bizchat.local` / `changeme` → https://bizchat-panel-…/platform  
+
+Landing (`docs/`) wysyła pageview na `POST /api/analytics/pageview`. Redeploy:
+
+```bash
+gcloud run deploy bizchat-landing \
+  --project=bizchat-504420 --region=europe-central2 --source=./docs \
+  --allow-unauthenticated --max-instances=1
+```
 
 Alternatywa lokalna / VPS: `docker compose up --build -d` + silne sekrety i `CORS_ORIGINS`.
 

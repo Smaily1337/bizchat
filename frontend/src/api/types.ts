@@ -30,7 +30,29 @@ export type Owner = {
   role: UserRole;
   email_verified: boolean;
   is_active: boolean;
+  is_platform_admin?: boolean;
   created_at?: string | null;
+};
+
+export type PlatformAccount = Owner & {
+  business_name?: string | null;
+};
+
+export type PlatformPageviewStats = {
+  visits_today: number;
+  visits_7d: number;
+  visits_30d: number;
+  unique_sessions_7d: number;
+  by_day: Array<{ day: string; count: number }>;
+  top_paths: Array<{ path: string; count: number }>;
+  recent: Array<{
+    id: string;
+    path: string;
+    referrer: string | null;
+    user_agent: string | null;
+    session_id: string | null;
+    created_at: string;
+  }>;
 };
 
 export type Business = {

@@ -114,6 +114,37 @@ async def _ensure_notification_defaults(session, business_id: uuid.UUID) -> bool
     return added
 
 
+async def _ensure_platform_admin(session, business_id: uuid.UUID) -> bool:
+    """Idempotent: seed platform superadmin admin@bizchat.local."""
+    existing = await session.execute(
+        select(Owner).where(Owner.email == "admin@bizchat.local")
+    )
+    admin = existing.scalar_one_or_none()
+    if admin:
+        changed = False
+        if not admin.is_platform_admin:
+            admin.is_platform_admin = True
+            changed = True
+        if not admin.is_active:
+            admin.is_active = True
+            changed = True
+        return changed
+
+    session.add(
+        Owner(
+            email="admin@bizchat.local",
+            password_hash=hash_password("changeme"),
+            name="Platform Admin",
+            role=UserRole.owner,
+            email_verified=True,
+            is_active=True,
+            is_platform_admin=True,
+            business_id=business_id,
+        )
+    )
+    return True
+
+
 async def seed() -> None:
     async with AsyncSessionLocal() as session:
         existing = await session.execute(
@@ -121,9 +152,18 @@ async def seed() -> None:
         )
         existing_owner = existing.scalar_one_or_none()
         if existing_owner:
-            if await _ensure_notification_defaults(session, existing_owner.business_id):
+            topped = await _ensure_notification_defaults(
+                session, existing_owner.business_id
+            )
+            topped = await _ensure_platform_admin(
+                session, existing_owner.business_id
+            ) or topped
+            if topped:
                 await session.commit()
-                print("Seed top-up: added notification defaults")
+                print(
+                    "Seed top-up: notification defaults / platform admin "
+                    "(admin@bizchat.local / changeme)"
+                )
             else:
                 print("Seed already applied (owner@bizchat.local exists)")
             return
@@ -147,6 +187,7 @@ async def seed() -> None:
             business_id=business.id,
         )
         session.add(owner)
+        await _ensure_platform_admin(session, business.id)
 
         services = [
             Service(
@@ -303,7 +344,8 @@ async def seed() -> None:
 
         await session.commit()
         print(f"Seeded business={business.id}")
-        print("Login: owner@bizchat.local / changeme")
+        print("Login (salon): owner@bizchat.local / changeme")
+        print("Login (platform admin): admin@bizchat.local / changeme")
 
 
 if __name__ == "__main__":

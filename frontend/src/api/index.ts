@@ -13,6 +13,8 @@ import type {
   NotificationSettings,
   NotificationTemplate,
   Owner,
+  PlatformAccount,
+  PlatformPageviewStats,
   Service,
   TimeOff,
   WaitlistEntry,
@@ -253,4 +255,54 @@ export const inboxApi = {
       method: "POST",
       body: JSON.stringify({ text }),
     }),
+};
+
+export const platformApi = {
+  listAccounts: () => apiFetch<PlatformAccount[]>("/api/platform/accounts"),
+  createAccount: (body: {
+    email: string;
+    name?: string;
+    role?: string;
+    business_id?: string;
+    business_name?: string;
+    is_platform_admin?: boolean;
+  }) =>
+    apiFetch<{
+      account: PlatformAccount;
+      temporary_password: string;
+      message: string;
+    }>("/api/platform/accounts", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateAccount: (
+    id: string,
+    body: Partial<{
+      email: string;
+      name: string | null;
+      role: string;
+      is_active: boolean;
+      is_platform_admin: boolean;
+    }>,
+  ) =>
+    apiFetch<PlatformAccount>(`/api/platform/accounts/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  resetPassword: (id: string) =>
+    apiFetch<{ message: string; temporary_password: string | null }>(
+      `/api/platform/accounts/${id}/reset-password`,
+      { method: "POST" },
+    ),
+  listBusinesses: () => apiFetch<Business[]>("/api/platform/businesses"),
+  updateBusiness: (
+    id: string,
+    body: Partial<{ name: string; timezone: string }>,
+  ) =>
+    apiFetch<Business>(`/api/platform/businesses/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  pageviewStats: () =>
+    apiFetch<PlatformPageviewStats>("/api/platform/stats/pageviews"),
 };

@@ -14,6 +14,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import (
+    analytics,
     appointments,
     auth,
     business,
@@ -24,6 +25,7 @@ from app.api import (
     inbox,
     knowledge,
     notifications,
+    platform,
     services,
     users,
     ws,
@@ -67,6 +69,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(platform.router)
+app.include_router(analytics.router)
 app.include_router(appointments.router)
 app.include_router(calendar.router)
 app.include_router(dashboard.router)

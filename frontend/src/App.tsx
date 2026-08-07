@@ -12,6 +12,7 @@ import { HoursPage } from "@/pages/HoursPage";
 import { InboxPage } from "@/pages/InboxPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
+import { PlatformPage } from "@/pages/PlatformPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/hours" element={<HoursPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/users" element={<UsersPage />} />
+              <Route path="/platform" element={<PlatformPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/channels" element={<ChannelsPage />} />

@@ -102,3 +102,15 @@ RequireOwnerOrAdmin = Annotated[
     Owner, Depends(require_roles(UserRole.owner, UserRole.admin))
 ]
 RequireOwner = Annotated[Owner, Depends(require_roles(UserRole.owner))]
+
+
+async def require_platform_admin(owner: CurrentOwner) -> Owner:
+    if not owner.is_platform_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Wymagane uprawnienia administratora platformy",
+        )
+    return owner
+
+
+RequirePlatformAdmin = Annotated[Owner, Depends(require_platform_admin)]
