@@ -97,8 +97,11 @@ docker compose up --build
 
 ## Bot
 
+Dokumentacja techniczna (instalacja, Messenger, błędy): **[DOCS/TECHNICZNA-BOT.md](DOCS/TECHNICZNA-BOT.md)**
+
 - FAQ z `knowledge_items` (dopasowanie tokenów)
 - Rezerwacja wielokrokowa: usługa → dzień → slot → potwierdzenie
+- Daty po polsku: `jutro`, `23 sierpnia`, `15.12`, `grudzień`, dni tygodnia (`backend/app/bot/dates.py`)
 - „moje wizyty”, „anuluj”, lista oczekujących
 - OpenAI (`OPENAI_API_KEY`) opcjonalnie poprawia klasyfikację intencji — bez klucza działa rule-based
 
