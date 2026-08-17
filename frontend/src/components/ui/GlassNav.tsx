@@ -1,28 +1,130 @@
+import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { GlassButton } from "./GlassButton";
 
-const baseNavItems = [
-  { to: "/", label: "Kalendarz", end: true },
-  { to: "/appointments", label: "Wizyty" },
-  { to: "/inbox", label: "Inbox" },
-  { to: "/hours", label: "Godziny" },
-  { to: "/settings", label: "Ustawienia" },
-  { to: "/users", label: "Użytkownicy", roles: ["owner", "admin"] as const },
-  { to: "/platform", label: "Platforma", platformAdmin: true },
-  { to: "/feedback", label: "Feedback" },
-  { to: "/notifications", label: "Powiadomienia" },
-  { to: "/channels", label: "Kanały" },
-] as const;
+type NavItem = {
+  to: string;
+  label: string;
+  end?: boolean;
+  roles?: readonly ("owner" | "admin" | "pracownik")[];
+  platformAdmin?: boolean;
+  icon: ReactNode;
+};
+
+const baseNavItems: NavItem[] = [
+  {
+    to: "/",
+    label: "Kalendarz",
+    end: true,
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M16 3v4M8 3v4M3 11h18" />
+      </svg>
+    ),
+  },
+  {
+    to: "/appointments",
+    label: "Wizyty",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 11h6M9 15h3" />
+        <path d="M8 3h8v3H8z" />
+        <path d="M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
+      </svg>
+    ),
+  },
+  {
+    to: "/inbox",
+    label: "Inbox",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m3 7 9 7 9-7" />
+      </svg>
+    ),
+  },
+  {
+    to: "/hours",
+    label: "Godziny",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </svg>
+    ),
+  },
+  {
+    to: "/settings",
+    label: "Ustawienia",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+      </svg>
+    ),
+  },
+  {
+    to: "/users",
+    label: "Użytkownicy",
+    roles: ["owner", "admin"],
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3 19a6 6 0 0 1 12 0" />
+        <circle cx="17" cy="9" r="2.5" />
+        <path d="M16 19a4.5 4.5 0 0 1 5 0" />
+      </svg>
+    ),
+  },
+  {
+    to: "/platform",
+    label: "Platforma",
+    platformAdmin: true,
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4z" />
+      </svg>
+    ),
+  },
+  {
+    to: "/feedback",
+    label: "Feedback",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7z" />
+      </svg>
+    ),
+  },
+  {
+    to: "/notifications",
+    label: "Powiadomienia",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+        <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+      </svg>
+    ),
+  },
+  {
+    to: "/channels",
+    label: "Kanały",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+        <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
+      </svg>
+    ),
+  },
+];
 
 export function GlassNav() {
   const { business, owner, logout, resendVerification } = useAuth();
   const navItems = baseNavItems.filter((item) => {
-    if ("platformAdmin" in item && item.platformAdmin) {
-      return Boolean(owner?.is_platform_admin);
-    }
-    if (!("roles" in item) || !item.roles) return true;
-    return owner?.role && (item.roles as readonly string[]).includes(owner.role);
+    if (item.platformAdmin) return Boolean(owner?.is_platform_admin);
+    if (!item.roles) return true;
+    return owner?.role && item.roles.includes(owner.role);
   });
 
   return (
@@ -52,16 +154,17 @@ export function GlassNav() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={"end" in item ? item.end : false}
+              end={item.end}
               className={({ isActive }) =>
                 [
-                  "rounded-control px-3 py-2 text-sm font-medium transition duration-200",
+                  "inline-flex items-center gap-1.5 rounded-control px-3 py-2 text-sm font-medium transition duration-200",
                   isActive
                     ? "bg-glass-fillStrong text-white shadow-active"
                     : "text-[var(--muted)] hover:bg-glass-fill hover:text-white",
                 ].join(" ")
               }
             >
+              {item.icon}
               {item.label}
             </NavLink>
           ))}
@@ -103,16 +206,17 @@ export function GlassNav() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={"end" in item ? item.end : false}
+            end={item.end}
             className={({ isActive }) =>
               [
-                "relative z-10 shrink-0 rounded-control px-3 py-1.5 text-xs font-medium",
+                "relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium",
                 isActive
                   ? "bg-glass-fillStrong text-white"
                   : "text-[var(--muted)]",
               ].join(" ")
             }
           >
+            {item.icon}
             {item.label}
           </NavLink>
         ))}
