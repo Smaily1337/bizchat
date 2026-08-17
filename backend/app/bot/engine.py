@@ -69,19 +69,7 @@ class CoreBotEngine:
             await self.adapter.send_outbound(outbound)
             return outbound
 
-        try:
-            await limits_service.assert_can_receive_message(
-                self.db, business, inbound.channel
-            )
-        except LimitExceededError as exc:
-            outbound = OutboundMessage(
-                channel=inbound.channel,
-                external_thread_id=inbound.external_thread_id,
-                text=exc.user_message,
-            )
-            await self.adapter.send_outbound(outbound)
-            return outbound
-
+        # Always land in Inbox first — even for unknown writers / disabled channels.
         customer = await self._get_or_create_customer(inbound, business_id)
         conversation = await self._get_or_create_conversation(inbound, customer.id)
 
@@ -93,6 +81,47 @@ class CoreBotEngine:
                 raw_payload=inbound.raw_payload,
             )
         )
+        conversation.updated_at = utc_now()
+        await self.db.flush()
+
+        preview = inbound.text.strip()[:100] or "…"
+        await hub.publish(
+            business_id,
+            "chat.message",
+            {
+                "conversation_id": str(conversation.id),
+                "channel": inbound.channel.value
+                if hasattr(inbound.channel, "value")
+                else str(inbound.channel),
+                "customer_name": customer.name,
+                "role": "customer",
+            },
+            title="Nowa wiadomość",
+            message=f"{customer.name or 'Klient'} ({inbound.channel}): {preview}",
+        )
+
+        try:
+            await limits_service.assert_can_receive_message(
+                self.db, business, inbound.channel
+            )
+        except LimitExceededError as exc:
+            reply_text = exc.user_message
+            self.db.add(
+                Message(
+                    conversation_id=conversation.id,
+                    role=MessageRole.bot,
+                    content=reply_text,
+                )
+            )
+            conversation.updated_at = utc_now()
+            await self.db.flush()
+            outbound = OutboundMessage(
+                channel=inbound.channel,
+                external_thread_id=inbound.external_thread_id,
+                text=reply_text,
+            )
+            await self.adapter.send_outbound(outbound)
+            return outbound
 
         intent = await detect_intent(inbound.text)
         ctx = dict(conversation.context or {})
@@ -129,22 +158,6 @@ class CoreBotEngine:
         )
         conversation.updated_at = utc_now()
         await self.db.flush()
-
-        preview = inbound.text.strip()[:100] or "…"
-        await hub.publish(
-            business_id,
-            "chat.message",
-            {
-                "conversation_id": str(conversation.id),
-                "channel": inbound.channel.value
-                if hasattr(inbound.channel, "value")
-                else str(inbound.channel),
-                "customer_name": customer.name,
-                "role": "customer",
-            },
-            title="Nowa wiadomość",
-            message=f"{customer.name or 'Klient'} ({inbound.channel}): {preview}",
-        )
 
         outbound = OutboundMessage(
             channel=inbound.channel,

@@ -37,7 +37,8 @@ PLAN_DEFAULTS: dict[str, dict[str, Any]] = {
         "max_appointments_month": 30,
         "max_messages_month": 200,
         "max_seats": 2,
-        "enabled_channels": [Channel.widget.value, Channel.admin.value],
+        # Inbound must reach Inbox even on free/trial — otherwise writers never appear.
+        "enabled_channels": list(ALL_CHAT_CHANNELS),
         "trial_days": 14,
     },
     PLAN_STARTER: {

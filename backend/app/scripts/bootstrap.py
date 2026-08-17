@@ -115,7 +115,8 @@ async def _sqlite_prepare() -> None:
                       max_messages_month = COALESCE(max_messages_month, 200),
                       max_seats = COALESCE(max_seats, 2),
                       enabled_channels = COALESCE(
-                        enabled_channels, '["widget","admin"]'
+                        enabled_channels,
+                        '["widget","admin","telegram","messenger","instagram","whatsapp"]'
                       ),
                       deposit_percent = COALESCE(deposit_percent, 0)
                     """
@@ -143,6 +144,19 @@ async def _sqlite_prepare() -> None:
             )
         for stmt in appt_alters:
             await conn.execute(text(stmt))
+
+        # Expand legacy free-plan channel lists so Messenger/Telegram land in Inbox.
+        await conn.execute(
+            text(
+                """
+                UPDATE businesses
+                SET enabled_channels = '["widget","admin","telegram","messenger","instagram","whatsapp"]'
+                WHERE enabled_channels IS NULL
+                   OR enabled_channels = '["widget","admin"]'
+                   OR enabled_channels = '["admin","widget"]'
+                """
+            )
+        )
 
 
 def _alembic_upgrade() -> None:
