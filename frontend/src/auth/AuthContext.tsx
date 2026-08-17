@@ -40,9 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const me = await authApi.me();
-      const biz = await businessApi.get();
       setOwner(me);
-      setBusiness(biz);
+      try {
+        const biz = await businessApi.get();
+        setBusiness(biz);
+      } catch {
+        setBusiness(null);
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setToken(null);

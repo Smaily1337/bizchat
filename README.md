@@ -45,7 +45,8 @@ npm run dev
 | Widget demo | otwórz `widget/index.html` |
 
 **Demo login (salon):** `owner@bizchat.local` / `changeme`  
-**Platform admin (superadmin):** `admin@bizchat.local` / `changeme` → panel `/platform`
+**Platform admin (superadmin):** `admin@bizchat.local` / `changeme` → panel `/platform`  
+(Konto Google też może mieć Platformę, jeśli ma `is_platform_admin` albo jest na liście `PLATFORM_ADMIN_EMAILS`.)
 
 ## Docker (pełny stack)
 

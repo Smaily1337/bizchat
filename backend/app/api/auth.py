@@ -40,6 +40,18 @@ def normalize_email(value: str) -> str:
     return email
 
 
+def sync_platform_admin_flag(owner: Owner) -> bool:
+    """Promote owners listed in PLATFORM_ADMIN_EMAILS. Returns True if changed."""
+    emails = settings.platform_admin_email_set
+    if not emails:
+        return False
+    should = owner.email.lower() in emails
+    if should and not owner.is_platform_admin:
+        owner.is_platform_admin = True
+        return True
+    return False
+
+
 class RegisterRequest(BaseModel):
     email: str
     password: str = Field(min_length=6, max_length=128)
@@ -151,7 +163,9 @@ async def resend_verification(db: DbSession, owner: CurrentOwner) -> MessageOut:
 
 
 @router.get("/me", response_model=OwnerOut)
-async def me(owner: CurrentOwner) -> Owner:
+async def me(db: DbSession, owner: CurrentOwner) -> Owner:
+    if sync_platform_admin_flag(owner):
+        await db.flush()
     return owner
 
 
@@ -257,6 +271,9 @@ async def google_oauth_callback(
             owner.name = name
         await db.flush()
 
+    if sync_platform_admin_flag(owner):
+        await db.flush()
+
     jwt_token = create_access_token(
         subject=owner.email, business_id=owner.business_id, role=owner.role
     )
@@ -276,6 +293,8 @@ async def _authenticate(db: DbSession, email: str, password: str) -> TokenRespon
             detail="Nieprawidłowy e-mail lub hasło",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if sync_platform_admin_flag(owner):
+        await db.flush()
     token = create_access_token(
         subject=owner.email, business_id=owner.business_id, role=owner.role
     )

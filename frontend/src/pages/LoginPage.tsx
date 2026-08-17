@@ -129,9 +129,36 @@ export function LoginPage() {
         </h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           {mode === "login"
-            ? "Zaloguj się, aby zarządzać wizytami i ustawieniami salonu."
+            ? "Zaloguj się, aby zarządzać wizytami i ustawieniami salonu. Panel Platforma wymaga konta z flagą platform admin."
             : "Załóż konto właściciela i nowy salon w kilka sekund."}
         </p>
+
+        {mode === "login" && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <GlassButton
+              type="button"
+              variant="ghost"
+              className="!px-3 !py-1.5 text-xs"
+              onClick={() => {
+                setEmail("admin@bizchat.local");
+                setPassword("changeme");
+              }}
+            >
+              Superadmin platformy
+            </GlassButton>
+            <GlassButton
+              type="button"
+              variant="ghost"
+              className="!px-3 !py-1.5 text-xs"
+              onClick={() => {
+                setEmail("owner@bizchat.local");
+                setPassword("changeme");
+              }}
+            >
+              Demo salon
+            </GlassButton>
+          </div>
+        )}
 
         <div className="mt-5 flex gap-2">
           <GlassButton
@@ -242,7 +269,10 @@ export function LoginPage() {
         )}
 
         <p className="mt-5 text-xs text-[var(--muted)]">
-          Demo: owner@bizchat.local / changeme
+          Demo salon: owner@bizchat.local / changeme
+          <br />
+          Platforma: admin@bizchat.local / changeme (albo Google z uprawnieniami
+          platform admin)
         </p>
       </GlassCard>
     </div>

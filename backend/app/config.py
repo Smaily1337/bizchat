@@ -59,9 +59,20 @@ class Settings(BaseSettings):
     auto_migrate: bool = True
     auto_seed: bool = True
 
+    # Comma-separated emails that always get is_platform_admin on login/seed.
+    platform_admin_emails: str = "admin@bizchat.local"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def platform_admin_email_set(self) -> set[str]:
+        return {
+            e.strip().lower()
+            for e in self.platform_admin_emails.split(",")
+            if e.strip()
+        }
 
     @property
     def is_sqlite(self) -> bool:

@@ -37,14 +37,17 @@ export function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function reload() {
-    const [s, k, u] = await Promise.all([
+    const [s, k] = await Promise.all([
       servicesApi.list(),
       knowledgeApi.list(),
-      businessApi.usage(),
     ]);
     setServices(s);
     setKnowledge(k);
-    setUsage(u);
+    try {
+      setUsage(await businessApi.usage());
+    } catch {
+      setUsage(null);
+    }
   }
 
   useEffect(() => {
