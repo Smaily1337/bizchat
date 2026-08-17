@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Appointment, AppointmentStatus, CancellationEvent, Customer, Service
+from app.models import Appointment, AppointmentStatus, CancellationEvent, Customer, Service, Staff
 from app.models.enums import Channel
 from app.schemas import AppointmentOut
 from app.services import google_calendar
@@ -35,16 +35,20 @@ def to_appointment_out(appt: Appointment) -> AppointmentOut:
         business_id=appt.business_id,
         customer_id=appt.customer_id,
         service_id=appt.service_id,
+        staff_id=appt.staff_id,
         start_at=appt.start_at,
         end_at=appt.end_at,
         status=appt.status,
         channel=appt.channel,
         gcal_event_id=appt.gcal_event_id,
         notes=appt.notes,
+        deposit_amount=appt.deposit_amount,
+        deposit_status=appt.deposit_status,
         created_at=appt.created_at,
         updated_at=appt.updated_at,
         customer_name=appt.customer.name if appt.customer else None,
         service_name=appt.service.name if appt.service else None,
+        staff_name=appt.staff.name if getattr(appt, "staff", None) else None,
     )
 
 
@@ -57,6 +61,7 @@ async def _load_appointment(
         .options(
             selectinload(Appointment.customer),
             selectinload(Appointment.service),
+            selectinload(Appointment.staff),
         )
     )
     return result.scalar_one_or_none()
@@ -69,6 +74,7 @@ async def _assert_no_overlap(
     start_at: datetime,
     end_at: datetime,
     exclude_id: UUID | None = None,
+    staff_id: UUID | None = None,
 ) -> None:
     stmt = select(Appointment).where(
         Appointment.business_id == business_id,
@@ -76,6 +82,8 @@ async def _assert_no_overlap(
         Appointment.start_at < end_at,
         Appointment.end_at > start_at,
     )
+    if staff_id is not None:
+        stmt = stmt.where(Appointment.staff_id == staff_id)
     if exclude_id is not None:
         stmt = stmt.where(Appointment.id != exclude_id)
     conflict = (await db.execute(stmt)).scalars().first()
@@ -94,6 +102,7 @@ async def create_appointment(
     status: AppointmentStatus = AppointmentStatus.pending,
     channel: Channel = Channel.admin,
     notes: str | None = None,
+    staff_id: UUID | None = None,
 ) -> Appointment:
     from app.models import Business
 
@@ -113,24 +122,35 @@ async def create_appointment(
     if customer is None or customer.business_id != business_id:
         raise BookingError("Customer not found for this business")
 
+    if staff_id is not None:
+        staff = await db.get(Staff, staff_id)
+        if staff is None or staff.business_id != business_id or not staff.is_active:
+            raise BookingError("Pracownik niedostępny")
+
     if end_at is None:
         end_at = start_at + timedelta(minutes=service.duration_min)
     if end_at <= start_at:
         raise BookingError("end_at must be after start_at")
 
     await _assert_no_overlap(
-        db, business_id=business_id, start_at=start_at, end_at=end_at
+        db,
+        business_id=business_id,
+        start_at=start_at,
+        end_at=end_at,
+        staff_id=staff_id,
     )
 
     appointment = Appointment(
         business_id=business_id,
         customer_id=customer_id,
         service_id=service_id,
+        staff_id=staff_id,
         start_at=start_at,
         end_at=end_at,
         status=status,
         channel=channel,
         notes=notes,
+        deposit_status="none",
     )
     db.add(appointment)
     await db.flush()
@@ -168,6 +188,7 @@ async def update_appointment(
     status: AppointmentStatus | None = None,
     notes: str | None = None,
     service_id: UUID | None = None,
+    staff_id: UUID | None = None,
 ) -> Appointment:
     if service_id is not None:
         service = await db.get(Service, service_id)
@@ -175,18 +196,28 @@ async def update_appointment(
             raise BookingError("Service not found for this business")
         appointment.service_id = service_id
 
+    if staff_id is not None:
+        if staff_id:
+            staff = await db.get(Staff, staff_id)
+            if staff is None or staff.business_id != appointment.business_id:
+                raise BookingError("Pracownik niedostępny")
+            appointment.staff_id = staff_id
+        else:
+            appointment.staff_id = None
+
     new_start = start_at if start_at is not None else appointment.start_at
     new_end = end_at if end_at is not None else appointment.end_at
     if new_end <= new_start:
         raise BookingError("end_at must be after start_at")
 
-    if start_at is not None or end_at is not None:
+    if start_at is not None or end_at is not None or staff_id is not None:
         await _assert_no_overlap(
             db,
             business_id=appointment.business_id,
             start_at=new_start,
             end_at=new_end,
             exclude_id=appointment.id,
+            staff_id=appointment.staff_id,
         )
 
     if start_at is not None:
@@ -264,6 +295,7 @@ async def list_appointments(
         .options(
             selectinload(Appointment.customer),
             selectinload(Appointment.service),
+            selectinload(Appointment.staff),
         )
     )
     if status is not None:

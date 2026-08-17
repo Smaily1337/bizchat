@@ -64,6 +64,18 @@ const baseNavItems: NavItem[] = [
     ),
   },
   {
+    to: "/staff",
+    label: "Zespół",
+    tourId: "nav-staff",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+  {
     to: "/hours",
     label: "Godziny",
     tourId: "nav-hours",
@@ -71,6 +83,16 @@ const baseNavItems: NavItem[] = [
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="9" />
         <path d="M12 7v5l3 2" />
+      </svg>
+    ),
+  },
+  {
+    to: "/reports",
+    label: "Raporty",
+    tourId: "nav-reports",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19V5M10 19V9M16 19v-6M22 19H2" />
       </svg>
     ),
   },

@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from app.models.appointment import Appointment
     from app.models.customer import Customer
     from app.models.knowledge import KnowledgeItem
+    from app.models.staff import Staff
 
 
 class Business(Base, TimestampMixin):
@@ -37,6 +38,9 @@ class Business(Base, TimestampMixin):
     timezone: Mapped[str] = mapped_column(String(64), default="Europe/Warsaw")
     google_calendar_id: Mapped[Optional[str]] = mapped_column(String(255))
     settings: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
+    public_slug: Mapped[Optional[str]] = mapped_column(String(64), unique=True)
+    deposit_percent: Mapped[Optional[int]] = mapped_column(Integer, default=0)
+    stripe_account_id: Mapped[Optional[str]] = mapped_column(String(255))
 
     # Licensing / plan limits (NULL limit = unlimited)
     plan: Mapped[str] = mapped_column(String(32), default="free", nullable=False)
@@ -61,6 +65,7 @@ class Business(Base, TimestampMixin):
     knowledge_items: Mapped[list[KnowledgeItem]] = relationship(
         back_populates="business"
     )
+    staff_members: Mapped[list[Staff]] = relationship(back_populates="business")
 
 
 class Owner(Base, TimestampMixin):

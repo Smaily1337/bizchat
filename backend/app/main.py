@@ -25,13 +25,16 @@ from app.api import (
     inbox,
     knowledge,
     notifications,
+    payments,
     platform,
+    public_booking,
     services,
+    staff,
     users,
     ws,
 )
 from app.api.feedback_waitlist import feedback_router, waitlist_router
-from app.api.webhooks import meta_router, telegram_router, widget_router
+from app.api.webhooks import meta_router, telegram_router, whatsapp_router, widget_router
 from app.config import settings
 from app.db.session import engine
 from app.schemas import HealthResponse
@@ -76,6 +79,7 @@ app.include_router(calendar.router)
 app.include_router(dashboard.router)
 app.include_router(business.router)
 app.include_router(services.router)
+app.include_router(staff.router)
 app.include_router(customers.router)
 app.include_router(hours.router)
 app.include_router(knowledge.router)
@@ -83,9 +87,12 @@ app.include_router(feedback_router)
 app.include_router(waitlist_router)
 app.include_router(inbox.router)
 app.include_router(notifications.router)
+app.include_router(public_booking.router)
+app.include_router(payments.router)
 app.include_router(ws.router)
 app.include_router(telegram_router)
 app.include_router(meta_router)
+app.include_router(whatsapp_router)
 app.include_router(widget_router)
 
 _widget_candidates = [

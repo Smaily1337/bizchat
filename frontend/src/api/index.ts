@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, API_BASE, getToken } from "./client";
 import type {
   Appointment,
   Business,
@@ -20,10 +20,13 @@ import type {
   PlatformBusiness,
   PlatformPageviewStats,
   Service,
+  StaffMember,
   TimeOff,
   WaitlistEntry,
   WorkingHours,
 } from "./types";
+
+export { API_BASE } from "./client";
 
 export const authApi = {
   login: (email: string, password: string) =>
@@ -97,7 +100,7 @@ export const usersApi = {
 export const businessApi = {
   get: () => apiFetch<Business>("/api/business"),
   usage: () => apiFetch<LicenseUsage>("/api/business/usage"),
-  update: (body: Partial<Business>) =>
+  update: (body: Record<string, unknown>) =>
     apiFetch<Business>("/api/business", {
       method: "PATCH",
       body: JSON.stringify(body),
@@ -177,6 +180,100 @@ export const customersApi = {
     }),
   remove: (id: string) =>
     apiFetch<void>(`/api/customers/${id}`, { method: "DELETE" }),
+  importCsv: async (file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`${API_BASE}/api/customers/import`, {
+      method: "POST",
+      headers: getToken() ? { Authorization: `Bearer ${getToken()}` } : {},
+      body: fd,
+    });
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(detail || "Import failed");
+    }
+    return res.json() as Promise<{
+      created: number;
+      updated: number;
+      skipped: number;
+      errors: string[];
+    }>;
+  },
+};
+
+export const staffApi = {
+  list: () => apiFetch<StaffMember[]>("/api/staff"),
+  create: (body: { name: string; color?: string; sort_order?: number }) =>
+    apiFetch<StaffMember>("/api/staff", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  update: (id: string, body: Record<string, unknown>) =>
+    apiFetch<StaffMember>(`/api/staff/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  remove: (id: string) =>
+    apiFetch<void>(`/api/staff/${id}`, { method: "DELETE" }),
+};
+
+export const publicBookingApi = {
+  business: (key: string) =>
+    apiFetch<{
+      id: string;
+      name: string;
+      timezone: string;
+      public_slug: string | null;
+      deposit_percent: number;
+      booking_url: string | null;
+    }>(`/api/public/${key}`),
+  services: (key: string) =>
+    apiFetch<
+      Array<{
+        id: string;
+        name: string;
+        duration_min: number;
+        price: string | number;
+        description: string | null;
+      }>
+    >(`/api/public/${key}/services`),
+  staff: (key: string) =>
+    apiFetch<Array<{ id: string; name: string; color: string | null }>>(
+      `/api/public/${key}/staff`,
+    ),
+  availability: (key: string, serviceId: string, day: string, staffId?: string) => {
+    const q = new URLSearchParams({
+      service_id: serviceId,
+      day,
+    });
+    if (staffId) q.set("staff_id", staffId);
+    return apiFetch<{
+      slots: Array<{ start_at: string; end_at: string; available: boolean }>;
+    }>(`/api/public/${key}/availability?${q}`);
+  },
+  book: (
+    key: string,
+    body: {
+      service_id: string;
+      start_at: string;
+      name: string;
+      phone?: string;
+      email?: string;
+      staff_id?: string;
+      notes?: string;
+    },
+  ) =>
+    apiFetch<{
+      appointment_id: string;
+      status: string;
+      deposit_status: string;
+      deposit_amount: string | number | null;
+      checkout_url: string | null;
+      message: string;
+    }>(`/api/public/${key}/book`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };
 
 export const hoursApi = {

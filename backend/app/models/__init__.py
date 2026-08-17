@@ -9,6 +9,7 @@ from app.models.enums import (
     AppointmentStatus,
     Channel,
     ConversationState,
+    DepositStatus,
     FeedbackRoute,
     MessageRole,
     NotificationChannel,
@@ -24,6 +25,7 @@ from app.models.notification import (
     NotificationSettings,
     NotificationTemplate,
 )
+from app.models.staff import Staff
 
 __all__ = [
     "Appointment",
@@ -34,6 +36,7 @@ __all__ = [
     "Conversation",
     "ConversationState",
     "Customer",
+    "DepositStatus",
     "Feedback",
     "FeedbackRoute",
     "KnowledgeItem",
@@ -48,6 +51,7 @@ __all__ = [
     "Owner",
     "PageView",
     "Service",
+    "Staff",
     "TimeOff",
     "UserRole",
     "WaitlistEntry",

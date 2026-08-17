@@ -20,6 +20,7 @@ async def get_availability(
     owner: CurrentOwner,
     service_id: UUID = Query(...),
     day: date = Query(..., description="YYYY-MM-DD"),
+    staff_id: UUID | None = Query(None),
 ) -> AvailabilityResponse:
     try:
         return await availability.list_availability(
@@ -27,6 +28,7 @@ async def get_availability(
             business_id=owner.business_id,
             service_id=service_id,
             day=day,
+            staff_id=staff_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

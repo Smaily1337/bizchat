@@ -15,7 +15,10 @@ import { InboxPage } from "@/pages/InboxPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { PlatformPage } from "@/pages/PlatformPage";
+import { PublicBookingPage } from "@/pages/PublicBookingPage";
+import { ReportsPage } from "@/pages/ReportsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { StaffPage } from "@/pages/StaffPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
 
@@ -47,12 +50,14 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/book/:key" element={<PublicBookingPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/appointments" element={<AppointmentsPage />} />
               <Route path="/inbox" element={<InboxPage />} />
               <Route path="/customers" element={<CustomersPage />} />
+              <Route path="/staff" element={<StaffPage />} />
               <Route path="/hours" element={<HoursPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/users" element={<UsersPage />} />
@@ -60,6 +65,7 @@ export default function App() {
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/channels" element={<ChannelsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Route>

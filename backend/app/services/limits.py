@@ -28,6 +28,7 @@ ALL_CHAT_CHANNELS = [
     Channel.telegram.value,
     Channel.messenger.value,
     Channel.instagram.value,
+    Channel.whatsapp.value,
     Channel.admin.value,
 ]
 

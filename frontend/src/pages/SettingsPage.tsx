@@ -19,6 +19,9 @@ export function SettingsPage() {
   const { business, refreshBusiness } = useAuth();
   const [name, setName] = useState("");
   const [timezone, setTimezone] = useState("Europe/Warsaw");
+  const [publicSlug, setPublicSlug] = useState("");
+  const [depositPercent, setDepositPercent] = useState("0");
+  const [gcalId, setGcalId] = useState("");
   const [services, setServices] = useState<Service[]>([]);
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
   const [usage, setUsage] = useState<LicenseUsage | null>(null);
@@ -54,6 +57,9 @@ export function SettingsPage() {
     if (business) {
       setName(business.name);
       setTimezone(business.timezone);
+      setPublicSlug(business.public_slug || "");
+      setDepositPercent(String(business.deposit_percent ?? 0));
+      setGcalId(business.google_calendar_id || "");
     }
   }, [business]);
 
@@ -65,7 +71,13 @@ export function SettingsPage() {
     e.preventDefault();
     setError(null);
     try {
-      await businessApi.update({ name, timezone });
+      await businessApi.update({
+        name,
+        timezone,
+        public_slug: publicSlug.trim().toLowerCase() || null,
+        deposit_percent: Number(depositPercent) || 0,
+        google_calendar_id: gcalId.trim() || null,
+      });
       await refreshBusiness();
       setMsg("Zapisano ustawienia biznesu");
     } catch (err) {
@@ -180,6 +192,48 @@ export function SettingsPage() {
               required
             />
           </label>
+          <label className="space-y-1 text-sm">
+            <span className="text-[var(--muted)]">Slug publicznej rezerwacji</span>
+            <GlassInput
+              value={publicSlug}
+              onChange={(e) => setPublicSlug(e.target.value)}
+              placeholder="moj-salon"
+            />
+          </label>
+          <label className="space-y-1 text-sm">
+            <span className="text-[var(--muted)]">Zaliczka %</span>
+            <GlassInput
+              type="number"
+              min={0}
+              max={100}
+              value={depositPercent}
+              onChange={(e) => setDepositPercent(e.target.value)}
+            />
+          </label>
+          <label className="space-y-1 text-sm sm:col-span-2">
+            <span className="text-[var(--muted)]">Google Calendar ID</span>
+            <GlassInput
+              value={gcalId}
+              onChange={(e) => setGcalId(e.target.value)}
+              placeholder="primary lub ID kalendarza"
+            />
+            <span className="mt-1 block text-xs text-[var(--muted)]">
+              Wymaga GOOGLE_CALENDAR_ENABLED + refresh token na API.
+            </span>
+          </label>
+          {business?.id && (
+            <p className="sm:col-span-2 text-xs text-[var(--muted)]">
+              Link:{" "}
+              <a
+                className="underline"
+                href={`/book/${publicSlug || business.id}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                /book/{publicSlug || business.id}
+              </a>
+            </p>
+          )}
           <GlassButton type="submit" className="sm:w-fit">
             Zapisz
           </GlassButton>

@@ -83,16 +83,31 @@ async def _auth_headers() -> dict[str, str] | None:
 
 
 def _event_body(appointment: Appointment) -> dict[str, Any]:
-    summary = f"BizChat wizyta {appointment.id}"
+    staff_name = ""
+    staff = getattr(appointment, "staff", None)
+    if staff is not None:
+        staff_name = f" · {staff.name}"
+    customer = getattr(appointment, "customer", None)
+    service = getattr(appointment, "service", None)
+    who = customer.name if customer and customer.name else "Klient"
+    what = service.name if service else "wizyta"
+    summary = f"{what} — {who}{staff_name}"
     return {
         "summary": summary,
-        "description": appointment.notes or "",
+        "description": appointment.notes or f"BizChat {appointment.id}",
         "start": {"dateTime": appointment.start_at.isoformat()},
         "end": {"dateTime": appointment.end_at.isoformat()},
     }
 
 
-def _calendar_id(appointment: Appointment) -> str:
+async def _resolve_calendar_id(appointment: Appointment) -> str:
+    from app.db.session import AsyncSessionLocal
+    from app.models import Business
+
+    async with AsyncSessionLocal() as db:
+        biz = await db.get(Business, appointment.business_id)
+        if biz and biz.google_calendar_id:
+            return biz.google_calendar_id
     return settings.google_calendar_id or "primary"
 
 
@@ -112,7 +127,7 @@ async def create_event(appointment: Appointment) -> str | None:
     if not headers:
         return f"stub-gcal-{appointment.id}"
 
-    cal = _calendar_id(appointment)
+    cal = await _resolve_calendar_id(appointment)
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.post(
             GOOGLE_EVENTS_URL.format(calendar_id=cal),
@@ -135,7 +150,7 @@ async def update_event(appointment: Appointment) -> None:
     headers = await _auth_headers()
     if not headers:
         return
-    cal = _calendar_id(appointment)
+    cal = await _resolve_calendar_id(appointment)
     url = GOOGLE_EVENTS_URL.format(calendar_id=cal) + f"/{appointment.gcal_event_id}"
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.patch(url, headers=headers, json=_event_body(appointment))
@@ -153,7 +168,7 @@ async def delete_event(appointment: Appointment) -> None:
     headers = await _auth_headers()
     if not headers:
         return
-    cal = _calendar_id(appointment)
+    cal = await _resolve_calendar_id(appointment)
     url = GOOGLE_EVENTS_URL.format(calendar_id=cal) + f"/{appointment.gcal_event_id}"
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.delete(url, headers=headers)

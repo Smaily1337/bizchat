@@ -52,6 +52,9 @@ class DashboardAnalytics(BaseModel):
     by_channel: list[ChannelBucket]
     gaps_today: int
     feedback_avg: float | None
+    visits: int = 0
+    no_show_rate: float | None = None
+    cancel_rate: float | None = None
 
 
 @router.get("/summary", response_model=DashboardSummary)
@@ -133,7 +136,7 @@ async def dashboard_summary(db: DbSession, owner: CurrentOwner) -> DashboardSumm
 async def dashboard_analytics(
     db: DbSession,
     owner: CurrentOwner,
-    days: int = Query(7, ge=3, le=30),
+    days: int = Query(7, ge=3, le=90),
 ) -> DashboardAnalytics:
     today = datetime.now(timezone.utc).date()
     start_day = today - timedelta(days=days - 1)
@@ -206,6 +209,20 @@ async def dashboard_analytics(
         .where(Appointment.business_id == owner.business_id)
     )
 
+    total = len(appts)
+    no_shows = sum(1 for a in appts if a.status == AppointmentStatus.no_show)
+    cancelled = sum(1 for a in appts if a.status == AppointmentStatus.cancelled)
+    visits = sum(
+        1
+        for a in appts
+        if a.status
+        in {
+            AppointmentStatus.completed,
+            AppointmentStatus.confirmed,
+            AppointmentStatus.no_show,
+        }
+    )
+
     return DashboardAnalytics(
         days=day_list,
         by_channel=[
@@ -215,4 +232,7 @@ async def dashboard_analytics(
         or [ChannelBucket(channel=c.value, count=0) for c in Channel],
         gaps_today=gaps_today,
         feedback_avg=round(float(avg_score), 2) if avg_score is not None else None,
+        visits=visits,
+        no_show_rate=round(100 * no_shows / total, 1) if total else None,
+        cancel_rate=round(100 * cancelled / total, 1) if total else None,
     )

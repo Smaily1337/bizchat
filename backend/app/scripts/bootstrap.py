@@ -92,6 +92,16 @@ async def _sqlite_prepare() -> None:
             biz_alters.append("ALTER TABLE businesses ADD COLUMN max_seats INTEGER")
         if "enabled_channels" not in biz_existing:
             biz_alters.append("ALTER TABLE businesses ADD COLUMN enabled_channels JSON")
+        if "public_slug" not in biz_existing:
+            biz_alters.append("ALTER TABLE businesses ADD COLUMN public_slug VARCHAR(64)")
+        if "deposit_percent" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN deposit_percent INTEGER DEFAULT 0"
+            )
+        if "stripe_account_id" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN stripe_account_id VARCHAR(255)"
+            )
         for stmt in biz_alters:
             await conn.execute(text(stmt))
         if biz_alters:
@@ -106,10 +116,33 @@ async def _sqlite_prepare() -> None:
                       max_seats = COALESCE(max_seats, 2),
                       enabled_channels = COALESCE(
                         enabled_channels, '["widget","admin"]'
-                      )
+                      ),
+                      deposit_percent = COALESCE(deposit_percent, 0)
                     """
                 )
             )
+
+        appt_cols = (
+            await conn.execute(text("PRAGMA table_info(appointments)"))
+        ).mappings().all()
+        appt_existing = {c["name"] for c in appt_cols}
+        appt_alters: list[str] = []
+        if "staff_id" not in appt_existing:
+            appt_alters.append("ALTER TABLE appointments ADD COLUMN staff_id CHAR(36)")
+        if "deposit_amount" not in appt_existing:
+            appt_alters.append(
+                "ALTER TABLE appointments ADD COLUMN deposit_amount NUMERIC(10,2)"
+            )
+        if "deposit_status" not in appt_existing:
+            appt_alters.append(
+                "ALTER TABLE appointments ADD COLUMN deposit_status VARCHAR(32) DEFAULT 'none'"
+            )
+        if "stripe_checkout_session_id" not in appt_existing:
+            appt_alters.append(
+                "ALTER TABLE appointments ADD COLUMN stripe_checkout_session_id VARCHAR(255)"
+            )
+        for stmt in appt_alters:
+            await conn.execute(text(stmt))
 
 
 def _alembic_upgrade() -> None:
@@ -135,6 +168,13 @@ async def _ensure_owner_columns_pg() -> None:
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS max_messages_month INTEGER",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS max_seats INTEGER",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS enabled_channels JSONB",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS public_slug VARCHAR(64)",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS deposit_percent INTEGER DEFAULT 0",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_account_id VARCHAR(255)",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS staff_id UUID",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS deposit_amount NUMERIC(10,2)",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS deposit_status VARCHAR(32) DEFAULT 'none'",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS stripe_checkout_session_id VARCHAR(255)",
     ]
     async with engine.begin() as conn:
         for stmt in stmts:

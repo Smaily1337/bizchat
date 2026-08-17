@@ -59,6 +59,9 @@ class BusinessOut(ORMModel):
     timezone: str
     google_calendar_id: Optional[str] = None
     settings: dict[str, Any] = Field(default_factory=dict)
+    public_slug: Optional[str] = None
+    deposit_percent: Optional[int] = 0
+    stripe_account_id: Optional[str] = None
     plan: str = "free"
     license_status: str = "trial"
     license_expires_at: Optional[datetime] = None
@@ -75,6 +78,8 @@ class BusinessUpdate(BaseModel):
     timezone: Optional[str] = None
     google_calendar_id: Optional[str] = None
     settings: Optional[dict[str, Any]] = None
+    public_slug: Optional[str] = None
+    deposit_percent: Optional[int] = Field(default=None, ge=0, le=100)
 
 
 class LicenseUsageOut(BaseModel):
@@ -224,6 +229,7 @@ class AppointmentCreate(BaseModel):
     status: AppointmentStatus = AppointmentStatus.pending
     channel: Channel = Channel.admin
     notes: Optional[str] = None
+    staff_id: Optional[UUID] = None
 
 
 class AppointmentUpdate(BaseModel):
@@ -232,6 +238,7 @@ class AppointmentUpdate(BaseModel):
     status: Optional[AppointmentStatus] = None
     notes: Optional[str] = None
     service_id: Optional[UUID] = None
+    staff_id: Optional[UUID] = None
 
 
 class AppointmentOut(ORMModel):
@@ -239,16 +246,20 @@ class AppointmentOut(ORMModel):
     business_id: UUID
     customer_id: UUID
     service_id: UUID
+    staff_id: Optional[UUID] = None
     start_at: datetime
     end_at: datetime
     status: AppointmentStatus
     channel: Channel
     gcal_event_id: Optional[str] = None
     notes: Optional[str] = None
+    deposit_amount: Optional[Decimal] = None
+    deposit_status: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     customer_name: Optional[str] = None
     service_name: Optional[str] = None
+    staff_name: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -267,6 +278,7 @@ class AvailabilityResponse(BaseModel):
     service_id: UUID
     date: str
     slots: list[SlotOut]
+    staff_id: Optional[UUID] = None
 
 
 # ---------------------------------------------------------------------------

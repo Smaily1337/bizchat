@@ -38,6 +38,7 @@ CHANNEL_LABELS = {
     NotificationChannel.telegram: "Telegram",
     NotificationChannel.messenger: "Messenger",
     NotificationChannel.instagram: "Instagram",
+    NotificationChannel.whatsapp: "WhatsApp",
     NotificationChannel.widget: "Widget",
 }
 
@@ -58,8 +59,8 @@ def channel_from_booking(
         Channel.telegram.value: NotificationChannel.telegram,
         Channel.messenger.value: NotificationChannel.messenger,
         Channel.instagram.value: NotificationChannel.instagram,
+        Channel.whatsapp.value: NotificationChannel.whatsapp,
         Channel.widget.value: NotificationChannel.widget,
-        # Panel / unknown → keep configured default
         Channel.admin.value: fallback,
     }
     return mapping.get(value, fallback)
@@ -123,6 +124,8 @@ async def _deliver(
     channel: NotificationChannel,
     customer: Customer | None,
     text: str,
+    *,
+    quick_replies: list[dict[str, str]] | None = None,
 ) -> tuple[NotificationStatus, str, str | None]:
     """Try to deliver a message. Returns (status, provider, error)."""
     ext = (customer.external_ids or {}) if customer else {}
@@ -162,6 +165,9 @@ async def _deliver(
                 "Brak ID klienta z Messengera/Instagrama.",
             )
         try:
+            meta = {
+                "quick_replies": quick_replies or [],
+            }
             ok = await MetaAdapter().send_outbound(
                 OutboundMessage(
                     channel=Channel.messenger
@@ -169,6 +175,7 @@ async def _deliver(
                     else Channel.instagram,
                     external_thread_id=str(psid),
                     text=text,
+                    metadata=meta,
                 )
             )
             if ok:
@@ -181,6 +188,32 @@ async def _deliver(
         except Exception as exc:  # noqa: BLE001
             logger.warning("Meta notify failed: %s", exc)
             return NotificationStatus.failed, "meta", str(exc)[:490]
+
+    if channel == NotificationChannel.whatsapp:
+        from app.bot.adapters.whatsapp import WhatsAppAdapter
+
+        wa_id = ext.get("whatsapp")
+        if not wa_id:
+            return (
+                NotificationStatus.failed,
+                "whatsapp",
+                "Brak numeru WhatsApp klienta (external_ids.whatsapp).",
+            )
+        try:
+            ok = await WhatsAppAdapter().send_outbound(
+                OutboundMessage(
+                    channel=Channel.whatsapp,
+                    external_thread_id=str(wa_id),
+                    text=text,
+                    metadata={"quick_replies": quick_replies or []},
+                )
+            )
+            if ok:
+                return NotificationStatus.sent, "whatsapp", None
+            return NotificationStatus.failed, "whatsapp", "WhatsApp API odrzuciło wiadomość"
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("WhatsApp notify failed: %s", exc)
+            return NotificationStatus.failed, "whatsapp", str(exc)[:490]
 
     if channel == NotificationChannel.email:
         email = (customer.email if customer else None) or None
@@ -210,12 +243,25 @@ async def send_notification(
     body: str,
     lead_time_min: int | None = None,
     publish_event: bool = True,
+    with_confirm_buttons: bool = False,
 ) -> NotificationLog:
     """Render, deliver (mock or real), persist a log entry, emit a WS event."""
+    from app.services.appointment_actions import reminder_quick_replies
+
     context = build_context(business, customer, appointment, service)
     text = render_template(body, context)
+    quick = None
+    if (
+        with_confirm_buttons
+        and appointment is not None
+        and kind == NotificationKind.reminder
+    ):
+        quick = reminder_quick_replies(appointment.id)
+        text = f"{text}\n\nOdpowiedz przyciskiem poniżej."
 
-    status, provider, error = await _deliver(channel, customer, text)
+    status, provider, error = await _deliver(
+        channel, customer, text, quick_replies=quick
+    )
 
     log = NotificationLog(
         business_id=business.id,
@@ -245,6 +291,6 @@ async def send_notification(
                 "status": status.value,
             },
             title="Powiadomienie wysłane",
-            message=f"{CHANNEL_LABELS[channel]} do {who}",
+            message=f"{CHANNEL_LABELS.get(channel, channel.value)} do {who}",
         )
     return log

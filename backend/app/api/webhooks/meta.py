@@ -13,6 +13,7 @@ from app.api.deps import DbSession
 from app.bot.adapters.meta import MetaAdapter, fetch_messenger_profile_name
 from app.bot.engine import CoreBotEngine
 from app.config import settings
+from app.services import appointment_actions
 
 router = APIRouter(prefix="/webhooks/meta", tags=["webhooks"])
 
@@ -68,6 +69,8 @@ async def meta_webhook(
             inbound.display_name = await fetch_messenger_profile_name(
                 inbound.external_user_id
             )
+        if await appointment_actions.try_handle_payload(db, inbound.text, inbound):
+            continue
         await engine.handle(inbound)
 
     return {"ok": True, "handled": len(inbound_list)}

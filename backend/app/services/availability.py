@@ -32,6 +32,7 @@ async def list_availability(
     service_id: UUID,
     day: date,
     slot_step_min: int = 15,
+    staff_id: UUID | None = None,
 ) -> AvailabilityResponse:
     business = await db.get(Business, business_id)
     if business is None:
@@ -57,20 +58,21 @@ async def list_availability(
             service_id=service_id,
             date=day.isoformat(),
             slots=[],
+            staff_id=staff_id,
         )
 
     day_start = datetime.combine(day, working.start_time, tzinfo=tz)
     day_end = datetime.combine(day, working.end_time, tzinfo=tz)
 
-    appts_result = await db.execute(
-        select(Appointment).where(
-            Appointment.business_id == business_id,
-            Appointment.status.in_(ACTIVE_STATUSES),
-            Appointment.start_at < day_end.astimezone(timezone.utc),
-            Appointment.end_at > day_start.astimezone(timezone.utc),
-        )
+    appt_stmt = select(Appointment).where(
+        Appointment.business_id == business_id,
+        Appointment.status.in_(ACTIVE_STATUSES),
+        Appointment.start_at < day_end.astimezone(timezone.utc),
+        Appointment.end_at > day_start.astimezone(timezone.utc),
     )
-    appointments = list(appts_result.scalars().all())
+    if staff_id is not None:
+        appt_stmt = appt_stmt.where(Appointment.staff_id == staff_id)
+    appointments = list((await db.execute(appt_stmt)).scalars().all())
 
     toff_result = await db.execute(
         select(TimeOff).where(
@@ -115,4 +117,5 @@ async def list_availability(
         service_id=service_id,
         date=day.isoformat(),
         slots=[s for s in slots if s.available],
+        staff_id=staff_id,
     )

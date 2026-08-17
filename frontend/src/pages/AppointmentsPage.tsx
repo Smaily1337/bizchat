@@ -4,8 +4,9 @@ import {
   customersApi,
   notificationsApi,
   servicesApi,
+  staffApi,
 } from "@/api";
-import type { Appointment, Customer, Service } from "@/api/types";
+import type { Appointment, Customer, Service, StaffMember } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
@@ -27,6 +28,7 @@ export function AppointmentsPage() {
   const [items, setItems] = useState<Appointment[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
@@ -34,6 +36,7 @@ export function AppointmentsPage() {
   const [form, setForm] = useState({
     customer_id: "",
     service_id: "",
+    staff_id: "",
     start_at: "",
     status: "confirmed",
     notes: "",
@@ -43,14 +46,16 @@ export function AppointmentsPage() {
   });
 
   async function reload() {
-    const [a, s, c] = await Promise.all([
+    const [a, s, c, st] = await Promise.all([
       appointmentsApi.list(),
       servicesApi.list(),
       customersApi.list(),
+      staffApi.list().catch(() => [] as StaffMember[]),
     ]);
     setItems(a);
     setServices(s);
     setCustomers(c);
+    setStaff(st.filter((x) => x.is_active));
     if (!form.service_id && s[0]) {
       setForm((f) => ({ ...f, service_id: s[0].id, customer_id: c[0]?.id || "" }));
     }
@@ -69,6 +74,7 @@ export function AppointmentsPage() {
     setForm({
       customer_id: customers[0]?.id || "",
       service_id: services[0]?.id || "",
+      staff_id: "",
       start_at: local.toISOString().slice(0, 16),
       status: "confirmed",
       notes: "",
@@ -85,6 +91,7 @@ export function AppointmentsPage() {
     setForm({
       customer_id: a.customer_id,
       service_id: a.service_id,
+      staff_id: a.staff_id || "",
       start_at: new Date(a.start_at).toISOString().slice(0, 16),
       status: a.status,
       notes: a.notes || "",
@@ -125,6 +132,7 @@ export function AppointmentsPage() {
           status: form.status,
           notes: form.notes || null,
           service_id: form.service_id,
+          staff_id: form.staff_id || null,
         });
       } else {
         await appointmentsApi.create({
@@ -133,6 +141,7 @@ export function AppointmentsPage() {
           start_at: start,
           status: form.status,
           notes: form.notes || null,
+          staff_id: form.staff_id || null,
         });
       }
       setShowForm(false);
@@ -325,6 +334,24 @@ export function AppointmentsPage() {
                 ))}
               </GlassSelect>
             </label>
+            {staff.length > 0 && (
+              <label className="space-y-1 text-sm">
+                <span className="text-[var(--muted)]">Specjalista</span>
+                <GlassSelect
+                  value={form.staff_id}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, staff_id: e.target.value }))
+                  }
+                >
+                  <option value="">Bez przypisania</option>
+                  {staff.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </GlassSelect>
+              </label>
+            )}
             <label className="space-y-1 text-sm">
               <span className="text-[var(--muted)]">Start</span>
               <GlassInput

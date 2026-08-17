@@ -54,6 +54,8 @@ async def update_business(
         raise HTTPException(status_code=404, detail="Business not found")
 
     data = body.model_dump(exclude_unset=True)
+    if "public_slug" in data and data["public_slug"]:
+        data["public_slug"] = str(data["public_slug"]).strip().lower()
     for key, value in data.items():
         setattr(business, key, value)
     await db.flush()

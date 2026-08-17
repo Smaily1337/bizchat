@@ -112,6 +112,31 @@ export function CustomersPage() {
       {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}
 
       <GlassCard className="animate-fade-up">
+        <p className="font-display text-lg font-semibold">Import CSV</p>
+        <p className="mt-1 text-xs text-[var(--muted)]">
+          Kolumny: name, phone, email, messenger_psid, whatsapp
+        </p>
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          className="mt-3 block w-full text-sm text-[var(--muted)]"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            void customersApi
+              .importCsv(file)
+              .then(async (r) => {
+                setMsg(
+                  `Import: +${r.created} nowych, ${r.updated} zaktualizowanych, ${r.skipped} pominiętych`,
+                );
+                await reload();
+              })
+              .catch((err: Error) => setError(err.message));
+          }}
+        />
+      </GlassCard>
+
+      <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">Nowy klient</p>
         <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={onCreate}>
           <label className="space-y-1 text-sm">

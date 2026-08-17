@@ -21,7 +21,7 @@ const CHANNELS: ChannelDef[] = [
     name: "Messenger / Instagram",
     licenseKeys: ["messenger", "instagram", "meta"],
     summary:
-      "Klienci piszą do fanpage — bot umawia wizyty, a Ty odpowiadasz w Inbox lub piszesz proaktywnie z karty klienta (PSID).",
+      "Klienci piszą do fanpage — bot umawia wizyty, a Ty odpowiadasz w Inbox lub piszesz proaktywnie z karty klienta (PSID). Reminder ma przyciski Potwierdzam / Odwołuję.",
     steps: [
       "W Meta Developers utwórz aplikację z produktem Messenger.",
       "Webhook Callback URL: skopiuj adres poniżej (z business_id).",
@@ -35,6 +35,25 @@ const CHANNELS: ChannelDef[] = [
       "META_VERIFY_TOKEN",
       "META_APP_SECRET",
       "META_DEFAULT_BUSINESS_ID",
+    ],
+  },
+  {
+    id: "whatsapp",
+    name: "WhatsApp",
+    licenseKeys: ["whatsapp"],
+    summary:
+      "WhatsApp Cloud API (Meta) — ten sam inbox i outreach co Messenger. Numer w external_ids.whatsapp.",
+    steps: [
+      "W Meta Business włącz WhatsApp Cloud API i skopiuj Phone Number ID.",
+      "Ustaw WHATSAPP_PHONE_NUMBER_ID + WHATSAPP_ACCESS_TOKEN (lub page token).",
+      "Webhook: URL poniżej, verify token jak Meta / WHATSAPP_VERIFY_TOKEN.",
+      "Subskrypcje: messages.",
+    ],
+    webhookPath: "/webhooks/whatsapp",
+    envVars: [
+      "WHATSAPP_PHONE_NUMBER_ID",
+      "WHATSAPP_ACCESS_TOKEN",
+      "WHATSAPP_VERIFY_TOKEN",
     ],
   },
   {
@@ -114,6 +133,10 @@ export function ChannelsPage() {
     () => `${API_BASE}/webhooks/meta?business_id=${businessId}`,
     [businessId],
   );
+  const whatsappUrl = useMemo(
+    () => `${API_BASE}/webhooks/whatsapp?business_id=${businessId}`,
+    [businessId],
+  );
   const telegramUrl = useMemo(
     () => `${API_BASE}/webhooks/telegram?business_id=${businessId}`,
     [businessId],
@@ -128,6 +151,7 @@ export function ChannelsPage() {
 
   const webhookFor = (ch: ChannelDef) => {
     if (ch.id === "messenger") return metaUrl;
+    if (ch.id === "whatsapp") return whatsappUrl;
     if (ch.id === "telegram") return telegramUrl;
     return `${API_BASE}${ch.webhookPath}`;
   };
@@ -172,10 +196,21 @@ export function ChannelsPage() {
               Klienci + PSID
             </GlassButton>
           </Link>
+          {business?.public_slug || business?.id ? (
+            <a
+              href={`/book/${business.public_slug || business.id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <GlassButton type="button" variant="ghost" className="!px-3 !py-1.5 text-xs">
+                Publiczna rezerwacja
+              </GlassButton>
+            </a>
+          ) : null}
         </div>
       </GlassCard>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
         {CHANNELS.map((ch) => {
           const on = channelEnabled(enabled, ch.licenseKeys);
           return (

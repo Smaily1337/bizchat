@@ -5,8 +5,17 @@ class Channel(str, enum.Enum):
     telegram = "telegram"
     messenger = "messenger"
     instagram = "instagram"
+    whatsapp = "whatsapp"
     widget = "widget"
     admin = "admin"
+
+
+class DepositStatus(str, enum.Enum):
+    none = "none"
+    pending = "pending"
+    paid = "paid"
+    waived = "waived"
+    failed = "failed"
 
 
 class AppointmentStatus(str, enum.Enum):
@@ -52,6 +61,7 @@ class NotificationChannel(str, enum.Enum):
     telegram = "telegram"
     messenger = "messenger"
     instagram = "instagram"
+    whatsapp = "whatsapp"
     widget = "widget"
 
 
