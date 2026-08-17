@@ -8,7 +8,7 @@ Omnichannel booking + panel admina (Automovia Core / dark glass) dla lokalnych u
 |---------|-------------|
 | Backend | FastAPI, SQLAlchemy 2 (async), Alembic, PostgreSQL 16, httpx |
 | Auth | PyJWT + bcrypt |
-| Frontend | React, Vite, TypeScript, Tailwind — Liquid Glass (`#121417` / `#F4E04D`) |
+| Frontend | React, Vite, TypeScript, Tailwind — Automovia Core (`#0A0A0A` / white glass) |
 | Widget | Vanilla JS embed (`widget/bizchat-widget.js`) |
 | Infra | Docker Compose (Postgres + backend + frontend/nginx) |
 
