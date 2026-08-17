@@ -10,6 +10,8 @@ export type TourStep = {
 };
 
 export const TOUR_STORAGE_KEY = "bizchat_tour_v1";
+/** Set on login — TourProvider starts the walkthrough once after auth. */
+export const TOUR_PENDING_KEY = "bizchat_tour_pending";
 
 export const TOUR_STEPS: TourStep[] = [
   {
@@ -102,7 +104,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: "done",
     title: "Gotowe",
-    body: "To wszystko na start. Samouczek możesz uruchomić ponownie z przycisku „Samouczek” w górnym pasku albo z sekcji Kanały.",
+    body: "To wszystko na start. Przy następnym logowaniu samouczek odpali się sam; możesz też uruchomić go ponownie w sekcji Kanały.",
     route: "/",
     placement: "center",
   },

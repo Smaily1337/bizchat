@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { TOUR_STEPS, TOUR_STORAGE_KEY } from "./steps";
+import { TOUR_PENDING_KEY, TOUR_STEPS, TOUR_STORAGE_KEY } from "./steps";
 
 type TourContextValue = {
   active: boolean;
@@ -39,13 +39,48 @@ function writeCompleted() {
   }
 }
 
+function readPendingLoginTour(): boolean {
+  try {
+    return sessionStorage.getItem(TOUR_PENDING_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function clearPendingLoginTour() {
+  try {
+    sessionStorage.removeItem(TOUR_PENDING_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function markTourPendingAfterLogin() {
+  try {
+    sessionStorage.setItem(TOUR_PENDING_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
 export function TourProvider({ children }: { children: ReactNode }) {
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [completed, setCompleted] = useState(readCompleted);
 
   useEffect(() => {
-    if (completed || active) return;
+    if (active) return;
+
+    if (readPendingLoginTour()) {
+      clearPendingLoginTour();
+      const t = window.setTimeout(() => {
+        setStepIndex(0);
+        setActive(true);
+      }, 500);
+      return () => window.clearTimeout(t);
+    }
+
+    if (completed) return;
     const t = window.setTimeout(() => {
       if (!readCompleted()) {
         setActive(true);

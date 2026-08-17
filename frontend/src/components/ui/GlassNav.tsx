@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
-import { useTour } from "@/tour/TourContext";
 import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
 
@@ -185,7 +184,6 @@ function linkClass(isActive: boolean, compact = false) {
 
 export function GlassNav() {
   const { business, owner, logout, resendVerification } = useAuth();
-  const { start } = useTour();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -262,11 +260,11 @@ export function GlassNav() {
           <div className="relative z-20 flex shrink-0 flex-wrap items-center justify-end gap-2">
             <GlassButton
               variant="subtle"
-              className="!hidden !px-3 !py-2 md:!inline-flex"
-              onClick={start}
-              data-tour="nav-tour"
+              className="!px-3 !py-2"
+              onClick={logout}
+              aria-label="Wyloguj"
             >
-              Samouczek
+              Wyloguj
             </GlassButton>
             <button
               type="button"
@@ -308,28 +306,6 @@ export function GlassNav() {
               <span className="hidden sm:inline">
                 {theme === "dark" ? "Jasny" : "Ciemny"}
               </span>
-            </button>
-            <button
-              type="button"
-              onClick={logout}
-              className="inline-flex items-center gap-1.5 rounded-control border border-glass-border bg-glass-fillStrong px-3.5 py-2 text-sm font-semibold text-[var(--text-bright)] backdrop-blur-glass transition hover:bg-glass-fill"
-              aria-label="Wyloguj"
-            >
-              <svg
-                aria-hidden
-                viewBox="0 0 24 24"
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <path d="M16 17l5-5-5-5" />
-                <path d="M21 12H9" />
-              </svg>
-              Wyloguj
             </button>
           </div>
         </div>
@@ -420,17 +396,6 @@ export function GlassNav() {
                   {item.label}
                 </NavLink>
               ))}
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setMoreOpen(false);
-                  start();
-                }}
-                className="flex w-full items-center gap-2 rounded-control px-3 py-2.5 text-left text-sm text-[var(--muted)] hover:bg-glass-fill hover:text-[var(--text-bright)] md:hidden"
-              >
-                Samouczek
-              </button>
             </div>
           )}
         </div>
