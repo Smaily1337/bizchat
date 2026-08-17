@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "@/auth/AuthContext";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { ToastProvider } from "@/components/ToastProvider";
 import { GlassNav } from "@/components/ui";
+import { ProductTour, TourProvider } from "@/tour";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { AppointmentsPage } from "@/pages/AppointmentsPage";
 import { ChannelsPage } from "@/pages/ChannelsPage";
@@ -26,13 +27,16 @@ function RealtimeBridge() {
 
 function AppLayout() {
   return (
-    <div className="min-h-screen">
-      <RealtimeBridge />
-      <GlassNav />
-      <main className="mx-auto max-w-shell px-5 py-6 sm:px-10 sm:py-8 lg:px-16">
-        <Outlet />
-      </main>
-    </div>
+    <TourProvider>
+      <div className="min-h-screen">
+        <RealtimeBridge />
+        <GlassNav />
+        <main className="mx-auto max-w-shell px-5 py-6 sm:px-10 sm:py-8 lg:px-16">
+          <Outlet />
+        </main>
+        <ProductTour />
+      </div>
+    </TourProvider>
   );
 }
 

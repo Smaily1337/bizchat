@@ -349,25 +349,39 @@ export function DashboardPage() {
           <GlassCard>
             <p className="mb-3 font-display text-base font-semibold">Kanały</p>
             <ul className="space-y-2 text-sm">
-              {[
-                ["Telegram", "token"],
-                ["Messenger", "token"],
-                ["Widget WWW", "online"],
-              ].map(([name, status]) => (
-                <li
-                  key={name}
-                  className="flex items-center justify-between rounded-soft border border-glass-border bg-glass-fill px-3 py-2"
-                >
-                  <span>{name}</span>
-                  <span
-                    className={
-                      status === "online" ? "text-canary" : "text-[var(--muted)]"
-                    }
+              {(
+                [
+                  ["Messenger", "messenger"],
+                  ["Telegram", "telegram"],
+                  ["Widget WWW", "widget"],
+                ] as const
+              ).map(([name, key]) => {
+                const enabledList = business?.enabled_channels;
+                const on =
+                  !enabledList ||
+                  enabledList.length === 0 ||
+                  enabledList.some(
+                    (c) =>
+                      c.toLowerCase() === key ||
+                      (key === "messenger" &&
+                        ["instagram", "meta"].includes(c.toLowerCase())),
+                  );
+                return (
+                  <li
+                    key={name}
+                    className="flex items-center justify-between rounded-soft border border-glass-border bg-glass-fill px-3 py-2"
                   >
-                    {status === "online" ? "online" : "env"}
-                  </span>
-                </li>
-              ))}
+                    <span>{name}</span>
+                    <span
+                      className={
+                        on ? "text-white" : "text-[var(--muted)]"
+                      }
+                    >
+                      {on ? "w planie" : "poza planem"}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
             <Link to="/channels" className="mt-3 inline-block text-xs text-canary">
               Szczegóły kanałów →

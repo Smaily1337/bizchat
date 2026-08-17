@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
+import { useTour } from "@/tour/TourContext";
 import { GlassButton } from "./GlassButton";
 
 type NavItem = {
   to: string;
   label: string;
   end?: boolean;
+  tourId?: string;
   roles?: readonly ("owner" | "admin" | "pracownik")[];
   platformAdmin?: boolean;
   icon: ReactNode;
@@ -17,6 +19,7 @@ const baseNavItems: NavItem[] = [
     to: "/",
     label: "Kalendarz",
     end: true,
+    tourId: "nav-calendar",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="5" width="18" height="16" rx="2" />
@@ -27,6 +30,7 @@ const baseNavItems: NavItem[] = [
   {
     to: "/appointments",
     label: "Wizyty",
+    tourId: "nav-appointments",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 11h6M9 15h3" />
@@ -38,6 +42,7 @@ const baseNavItems: NavItem[] = [
   {
     to: "/inbox",
     label: "Inbox",
+    tourId: "nav-inbox",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -48,6 +53,7 @@ const baseNavItems: NavItem[] = [
   {
     to: "/customers",
     label: "Klienci",
+    tourId: "nav-customers",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="9" cy="8" r="3" />
@@ -60,6 +66,7 @@ const baseNavItems: NavItem[] = [
   {
     to: "/hours",
     label: "Godziny",
+    tourId: "nav-hours",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="9" />
@@ -70,6 +77,7 @@ const baseNavItems: NavItem[] = [
   {
     to: "/settings",
     label: "Ustawienia",
+    tourId: "nav-settings",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3" />
@@ -112,6 +120,7 @@ const baseNavItems: NavItem[] = [
   {
     to: "/notifications",
     label: "Powiadomienia",
+    tourId: "nav-notifications",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
@@ -122,6 +131,7 @@ const baseNavItems: NavItem[] = [
   {
     to: "/channels",
     label: "Kanały",
+    tourId: "nav-channels",
     icon: (
       <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
@@ -133,6 +143,7 @@ const baseNavItems: NavItem[] = [
 
 export function GlassNav() {
   const { business, owner, logout, resendVerification } = useAuth();
+  const { start } = useTour();
   const navItems = baseNavItems.filter((item) => {
     if (item.platformAdmin) return Boolean(owner?.is_platform_admin);
     if (!item.roles) return true;
@@ -167,6 +178,7 @@ export function GlassNav() {
               key={item.to}
               to={item.to}
               end={item.end}
+              data-tour={item.tourId}
               className={({ isActive }) =>
                 [
                   "inline-flex items-center gap-1.5 rounded-control px-3 py-2 text-sm font-medium transition duration-200",
@@ -182,8 +194,16 @@ export function GlassNav() {
           ))}
         </nav>
 
-        <div className="relative z-10 flex items-center gap-3">
-          <span className="hidden max-w-[180px] truncate font-mono text-[11px] text-[var(--muted)] sm:inline">
+        <div className="relative z-10 flex items-center gap-2 sm:gap-3">
+          <GlassButton
+            variant="subtle"
+            className="!px-2.5 !py-1.5 hidden sm:inline-flex"
+            onClick={start}
+            data-tour="nav-tour"
+          >
+            Samouczek
+          </GlassButton>
+          <span className="hidden max-w-[140px] truncate font-mono text-[11px] text-[var(--muted)] lg:inline">
             {owner?.email}
             {owner?.is_platform_admin
               ? " · platforma"
@@ -219,6 +239,7 @@ export function GlassNav() {
             key={item.to}
             to={item.to}
             end={item.end}
+            data-tour={item.tourId}
             className={({ isActive }) =>
               [
                 "relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium",
@@ -232,6 +253,13 @@ export function GlassNav() {
             {item.label}
           </NavLink>
         ))}
+        <button
+          type="button"
+          onClick={start}
+          className="relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium text-[var(--muted)]"
+        >
+          Samouczek
+        </button>
       </nav>
     </header>
   );
