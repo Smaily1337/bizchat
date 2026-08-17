@@ -5,7 +5,11 @@ export default {
     extend: {
       colors: {
         graphite: "var(--bg)",
+        void: "var(--bg)",
+        surface: "var(--surface)",
         canary: "var(--accent)",
+        accent: "var(--accent)",
+        frost: "var(--text)",
         glass: {
           border: "var(--glass-border)",
           fill: "var(--glass-fill)",
@@ -13,18 +17,26 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Syne", "sans-serif"],
-        sans: ["Outfit", "sans-serif"],
+        display: ["Geist", "Geist Sans", "system-ui", "sans-serif"],
+        sans: ["Geist", "Geist Sans", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        label: ["Fira Sans", "sans-serif"],
       },
       boxShadow: {
-        glass: "0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
-        canary: "0 0 24px rgba(244, 224, 77, 0.25)",
+        glass: "none",
+        canary: "0 0 20px rgba(255, 255, 255, 0.08)",
+        active: "0 0 16px rgba(255, 255, 255, 0.05)",
       },
       backdropBlur: {
-        glass: "18px",
+        glass: "16px",
       },
       borderRadius: {
-        glass: "1.25rem",
+        soft: "4px",
+        glass: "4px",
+        control: "8px",
+      },
+      maxWidth: {
+        shell: "1440px",
       },
     },
   },

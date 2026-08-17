@@ -40,7 +40,7 @@ export function ChannelsPage() {
 
       <GlassCard>
         <p className="font-display text-base font-semibold">Snippet widgetu</p>
-        <pre className="mt-3 overflow-x-auto rounded-xl border border-glass-border bg-black/30 p-4 text-xs text-[var(--muted)]">
+        <pre className="mt-3 overflow-x-auto rounded-soft border border-glass-border bg-black/30 p-4 text-xs text-[var(--muted)]">
 {`<script src="https://YOUR_CDN/bizchat-widget.js"
   data-api="http://localhost:8000"
   data-business-id="${business?.id || "BUSINESS_UUID"}"></script>`}

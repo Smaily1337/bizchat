@@ -1,6 +1,6 @@
 # BizChat
 
-Omnichannel booking + panel admina (Liquid Glass) dla lokalnych usług. Przyjmuje wiadomości z Telegram / Meta / widgetu WWW przez **Core Bot Engine**, zarządza wizytami, godzinami, feedbackiem i kolejką oczekujących.
+Omnichannel booking + panel admina (Automovia Core / dark glass) dla lokalnych usług. Przyjmuje wiadomości z Telegram / Meta / widgetu WWW przez **Core Bot Engine**, zarządza wizytami, godzinami, feedbackiem i kolejką oczekujących.
 
 ## Stack
 

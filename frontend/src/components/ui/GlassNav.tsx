@@ -26,19 +26,19 @@ export function GlassNav() {
   });
 
   return (
-    <header className="sticky top-0 z-40 animate-fade-in border-b border-glass-border bg-[rgba(18,20,23,0.55)] backdrop-blur-glass">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+    <header className="sticky top-0 z-40 animate-fade-in border-b border-glass-border bg-[rgba(10,10,10,0.72)] backdrop-blur-glass">
+      <div className="mx-auto flex max-w-shell items-center justify-between gap-4 px-5 py-4 sm:px-10 lg:px-16">
         <NavLink to="/" className="group flex items-center gap-3">
-          <div className="animate-glow-pulse flex h-11 w-11 items-center justify-center rounded-xl border border-glass-border bg-glass-fill transition group-hover:border-canary/40">
-            <span className="font-display text-base font-extrabold text-canary">
+          <div className="animate-glow-pulse flex h-10 w-10 items-center justify-center rounded-soft border border-glass-border bg-glass-fill transition group-hover:border-white/40">
+            <span className="font-display text-sm font-bold tracking-tight text-white">
               B
             </span>
           </div>
           <div>
-            <p className="font-display text-2xl font-extrabold tracking-tight text-white transition group-hover:text-canary">
+            <p className="font-display text-xl font-bold tracking-[-0.03em] text-white transition group-hover:text-frost">
               BizChat
             </p>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">
+            <p className="label-caps mt-1 text-[10px] text-[var(--muted)]">
               {business?.name || "Admin"}
             </p>
           </div>
@@ -55,9 +55,9 @@ export function GlassNav() {
               end={"end" in item ? item.end : false}
               className={({ isActive }) =>
                 [
-                  "rounded-xl px-3 py-2 text-sm font-medium transition duration-200",
+                  "rounded-control px-3 py-2 text-sm font-medium transition duration-200",
                   isActive
-                    ? "bg-glass-fillStrong text-canary"
+                    ? "bg-glass-fillStrong text-white"
                     : "text-[var(--muted)] hover:bg-glass-fill hover:text-white",
                 ].join(" ")
               }
@@ -68,7 +68,7 @@ export function GlassNav() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <span className="hidden max-w-[160px] truncate text-xs text-[var(--muted)] sm:inline">
+          <span className="hidden max-w-[180px] truncate font-mono text-[11px] text-[var(--muted)] sm:inline">
             {owner?.email}
             {owner?.is_platform_admin
               ? " · platforma"
@@ -83,11 +83,11 @@ export function GlassNav() {
       </div>
 
       {owner && !owner.email_verified && (
-        <div className="border-t border-glass-border bg-[rgba(244,224,77,0.08)] px-4 py-2 text-center text-xs text-canary sm:px-6">
+        <div className="border-t border-glass-border bg-white/[0.04] px-5 py-2 text-center text-xs text-frost sm:px-10">
           Potwierdź e-mail — link jest w logach API (console mailer) albo SMTP.{" "}
           <button
             type="button"
-            className="underline underline-offset-2"
+            className="font-mono underline underline-offset-2"
             onClick={() => void resendVerification()}
           >
             Wyślij ponownie
@@ -106,9 +106,9 @@ export function GlassNav() {
             end={"end" in item ? item.end : false}
             className={({ isActive }) =>
               [
-                "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium",
+                "shrink-0 rounded-control px-3 py-1.5 text-xs font-medium",
                 isActive
-                  ? "bg-glass-fillStrong text-canary"
+                  ? "bg-glass-fillStrong text-white"
                   : "text-[var(--muted)]",
               ].join(" ")
             }

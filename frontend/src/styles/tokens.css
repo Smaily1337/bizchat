@@ -1,14 +1,24 @@
 :root {
-  --bg: #121417;
-  --accent: #f4e04d;
-  --text: #ffffff;
-  --glass-border: rgba(255, 255, 255, 0.14);
-  --glass-fill: rgba(255, 255, 255, 0.06);
-  --glass-fill-strong: rgba(255, 255, 255, 0.1);
-  --glass-highlight: rgba(255, 255, 255, 0.22);
-  --muted: rgba(255, 255, 255, 0.55);
-  --danger: #ff6b6b;
-  --success: #6bffb8;
+  /* Automovia Core — Architectural Liquidity */
+  --bg: #0a0a0a;
+  --bg-elevated: #131313;
+  --surface: #161616;
+  --surface-container: #201f1f;
+  --accent: #ffffff;
+  --on-accent: #2f3131;
+  --text: #ededed;
+  --text-bright: #ffffff;
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-fill: rgba(255, 255, 255, 0.03);
+  --glass-fill-strong: rgba(255, 255, 255, 0.06);
+  --glass-highlight: rgba(255, 255, 255, 0.2);
+  --muted: #c4c7c8;
+  --outline: #8e9192;
+  --danger: #ffb4ab;
+  --success: #c6c6c7;
+  --radius-soft: 4px;
+  --radius-control: 8px;
+  --blur-glass: 16px;
 }
 
 *,
@@ -25,21 +35,23 @@ body,
 
 body {
   margin: 0;
-  font-family: Outfit, sans-serif;
+  font-family: "Geist", "Geist Sans", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--text);
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(244, 224, 77, 0.08), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255, 255, 255, 0.04), transparent 50%),
-    linear-gradient(180deg, #16191d 0%, var(--bg) 40%, #0e1012 100%);
+    radial-gradient(ellipse 70% 45% at 15% -5%, rgba(255, 255, 255, 0.04), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 0%, rgba(255, 255, 255, 0.025), transparent 50%),
+    linear-gradient(180deg, #0e0e0e 0%, var(--bg) 45%, #050505 100%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: rgba(244, 224, 77, 0.35);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-bright);
 }
 
 a {
@@ -49,6 +61,23 @@ a {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
+}
+
+.label-caps {
+  font-family: "Fira Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.font-mono-data {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }

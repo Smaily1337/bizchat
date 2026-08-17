@@ -411,7 +411,7 @@ export function NotificationsPage() {
             </label>
 
             {preview && (
-              <div className="rounded-xl border border-canary/25 bg-glass-fill p-3">
+              <div className="rounded-soft border border-white/25 bg-glass-fill p-3">
                 <p className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)]">
                   Podgląd — jak zobaczy klient
                 </p>
@@ -444,7 +444,7 @@ export function NotificationsPage() {
               className={[
                 "relative h-6 w-11 shrink-0 rounded-full border transition",
                 settingsForm.reminders_enabled
-                  ? "border-canary/60 bg-canary/80"
+                  ? "border-white/60 bg-white/80"
                   : "border-glass-border bg-glass-fill",
               ].join(" ")}
             >
@@ -578,7 +578,7 @@ export function NotificationsPage() {
 
         {showTemplateForm && (
           <form
-            className="mt-4 grid gap-3 rounded-xl border border-glass-border bg-glass-fill p-4 sm:grid-cols-2"
+            className="mt-4 grid gap-3 rounded-soft border border-glass-border bg-glass-fill p-4 sm:grid-cols-2"
             onSubmit={onSaveTemplate}
           >
             <label className="space-y-1 text-sm">
@@ -645,7 +645,7 @@ export function NotificationsPage() {
           {templates.map((t) => (
             <div
               key={t.id}
-              className="rounded-xl border border-glass-border bg-glass-fill p-4"
+              className="rounded-soft border border-glass-border bg-glass-fill p-4"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -691,7 +691,7 @@ export function NotificationsPage() {
             {log.map((entry) => (
               <div
                 key={entry.id}
-                className="flex flex-col gap-1 rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-1 rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
                   <p className="truncate text-white">{entry.body}</p>
@@ -711,7 +711,7 @@ export function NotificationsPage() {
                   <span
                     className={
                       entry.status === "sent"
-                        ? "rounded-lg border border-canary/40 px-2 py-0.5 text-canary"
+                        ? "rounded-lg border border-white/40 px-2 py-0.5 text-canary"
                         : "rounded-lg border border-red-400/40 px-2 py-0.5 text-[var(--danger)]"
                     }
                   >

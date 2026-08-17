@@ -155,7 +155,7 @@ export function UsersPage() {
           <label className="space-y-1 text-sm">
             <span className="text-[var(--muted)]">Rola</span>
             <select
-              className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white outline-none focus:border-canary/50"
+              className="w-full rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white outline-none focus:border-white/50"
               value={form.role}
               onChange={(e) =>
                 setForm({ ...form, role: e.target.value as UserRole })
@@ -191,7 +191,7 @@ export function UsersPage() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <select
-                  className="rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-xs text-white"
+                  className="rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-xs text-white"
                   value={user.role}
                   onChange={(e) =>
                     void changeRole(user, e.target.value as UserRole)

@@ -1,18 +1,23 @@
-/* BizChat landing — Liquid Glass design system (spójny z panelem admina) */
+/* BizChat landing — Automovia Core (Architectural Liquidity) */
 
 :root {
-  --bg: #121417;
-  --accent: #f4e04d;
-  --text: #ffffff;
-  --glass-border: rgba(255, 255, 255, 0.14);
-  --glass-fill: rgba(255, 255, 255, 0.06);
-  --glass-fill-strong: rgba(255, 255, 255, 0.1);
-  --glass-highlight: rgba(255, 255, 255, 0.22);
-  --muted: rgba(255, 255, 255, 0.55);
-  --font-body: "Manrope", sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
-  --radius: 20px;
-  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --accent: #ffffff;
+  --on-accent: #2f3131;
+  --text: #ededed;
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-fill: rgba(255, 255, 255, 0.03);
+  --glass-fill-strong: rgba(255, 255, 255, 0.06);
+  --glass-highlight: rgba(255, 255, 255, 0.2);
+  --muted: #c4c7c8;
+  --font-body: "Geist", "Geist Sans", system-ui, sans-serif;
+  --font-display: "Geist", "Geist Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-label: "Fira Sans", sans-serif;
+  --radius: 4px;
+  --radius-control: 8px;
+  --shadow: none;
 }
 
 *,
@@ -31,9 +36,9 @@ body {
   color: var(--text);
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(244, 224, 77, 0.08), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255, 255, 255, 0.04), transparent 50%),
-    linear-gradient(180deg, #16191d 0%, var(--bg) 40%, #0e1012 100%);
+    radial-gradient(ellipse 70% 45% at 15% -5%, rgba(255, 255, 255, 0.04), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 0%, rgba(255, 255, 255, 0.025), transparent 50%),
+    linear-gradient(180deg, #0e0e0e 0%, var(--bg) 45%, #050505 100%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -41,8 +46,8 @@ body {
 }
 
 ::selection {
-  background: rgba(244, 224, 77, 0.35);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 a {
@@ -88,9 +93,10 @@ code {
 }
 
 .eyebrow {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
   margin: 0 0 0.75rem;
@@ -99,12 +105,36 @@ code {
 /* ---------- Glass ---------- */
 
 .glass {
+  position: relative;
   background: var(--glass-fill);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: none;
+}
+
+.glass::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 
 /* ---------- Przyciski ---------- */
@@ -115,45 +145,41 @@ code {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.85rem 1.7rem;
-  border-radius: 999px;
+  border-radius: 0;
   font-weight: 600;
   font-size: 1rem;
   border: 1px solid transparent;
   cursor: pointer;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.25s ease,
     background 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-primary {
   background: var(--accent);
-  color: #17150a;
-  box-shadow: 0 8px 26px rgba(244, 224, 77, 0.28);
+  color: var(--on-accent);
+  box-shadow: none;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 38px rgba(244, 224, 77, 0.42);
+  background: #e2e2e2;
 }
 
 .btn-primary:active {
-  transform: translateY(0);
+  background: #c6c6c7;
 }
 
 .btn-ghost {
-  background: var(--glass-fill);
-  border-color: var(--glass-border);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-control);
   color: var(--text);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .btn-ghost:hover {
   background: var(--glass-fill-strong);
-  border-color: var(--glass-highlight);
-  transform: translateY(-2px);
+  border-color: #fff;
 }
 
 .btn-sm {
@@ -169,17 +195,20 @@ code {
 
 .nav {
   position: sticky;
-  top: 14px;
+  top: 0;
   z-index: 50;
-  margin: 14px auto 0;
-  max-width: 1080px;
-  width: calc(100% - 32px);
+  margin: 0 auto;
+  max-width: 1440px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.65rem 1.1rem;
-  border-radius: 999px;
+  padding: 0.85rem clamp(1.25rem, 4vw, 4rem);
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
 }
 
 .nav-brand {
@@ -241,11 +270,12 @@ code {
 }
 
 .hero-badges li {
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   padding: 0.35rem 0.9rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid var(--glass-border);
   background: var(--glass-fill);
   color: var(--muted);
@@ -314,8 +344,8 @@ code {
 
 .chat-bubble.out {
   align-self: flex-end;
-  background: rgba(244, 224, 77, 0.16);
-  border: 1px solid rgba(244, 224, 77, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-bottom-right-radius: 4px;
 }
 
@@ -434,7 +464,7 @@ code {
 
 .card:hover .card-icon {
   transform: scale(1.08) rotate(-3deg);
-  box-shadow: 0 6px 20px rgba(244, 224, 77, 0.22);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.08);
 }
 
 .check-icon {
@@ -491,7 +521,7 @@ code {
 
 .stat:hover {
   transform: translateY(-4px);
-  border-color: rgba(244, 224, 77, 0.4);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .stat-value {
@@ -535,9 +565,9 @@ code {
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--accent);
-  border: 1px solid rgba(244, 224, 77, 0.4);
-  background: rgba(244, 224, 77, 0.12);
-  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-control);
   padding: 0.25rem 0.7rem;
   white-space: nowrap;
 }
@@ -576,9 +606,9 @@ code {
 }
 
 .bar.accent {
-  background: linear-gradient(180deg, var(--accent), rgba(244, 224, 77, 0.55));
-  border-color: rgba(244, 224, 77, 0.5);
-  box-shadow: 0 6px 22px rgba(244, 224, 77, 0.25);
+  background: linear-gradient(180deg, var(--accent), rgba(255, 255, 255, 0.55));
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 22px rgba(255, 255, 255, 0.1);
 }
 
 .chart-mock.is-visible .bar {
@@ -619,7 +649,7 @@ code {
   font-weight: 700;
   font-size: 1.05rem;
   margin-bottom: 1rem;
-  box-shadow: 0 6px 18px rgba(244, 224, 77, 0.3);
+  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.12);
 }
 
 .step p {
@@ -717,7 +747,7 @@ code {
 
 .login-card input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(244, 224, 77, 0.18);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
 }
 
 .login-hint {

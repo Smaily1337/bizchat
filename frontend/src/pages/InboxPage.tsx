@@ -109,7 +109,7 @@ export function InboxPage() {
                   className={[
                     "w-full border-b border-glass-border px-4 py-3 text-left transition",
                     selectedId === c.id
-                      ? "bg-canary/10"
+                      ? "bg-white/5"
                       : "hover:bg-glass-fill",
                   ].join(" ")}
                 >
@@ -146,11 +146,11 @@ export function InboxPage() {
                   <div
                     key={m.id}
                     className={[
-                      "max-w-[85%] rounded-2xl border px-3 py-2 text-sm",
+                      "max-w-[85%] rounded-soft border px-3 py-2 text-sm",
                       m.role === "customer"
                         ? "ml-0 border-glass-border bg-glass-fill"
                         : m.role === "owner"
-                          ? "ml-auto border-canary/40 bg-canary/15"
+                          ? "ml-auto border-white/40 bg-white/10"
                           : "ml-auto border-glass-border bg-glass-fillStrong",
                     ].join(" ")}
                   >

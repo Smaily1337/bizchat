@@ -267,7 +267,7 @@ export function PlatformPage() {
               setMsg(null);
             }}
             className={[
-              "rounded-xl px-4 py-2 text-sm font-medium transition",
+              "rounded-soft px-4 py-2 text-sm font-medium transition",
               tab === t.id
                 ? "bg-glass-fillStrong text-canary"
                 : "bg-glass-fill text-[var(--muted)] hover:text-white",
@@ -324,7 +324,7 @@ export function PlatformPage() {
               <label className="space-y-1 text-sm">
                 <span className="text-[var(--muted)]">Rola w firmie</span>
                 <select
-                  className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white outline-none focus:border-canary/50"
+                  className="w-full rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white outline-none focus:border-white/50"
                   value={form.role}
                   onChange={(e) =>
                     setForm({ ...form, role: e.target.value as UserRole })
@@ -470,7 +470,7 @@ export function PlatformPage() {
                     <label className="space-y-1 text-sm">
                       <span className="text-[var(--muted)]">Plan</span>
                       <select
-                        className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                        className="w-full rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
                         value={licenseForm.plan}
                         onChange={(e) =>
                           setLicenseForm({
@@ -489,7 +489,7 @@ export function PlatformPage() {
                     <label className="space-y-1 text-sm">
                       <span className="text-[var(--muted)]">Status</span>
                       <select
-                        className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                        className="w-full rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
                         value={licenseForm.license_status}
                         onChange={(e) =>
                           setLicenseForm({
@@ -656,7 +656,7 @@ export function PlatformPage() {
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-xl border border-glass-border bg-glass-fill px-4 py-3"
+                className="rounded-soft border border-glass-border bg-glass-fill px-4 py-3"
               >
                 <p className="text-xs uppercase tracking-wider text-[var(--muted)]">
                   {item.label}
@@ -683,7 +683,7 @@ export function PlatformPage() {
                     title={`${d.day}: ${d.count}`}
                   >
                     <div
-                      className="w-full max-w-[18px] rounded-t bg-canary/80 transition group-hover:bg-canary"
+                      className="w-full max-w-[18px] rounded-t bg-white/80 transition group-hover:bg-white"
                       style={{
                         height: `${Math.max(4, (d.count / maxDay) * 100)}%`,
                       }}

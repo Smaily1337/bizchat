@@ -58,11 +58,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             type="button"
             onClick={() => dismiss(t.id)}
             className={[
-              "pointer-events-auto animate-fade-up rounded-2xl border px-4 py-3 text-left shadow-glass backdrop-blur-glass transition hover:brightness-110",
+              "pointer-events-auto animate-fade-up rounded-soft border px-4 py-3 text-left backdrop-blur-glass transition hover:bg-glass-fillStrong",
               t.tone === "danger"
-                ? "border-red-400/40 bg-[rgba(80,20,20,0.75)]"
+                ? "border-[var(--danger)]/50 bg-[rgba(20,8,8,0.85)]"
                 : t.tone === "canary"
-                  ? "border-canary/40 bg-[rgba(18,20,23,0.85)]"
+                  ? "border-white/30 bg-[rgba(10,10,10,0.88)]"
                   : "border-glass-border bg-glass-fillStrong",
             ].join(" ")}
           >

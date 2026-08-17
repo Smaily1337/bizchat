@@ -326,7 +326,7 @@ export function DashboardPage() {
             )}
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-canary transition-all duration-500"
+                className="h-full rounded-full bg-white transition-all duration-500"
                 style={{
                   width: `${Math.min(100, summary.appointments_today * 12 + 8)}%`,
                 }}
@@ -356,7 +356,7 @@ export function DashboardPage() {
               ].map(([name, status]) => (
                 <li
                   key={name}
-                  className="flex items-center justify-between rounded-xl border border-glass-border bg-glass-fill px-3 py-2"
+                  className="flex items-center justify-between rounded-soft border border-glass-border bg-glass-fill px-3 py-2"
                 >
                   <span>{name}</span>
                   <span
@@ -460,7 +460,7 @@ function AnalyticsStrip({
                   title={`${d.day}: ${d.confirmed} OK / ${d.cancelled} anul / ${d.no_show} NS`}
                 >
                   <div
-                    className="w-full bg-canary/80"
+                    className="w-full bg-white/80"
                     style={{
                       height: `${(d.confirmed / total) * 100}%`,
                       minHeight: d.confirmed ? 2 : 0,
@@ -511,7 +511,7 @@ function AnalyticsStrip({
               </span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-full rounded-full bg-canary transition-all duration-500"
+                  className="h-full rounded-full bg-white transition-all duration-500"
                   style={{ width: `${(ch.count / maxCh) * 100}%` }}
                 />
               </div>
@@ -558,7 +558,7 @@ function HourRow({
                 className={[
                   "absolute inset-x-1.5 rounded-lg border px-2 py-1.5 text-left shadow-glass backdrop-blur-sm transition hover:brightness-110",
                   event.tone === "canary"
-                    ? "border-canary/40 bg-canary/15 text-white"
+                    ? "border-white/40 bg-white/10 text-white"
                     : "border-glass-border bg-glass-fillStrong text-white",
                 ].join(" ")}
                 style={{

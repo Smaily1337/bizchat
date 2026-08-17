@@ -141,7 +141,7 @@ export function SettingsPage() {
             ).map((row) => (
               <div
                 key={row.label}
-                className="rounded-xl border border-glass-border bg-glass-fill px-3 py-3"
+                className="rounded-soft border border-glass-border bg-glass-fill px-3 py-3"
               >
                 <p className="text-xs text-[var(--muted)]">{row.label}</p>
                 <p className="mt-1 font-display text-xl font-semibold">
@@ -150,7 +150,7 @@ export function SettingsPage() {
                 {row.max != null && (
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
                     <div
-                      className="h-full rounded-full bg-canary/80"
+                      className="h-full rounded-full bg-white/80"
                       style={{ width: `${usagePct(row.used, row.max)}%` }}
                     />
                   </div>
@@ -192,7 +192,7 @@ export function SettingsPage() {
           {services.map((s) => (
             <li
               key={s.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm"
             >
               <span>
                 {s.name} · {s.duration_min} min · {s.price} zł
@@ -244,7 +244,7 @@ export function SettingsPage() {
           {knowledge.map((k) => (
             <li
               key={k.id}
-              className="rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm"
             >
               <div className="flex justify-between gap-2">
                 <p className="font-medium">{k.question}</p>
