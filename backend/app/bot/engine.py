@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.bot.adapters.base import ChannelAdapter
+from app.bot.dates import format_day_pl, parse_date_phrase, parse_month_only
 from app.bot.intents import Intent, detect_intent
 from app.bot.state_machine import booking_step, next_state
 from app.models import Appointment, Conversation, Customer, KnowledgeItem, Message, Service
@@ -25,7 +26,6 @@ from app.services.events import hub
 
 logger = logging.getLogger(__name__)
 
-DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
 TIME_RE = re.compile(r"(\d{1,2})[:\.](\d{2})")
 
 
@@ -227,44 +227,73 @@ class CoreBotEngine:
                 "service_id": str(match.id),
                 "service_name": match.name,
             }
+            example = format_day_pl(date.today() + timedelta(days=1))
             return (
-                f"Wybrano: {match.name}. Podaj dzień w formacie RRRR-MM-DD "
-                f"(np. {(date.today() + timedelta(days=1)).isoformat()})."
+                f"Wybrano: {match.name}. Kiedy Ci pasuje?\n"
+                f"Napisz np. „jutro”, „piątek”, „23 sierpnia”, „15.12” "
+                f"albo „grudzień” — podpowiem wolne dni.\n"
+                f"(przykład: {example})"
             )
 
         if step == "pick_day":
-            m = DATE_RE.search(text)
-            if not m:
-                return "Podaj dzień jako RRRR-MM-DD, np. 2026-08-10."
-            day = date.fromisoformat(m.group(1))
             service_id = UUID(ctx["service_id"])
-            try:
-                avail = await availability.list_availability(
-                    self.db,
-                    business_id=business_id,
-                    service_id=service_id,
-                    day=day,
+            today = date.today()
+
+            # Month only (e.g. "grudzień") → list free days in that month
+            month_only = parse_month_only(text, today=today)
+            if month_only is not None and parse_date_phrase(text, today=today) is None:
+                year, month = month_only
+                free_days = await self._free_days_in_month(
+                    business_id, service_id, year, month, limit=6
                 )
-            except ValueError as exc:
-                return str(exc)
-            free = avail.slots[:8]
-            if not free:
-                conversation.context = {**ctx, "booking_step": "pick_day"}
+                if not free_days:
+                    conversation.context = {**ctx, "booking_step": "pick_day"}
+                    return (
+                        f"W {month:02d}/{year} nie ma wolnych terminów. "
+                        "Podaj inny miesiąc albo konkretny dzień (np. „15 grudnia”)."
+                    )
+                conversation.context = {
+                    **ctx,
+                    "booking_step": "pick_day",
+                    "suggested_days": [d.isoformat() for d in free_days],
+                }
+                lines = [f"{i + 1}. {format_day_pl(d)}" for i, d in enumerate(free_days)]
                 return (
-                    f"Brak wolnych terminów {day.isoformat()}. "
-                    "Podaj inny dzień albo napisz „kolejka”, by dołączyć do listy oczekujących."
+                    "Wolne dni w tym miesiącu:\n"
+                    + "\n".join(lines)
+                    + "\nWybierz numer albo napisz datę (np. „15 grudnia”)."
                 )
-            slot_lines = [
-                f"{i + 1}. {s.start_at.strftime('%H:%M')}–{s.end_at.strftime('%H:%M')}"
-                for i, s in enumerate(free)
-            ]
-            conversation.context = {
-                **ctx,
-                "booking_step": "pick_slot",
-                "day": day.isoformat(),
-                "slots": [s.start_at.isoformat() for s in free],
-            }
-            return "Dostępne godziny:\n" + "\n".join(slot_lines) + "\nWybierz numer lub godzinę (HH:MM)."
+
+            # Numeric pick from previously suggested days
+            suggested = ctx.get("suggested_days") or []
+            day: date | None = None
+            if text.strip().isdigit() and suggested:
+                idx = int(text.strip()) - 1
+                if 0 <= idx < len(suggested):
+                    day = date.fromisoformat(suggested[idx])
+
+            if day is None:
+                day = parse_date_phrase(text, today=today)
+
+            if day is None:
+                return (
+                    "Nie rozpoznałem daty 🤔 Napisz np.:\n"
+                    "• jutro / pojutrze\n"
+                    "• piątek\n"
+                    "• 23 sierpnia\n"
+                    "• 15.12.2026\n"
+                    "• albo sam miesiąc: grudzień"
+                )
+
+            if day < today:
+                return (
+                    f"{format_day_pl(day)} już minął. "
+                    "Podaj przyszłą datę (np. „jutro” albo „15 grudnia”)."
+                )
+
+            return await self._offer_slots_for_day(
+                business_id, service_id, day, ctx, conversation
+            )
 
         if step == "pick_slot":
             slots = ctx.get("slots") or []
@@ -293,7 +322,7 @@ class CoreBotEngine:
             start_dt = datetime.fromisoformat(start_iso)
             return (
                 f"Potwierdź wizytę: {ctx.get('service_name')} "
-                f"{start_dt.strftime('%Y-%m-%d %H:%M')}. "
+                f"{format_day_pl(start_dt.date())} o {start_dt.strftime('%H:%M')}. "
                 "Odpisz „tak” aby zarezerwować lub „nie” aby anulować."
             )
 
@@ -336,6 +365,81 @@ class CoreBotEngine:
             if service.name.lower() in lowered:
                 return service
         return None
+
+    async def _offer_slots_for_day(
+        self,
+        business_id: UUID,
+        service_id: UUID,
+        day: date,
+        ctx: dict,
+        conversation: Conversation,
+    ) -> str:
+        try:
+            avail = await availability.list_availability(
+                self.db,
+                business_id=business_id,
+                service_id=service_id,
+                day=day,
+            )
+        except ValueError as exc:
+            return str(exc)
+        free = avail.slots[:8]
+        if not free:
+            conversation.context = {**ctx, "booking_step": "pick_day"}
+            return (
+                f"Brak wolnych terminów {format_day_pl(day)}. "
+                "Podaj inny dzień albo napisz „kolejka”, by dołączyć do listy oczekujących."
+            )
+        slot_lines = [
+            f"{i + 1}. {s.start_at.strftime('%H:%M')}–{s.end_at.strftime('%H:%M')}"
+            for i, s in enumerate(free)
+        ]
+        conversation.context = {
+            **ctx,
+            "booking_step": "pick_slot",
+            "day": day.isoformat(),
+            "suggested_days": [],
+            "slots": [s.start_at.isoformat() for s in free],
+        }
+        return (
+            f"Dostępne godziny {format_day_pl(day)}:\n"
+            + "\n".join(slot_lines)
+            + "\nWybierz numer lub godzinę (np. 16:30)."
+        )
+
+    async def _free_days_in_month(
+        self,
+        business_id: UUID,
+        service_id: UUID,
+        year: int,
+        month: int,
+        *,
+        limit: int = 6,
+    ) -> list[date]:
+        """Scan a month and return days that still have at least one free slot."""
+        import calendar as cal
+
+        today = date.today()
+        last_day = cal.monthrange(year, month)[1]
+        found: list[date] = []
+        for day_n in range(1, last_day + 1):
+            d = date(year, month, day_n)
+            if d < today:
+                continue
+            try:
+                avail = await availability.list_availability(
+                    self.db,
+                    business_id=business_id,
+                    service_id=service_id,
+                    day=d,
+                )
+            except ValueError:
+                continue
+            if avail.slots:
+                found.append(d)
+                if len(found) >= limit:
+                    break
+        return found
 
     async def _list_appointments(self, business_id: UUID, customer_id: UUID) -> str:
         result = await self.db.execute(

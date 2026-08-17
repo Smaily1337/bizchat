@@ -25,6 +25,14 @@ ACTIVE_STATUSES = {
 }
 
 
+def _aware(dt: datetime, tz: ZoneInfo) -> datetime:
+    """Normalize naive DB datetimes as if they were stored in business TZ / UTC."""
+    if dt.tzinfo is None:
+        # Prefer treating naive as UTC (how Cloud Run SQLite seed stores them).
+        return dt.replace(tzinfo=timezone.utc).astimezone(tz)
+    return dt.astimezone(tz)
+
+
 async def list_availability(
     db: AsyncSession,
     *,
@@ -91,16 +99,16 @@ async def list_availability(
         available = True
 
         for appt in appointments:
-            a_start = appt.start_at.astimezone(tz)
-            a_end = appt.end_at.astimezone(tz)
+            a_start = _aware(appt.start_at, tz)
+            a_end = _aware(appt.end_at, tz)
             if cursor < a_end and slot_end > a_start:
                 available = False
                 break
 
         if available:
             for toff in time_offs:
-                t_start = toff.start_at.astimezone(tz)
-                t_end = toff.end_at.astimezone(tz)
+                t_start = _aware(toff.start_at, tz)
+                t_end = _aware(toff.end_at, tz)
                 if cursor < t_end and slot_end > t_start:
                     available = False
                     break
