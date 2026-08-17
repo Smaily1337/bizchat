@@ -238,6 +238,16 @@ Pełna lista: `.env.example`.
 | `piątek` / `w poniedziałek` | najbliższy dzień tygodnia |
 | `grudzień` | sam miesiąc → lista wolnych dni do wyboru |
 
+### Godziny (krok slotu)
+
+| Przykład | Znaczenie |
+|----------|-----------|
+| `1` / `nr 3` | numer z listy |
+| `12:00` / `16.30` | konkretna godzina |
+| `o 12` / `12 godziny` | godzina (minuty = 00) |
+
+Bot pokazuje sloty **rozłożone w ciągu dnia** (nie tylko pierwsze z rana). Jeśli wpiszesz godzinę spoza krótkiej listy, ale wolną tego dnia — i tak ją przyjmie (albo najbliższą ±30 min).
+
 **Nie trzeba** już podawać wyłącznie `RRRR-MM-DD`.
 
 ---

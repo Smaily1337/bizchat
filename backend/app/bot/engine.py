@@ -27,6 +27,14 @@ from app.services.events import hub
 logger = logging.getLogger(__name__)
 
 TIME_RE = re.compile(r"(\d{1,2})[:\.](\d{2})")
+SLOT_INDEX_RE = re.compile(
+    r"(?:(?:nr|numer|nr\.|#)\s*)?(\d{1,2})\s*\.?\s*$",
+    re.IGNORECASE,
+)
+HOUR_FLEX_RE = re.compile(
+    r"(?:^|[^\d])(?:o\s+)?(\d{1,2})(?:[:\.](\d{2}))?(?:\s*(?:godz(?:iny|ina|ine)?|h))?\b",
+    re.IGNORECASE,
+)
 
 
 class CoreBotEngine:
@@ -296,23 +304,56 @@ class CoreBotEngine:
             )
 
         if step == "pick_slot":
-            slots = ctx.get("slots") or []
-            start_iso: str | None = None
-            if text.strip().isdigit():
-                idx = int(text.strip()) - 1
-                if 0 <= idx < len(slots):
-                    start_iso = slots[idx]
-            if start_iso is None:
-                tm = TIME_RE.search(text)
-                if tm:
-                    hh, mm = int(tm.group(1)), int(tm.group(2))
-                    for s in slots:
-                        dt = datetime.fromisoformat(s)
-                        if dt.hour == hh and dt.minute == mm:
-                            start_iso = s
+            slots = list(ctx.get("slots") or [])
+            day_iso = ctx.get("day")
+            service_id = UUID(ctx["service_id"])
+            start_iso = self._match_slot_choice(text, slots)
+
+            # Time not in the short list → search full day availability
+            if start_iso is None and day_iso:
+                wanted = self._parse_time_hm(text)
+                if wanted is not None:
+                    hh, mm = wanted
+                    try:
+                        avail = await availability.list_availability(
+                            self.db,
+                            business_id=business_id,
+                            service_id=service_id,
+                            day=date.fromisoformat(day_iso),
+                        )
+                    except ValueError as exc:
+                        return str(exc)
+                    for s in avail.slots:
+                        local = s.start_at
+                        if local.hour == hh and local.minute == mm:
+                            start_iso = s.start_at.isoformat()
                             break
+                    if start_iso is None:
+                        # nearest slot within 30 minutes
+                        target_min = hh * 60 + mm
+                        best = None
+                        best_diff = 10**9
+                        for s in avail.slots:
+                            diff = abs(s.start_at.hour * 60 + s.start_at.minute - target_min)
+                            if diff < best_diff:
+                                best_diff = diff
+                                best = s
+                        if best is not None and best_diff <= 30:
+                            start_iso = best.start_at.isoformat()
+
             if start_iso is None:
-                return "Wybierz numer slotu z listy lub godzinę HH:MM."
+                shown = []
+                for s in slots[:12]:
+                    try:
+                        dt = datetime.fromisoformat(s)
+                        shown.append(dt.strftime("%H:%M"))
+                    except ValueError:
+                        continue
+                hint = ", ".join(shown) if shown else "z listy powyżej"
+                return (
+                    f"Nie znalazłem tej godziny. Wybierz numer (np. „3” / „nr 3”) "
+                    f"albo godzinę z listy ({hint})."
+                )
 
             conversation.context = {
                 **ctx,
@@ -383,7 +424,7 @@ class CoreBotEngine:
             )
         except ValueError as exc:
             return str(exc)
-        free = avail.slots[:8]
+        free = self._sample_day_slots(avail.slots, limit=10)
         if not free:
             conversation.context = {**ctx, "booking_step": "pick_day"}
             return (
@@ -394,6 +435,7 @@ class CoreBotEngine:
             f"{i + 1}. {s.start_at.strftime('%H:%M')}–{s.end_at.strftime('%H:%M')}"
             for i, s in enumerate(free)
         ]
+        example = free[min(2, len(free) - 1)].start_at.strftime("%H:%M")
         conversation.context = {
             **ctx,
             "booking_step": "pick_slot",
@@ -404,8 +446,91 @@ class CoreBotEngine:
         return (
             f"Dostępne godziny {format_day_pl(day)}:\n"
             + "\n".join(slot_lines)
-            + "\nWybierz numer lub godzinę (np. 16:30)."
+            + f"\nWybierz numer (np. 1) albo godzinę (np. {example}). "
+            "Możesz też wpisać inną wolną godzinę tego dnia, np. 12:00."
         )
+
+    @staticmethod
+    def _sample_day_slots(slots: list, *, limit: int = 10) -> list:
+        """Spread slots across the day instead of only the first morning ones."""
+        if len(slots) <= limit:
+            return list(slots)
+        if limit <= 1:
+            return [slots[0]]
+        out = []
+        for i in range(limit):
+            idx = round(i * (len(slots) - 1) / (limit - 1))
+            out.append(slots[idx])
+        seen: set[str] = set()
+        unique = []
+        for s in out:
+            key = s.start_at.isoformat()
+            if key in seen:
+                continue
+            seen.add(key)
+            unique.append(s)
+        return unique
+
+    @staticmethod
+    def _parse_time_hm(text: str) -> tuple[int, int] | None:
+        """Parse '12:00', '12.30', 'o 12', '12 godziny' → (h, m)."""
+        lowered = text.lower().strip()
+        tm = TIME_RE.search(lowered)
+        if tm:
+            hh, mm = int(tm.group(1)), int(tm.group(2))
+            if 0 <= hh <= 23 and 0 <= mm <= 59:
+                return hh, mm
+        m = re.search(
+            r"(?:^|\s)(?:o\s+)?(\d{1,2})(?:\s*(?:godz(?:iny|ina|ine)?|h))?(?:\s|$|[^\d])",
+            lowered,
+        )
+        if m:
+            hh = int(m.group(1))
+            if 0 <= hh <= 23:
+                return hh, 0
+        return None
+
+    def _match_slot_choice(self, text: str, slots: list[str]) -> str | None:
+        raw = text.strip()
+        lowered = raw.lower().strip()
+        if not slots:
+            return None
+
+        # "nr 8" / "numer 3" / "#2"
+        m = re.search(r"(?:nr|numer|nr\.|#)\s*(\d{1,2})\b", lowered)
+        if m:
+            idx = int(m.group(1)) - 1
+            if 0 <= idx < len(slots):
+                return slots[idx]
+
+        # bare index "3" — only if not a plausible clock hour matching a slot time
+        if raw.isdigit():
+            n = int(raw)
+            wanted_as_hour = self._parse_time_hm(raw)
+            if wanted_as_hour is not None:
+                hh, mm = wanted_as_hour
+                for s in slots:
+                    try:
+                        dt = datetime.fromisoformat(s)
+                    except ValueError:
+                        continue
+                    if dt.hour == hh and dt.minute == mm:
+                        return s
+            idx = n - 1
+            if 0 <= idx < len(slots):
+                return slots[idx]
+
+        wanted = self._parse_time_hm(lowered)
+        if wanted is not None:
+            hh, mm = wanted
+            for s in slots:
+                try:
+                    dt = datetime.fromisoformat(s)
+                except ValueError:
+                    continue
+                if dt.hour == hh and dt.minute == mm:
+                    return s
+        return None
 
     async def _free_days_in_month(
         self,
