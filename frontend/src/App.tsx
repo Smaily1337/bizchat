@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "@/auth/AuthContext";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { ToastProvider } from "@/components/ToastProvider";
 import { GlassNav } from "@/components/ui";
+import { ThemeProvider } from "@/theme";
 import { ProductTour, TourProvider } from "@/tour";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { AppointmentsPage } from "@/pages/AppointmentsPage";
@@ -45,32 +46,34 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/book/:key" element={<PublicBookingPage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/appointments" element={<AppointmentsPage />} />
-              <Route path="/inbox" element={<InboxPage />} />
-              <Route path="/customers" element={<CustomersPage />} />
-              <Route path="/staff" element={<StaffPage />} />
-              <Route path="/hours" element={<HoursPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/platform" element={<PlatformPage />} />
-              <Route path="/feedback" element={<FeedbackPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/channels" element={<ChannelsPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/book/:key" element={<PublicBookingPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/appointments" element={<AppointmentsPage />} />
+                <Route path="/inbox" element={<InboxPage />} />
+                <Route path="/customers" element={<CustomersPage />} />
+                <Route path="/staff" element={<StaffPage />} />
+                <Route path="/hours" element={<HoursPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/platform" element={<PlatformPage />} />
+                <Route path="/feedback" element={<FeedbackPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/channels" element={<ChannelsPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </ToastProvider>
-    </AuthProvider>
+          </Routes>
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

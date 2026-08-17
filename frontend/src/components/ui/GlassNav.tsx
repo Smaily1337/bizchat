@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { useTour } from "@/tour/TourContext";
+import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
 
 type NavItem = {
@@ -185,6 +186,7 @@ function linkClass(isActive: boolean, compact = false) {
 export function GlassNav() {
   const { business, owner, logout, resendVerification } = useAuth();
   const { start } = useTour();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -254,8 +256,47 @@ export function GlassNav() {
           </GlassButton>
           <button
             type="button"
+            onClick={toggleTheme}
+            className="inline-flex items-center gap-1.5 rounded-control border border-glass-border bg-glass-fill px-2.5 py-1.5 text-sm font-semibold text-[var(--text-bright)] transition hover:bg-glass-fillStrong"
+            aria-label={theme === "dark" ? "Włącz jasny motyw" : "Włącz ciemny motyw"}
+            title={theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}
+          >
+            {theme === "dark" ? (
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+              </svg>
+            ) : (
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z" />
+              </svg>
+            )}
+            <span className="hidden sm:inline">
+              {theme === "dark" ? "Jasny" : "Ciemny"}
+            </span>
+          </button>
+          <button
+            type="button"
             onClick={logout}
-            className="inline-flex items-center gap-1.5 rounded-control border border-white/25 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur-glass transition hover:border-white/45 hover:bg-white/15"
+            className="inline-flex items-center gap-1.5 rounded-control border border-glass-border bg-glass-fillStrong px-3 py-1.5 text-sm font-semibold text-[var(--text-bright)] backdrop-blur-glass transition hover:bg-glass-fill"
             aria-label="Wyloguj"
           >
             <svg

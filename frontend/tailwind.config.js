@@ -4,6 +4,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Theme-aware ink — white in dark mode, near-black in light
+        white: "var(--text-bright)",
         graphite: "var(--bg)",
         void: "var(--bg)",
         surface: "var(--surface-solid)",
@@ -24,8 +26,8 @@ export default {
       },
       boxShadow: {
         glass: "var(--shadow-glass)",
-        canary: "0 10px 36px rgba(255, 255, 255, 0.14)",
-        active: "0 0 28px rgba(255, 255, 255, 0.1)",
+        canary: "var(--shadow-accent)",
+        active: "var(--shadow-active)",
       },
       backdropBlur: {
         glass: "28px",

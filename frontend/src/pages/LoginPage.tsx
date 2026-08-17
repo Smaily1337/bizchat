@@ -5,6 +5,7 @@ import { authApi } from "@/api";
 import { useAuth } from "@/auth/AuthContext";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
+import { useTheme } from "@/theme";
 
 /** Credentials or JWT passed from landing / OAuth in the URL fragment. */
 function readHashAuth(hash: string): {
@@ -34,6 +35,7 @@ function loginErrorMessage(err: unknown): string {
 
 export function LoginPage() {
   const { token, loading, login, acceptToken } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -119,7 +121,15 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
+    <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-control border border-glass-border bg-glass-fill px-3 py-1.5 text-sm font-semibold text-[var(--text-bright)] backdrop-blur-glass transition hover:bg-glass-fillStrong sm:right-8 sm:top-8"
+        aria-label={theme === "dark" ? "Włącz jasny motyw" : "Włącz ciemny motyw"}
+      >
+        {theme === "dark" ? "Jasny" : "Ciemny"}
+      </button>
       <GlassCard className="animate-fade-up w-full max-w-md">
         <p className="font-display text-4xl font-extrabold tracking-tight">
           BizChat

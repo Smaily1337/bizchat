@@ -4,6 +4,7 @@ import type { KnowledgeItem, LicenseUsage, Service } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput, GlassTextarea } from "@/components/ui/GlassInput";
+import { useTheme } from "@/theme";
 
 function fmtLimit(used: number, max: number | null) {
   if (max == null) return `${used} / ∞`;
@@ -17,6 +18,7 @@ function usagePct(used: number, max: number | null) {
 
 export function SettingsPage() {
   const { business, refreshBusiness } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [name, setName] = useState("");
   const [timezone, setTimezone] = useState("Europe/Warsaw");
   const [publicSlug, setPublicSlug] = useState("");
@@ -115,6 +117,32 @@ export function SettingsPage() {
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}
+
+      <GlassCard className="animate-fade-up">
+        <p className="font-display text-lg font-semibold">Wygląd panelu</p>
+        <p className="mt-1 text-sm text-[var(--muted)]">
+          Wybierz jasny lub ciemny motyw. Preferencja zapamiętuje się w tej
+          przeglądarce.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <GlassButton
+            type="button"
+            variant={theme === "light" ? "primary" : "ghost"}
+            className="!px-4 !py-2"
+            onClick={() => setTheme("light")}
+          >
+            Jasny
+          </GlassButton>
+          <GlassButton
+            type="button"
+            variant={theme === "dark" ? "primary" : "ghost"}
+            className="!px-4 !py-2"
+            onClick={() => setTheme("dark")}
+          >
+            Ciemny
+          </GlassButton>
+        </div>
+      </GlassCard>
 
       {usage && (
         <GlassCard className="animate-fade-up">
