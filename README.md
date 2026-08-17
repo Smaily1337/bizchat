@@ -64,11 +64,29 @@ docker compose up --build
 - **Kalendarz** dzień/tydzień z wizytami z API
 - **Wizyty** — lista, dodawanie, edycja, anulowanie
 - **Godziny otwarcia** + urlopy (time off)
-- **Ustawienia** — nazwa/timezone, usługi, FAQ
+- **Ustawienia** — nazwa/timezone, usługi, FAQ, podgląd licencji i limitów
 - **Feedback** — opinie + alerty (score ≤2) + waitlist FIFO
 - **Powiadomienia** — ręczna wysyłka do klienta (szablon lub własna treść), automatyczne przypomnienia (24h/2h/30min + własne czasy, limit na wizytę, kanał SMS/e-mail/Telegram/Widget — mock bez providera), edytowalne szablony z podglądem „jak zobaczy klient", log wysyłek; przycisk „Powiadom" przy każdej wizycie
 - **Kanały** — wskazówki webhooków + snippet widgetu
-- **Platforma** (`/platform`) — tylko `is_platform_admin`: konta wszystkich firm, lista businesses, statystyki pageview landingu
+- **Platforma** (`/platform`) — tylko `is_platform_admin`: konta, licencje/limity firm, statystyki pageview landingu
+
+## Licencje i limity
+
+Każda firma (`business`) ma plan, status licencji i limity miesięczne:
+
+| Plan | Rezerwacje/mies. | Wiadomości/mies. | Seats | Kanały |
+|------|------------------|------------------|-------|--------|
+| `free` (trial 14 dni) | 30 | 200 | 2 | widget, admin |
+| `starter` | 150 | 2000 | 5 | wszystkie |
+| `pro` | ∞ | ∞ | 20 | wszystkie |
+| `enterprise` | ∞ | ∞ | ∞ | wszystkie |
+
+- Egzekwowanie: tworzenie wizyt, inbound bota, dodawanie użytkowników panelu
+- Statusy: `trial` / `active` / `suspended` / `expired` (+ opcjonalna data wygaśnięcia)
+- Zarządzanie: Platforma → Firmy / licencje; podgląd użycia: Ustawienia
+- API: `GET /api/business/usage`, `GET/PATCH /api/platform/businesses`, `GET /api/platform/plans`
+
+Demo Salon seedowany jest na planie `pro` (bez blokad testowych).
 
 ## API (wybrane)
 
@@ -77,6 +95,7 @@ docker compose up --build
 | POST | `/api/auth/login/json` |
 | GET | `/api/auth/me` |
 | GET/PATCH | `/api/business` |
+| GET | `/api/business/usage` |
 | CRUD | `/api/appointments` |
 | CRUD | `/api/services`, `/api/customers` |
 | GET/PUT | `/api/working-hours` |
@@ -87,6 +106,7 @@ docker compose up --build
 | GET | `/api/availability` |
 | GET | `/api/dashboard/summary` |
 | GET/POST/PATCH | `/api/platform/accounts`, `/api/platform/businesses` (platform admin) |
+| GET | `/api/platform/plans`, `/api/platform/businesses/{id}/usage` |
 | GET | `/api/platform/stats/pageviews` (platform admin) |
 | POST | `/api/analytics/pageview` (publiczny, rate-limit) |
 | GET/PUT | `/api/notifications/settings` |

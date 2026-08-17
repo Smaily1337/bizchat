@@ -13,8 +13,10 @@ from app.models import Appointment, AppointmentStatus, CancellationEvent, Custom
 from app.models.enums import Channel
 from app.schemas import AppointmentOut
 from app.services import google_calendar
+from app.services import limits as limits_service
 from app.services import waitlist as waitlist_service
 from app.services.events import hub
+from app.services.limits import LimitExceededError
 
 
 class BookingError(Exception):
@@ -93,6 +95,16 @@ async def create_appointment(
     channel: Channel = Channel.admin,
     notes: str | None = None,
 ) -> Appointment:
+    from app.models import Business
+
+    business = await db.get(Business, business_id)
+    if business is None:
+        raise BookingError("Business not found")
+    try:
+        await limits_service.assert_can_book(db, business)
+    except LimitExceededError as exc:
+        raise BookingError(str(exc)) from exc
+
     service = await db.get(Service, service_id)
     if service is None or service.business_id != business_id:
         raise BookingError("Service not found for this business")

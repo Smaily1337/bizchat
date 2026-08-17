@@ -15,13 +15,23 @@ from sqlalchemy.orm import selectinload
 from app.bot.adapters.base import ChannelAdapter
 from app.bot.intents import Intent, detect_intent
 from app.bot.state_machine import booking_step, next_state
-from app.models import Appointment, Conversation, Customer, KnowledgeItem, Message, Service
+from app.models import (
+    Appointment,
+    Business,
+    Conversation,
+    Customer,
+    KnowledgeItem,
+    Message,
+    Service,
+)
 from app.models.enums import AppointmentStatus, Channel, ConversationState, MessageRole
 from app.schemas import InboundMessage, OutboundMessage
 from app.models.mixins import utc_now
 from app.services import availability, booking, waitlist
+from app.services import limits as limits_service
 from app.services.booking import BookingError
 from app.services.events import hub
+from app.services.limits import LimitExceededError
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +54,30 @@ class CoreBotEngine:
                 channel=inbound.channel,
                 external_thread_id=inbound.external_thread_id,
                 text=reply_text,
+            )
+            await self.adapter.send_outbound(outbound)
+            return outbound
+
+        business = await self.db.get(Business, business_id)
+        if business is None:
+            reply_text = "BizChat: salon nie został znaleziony."
+            outbound = OutboundMessage(
+                channel=inbound.channel,
+                external_thread_id=inbound.external_thread_id,
+                text=reply_text,
+            )
+            await self.adapter.send_outbound(outbound)
+            return outbound
+
+        try:
+            await limits_service.assert_can_receive_message(
+                self.db, business, inbound.channel
+            )
+        except LimitExceededError as exc:
+            outbound = OutboundMessage(
+                channel=inbound.channel,
+                external_thread_id=inbound.external_thread_id,
+                text=exc.user_message,
             )
             await self.adapter.send_outbound(outbound)
             return outbound

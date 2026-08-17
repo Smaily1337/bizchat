@@ -23,6 +23,7 @@ from app.api.deps import (
 from app.config import settings
 from app.models import Business, Owner, UserRole
 from app.schemas import LoginRequest, OwnerOut, TokenResponse
+from app.services.limits import PLAN_FREE, apply_plan_defaults
 from app.services.mailer import send_verification_email
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -93,6 +94,7 @@ async def register(db: DbSession, body: RegisterRequest) -> TokenResponse:
         timezone="Europe/Warsaw",
         settings={"locale": "pl", "currency": "PLN"},
     )
+    apply_plan_defaults(business, PLAN_FREE, start_trial=True)
     db.add(business)
     await db.flush()
 
@@ -230,6 +232,7 @@ async def google_oauth_callback(
             timezone="Europe/Warsaw",
             settings={"locale": "pl", "currency": "PLN"},
         )
+        apply_plan_defaults(business, PLAN_FREE, start_trial=True)
         db.add(business)
         await db.flush()
         owner = Owner(

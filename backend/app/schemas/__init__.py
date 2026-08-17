@@ -59,6 +59,13 @@ class BusinessOut(ORMModel):
     timezone: str
     google_calendar_id: Optional[str] = None
     settings: dict[str, Any] = Field(default_factory=dict)
+    plan: str = "free"
+    license_status: str = "trial"
+    license_expires_at: Optional[datetime] = None
+    max_appointments_month: Optional[int] = None
+    max_messages_month: Optional[int] = None
+    max_seats: Optional[int] = None
+    enabled_channels: Optional[list[str]] = None
     created_at: datetime
     updated_at: datetime
 
@@ -68,6 +75,31 @@ class BusinessUpdate(BaseModel):
     timezone: Optional[str] = None
     google_calendar_id: Optional[str] = None
     settings: Optional[dict[str, Any]] = None
+
+
+class LicenseUsageOut(BaseModel):
+    plan: str
+    license_status: str
+    license_expires_at: Optional[datetime] = None
+    is_active: bool
+    appointments_month: int
+    max_appointments_month: Optional[int] = None
+    messages_month: int
+    max_messages_month: Optional[int] = None
+    seats: int
+    max_seats: Optional[int] = None
+    enabled_channels: list[str] = Field(default_factory=list)
+    period_start: datetime
+    period_end: datetime
+
+
+class PlanCatalogItem(BaseModel):
+    id: str
+    max_appointments_month: Optional[int] = None
+    max_messages_month: Optional[int] = None
+    max_seats: Optional[int] = None
+    enabled_channels: list[str] = Field(default_factory=list)
+    trial_days: int = 0
 
 
 # ---------------------------------------------------------------------------

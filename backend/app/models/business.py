@@ -38,6 +38,19 @@ class Business(Base, TimestampMixin):
     google_calendar_id: Mapped[Optional[str]] = mapped_column(String(255))
     settings: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
 
+    # Licensing / plan limits (NULL limit = unlimited)
+    plan: Mapped[str] = mapped_column(String(32), default="free", nullable=False)
+    license_status: Mapped[str] = mapped_column(
+        String(32), default="trial", nullable=False
+    )
+    license_expires_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True)
+    )
+    max_appointments_month: Mapped[Optional[int]] = mapped_column(Integer)
+    max_messages_month: Mapped[Optional[int]] = mapped_column(Integer)
+    max_seats: Mapped[Optional[int]] = mapped_column(Integer)
+    enabled_channels: Mapped[Optional[list[Any]]] = mapped_column(JSONType)
+
     owners: Mapped[list[Owner]] = relationship(back_populates="business")
     services: Mapped[list[Service]] = relationship(back_populates="business")
     working_hours: Mapped[list[WorkingHours]] = relationship(

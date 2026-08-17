@@ -9,11 +9,14 @@ import type {
   Feedback,
   InboxMessage,
   KnowledgeItem,
+  LicenseUsage,
   NotificationLogEntry,
   NotificationSettings,
   NotificationTemplate,
   Owner,
+  PlanCatalogItem,
   PlatformAccount,
+  PlatformBusiness,
   PlatformPageviewStats,
   Service,
   TimeOff,
@@ -92,6 +95,7 @@ export const usersApi = {
 
 export const businessApi = {
   get: () => apiFetch<Business>("/api/business"),
+  usage: () => apiFetch<LicenseUsage>("/api/business/usage"),
   update: (body: Partial<Business>) =>
     apiFetch<Business>("/api/business", {
       method: "PATCH",
@@ -294,12 +298,28 @@ export const platformApi = {
       `/api/platform/accounts/${id}/reset-password`,
       { method: "POST" },
     ),
-  listBusinesses: () => apiFetch<Business[]>("/api/platform/businesses"),
+  listBusinesses: () =>
+    apiFetch<PlatformBusiness[]>("/api/platform/businesses"),
+  listPlans: () => apiFetch<PlanCatalogItem[]>("/api/platform/plans"),
+  businessUsage: (id: string) =>
+    apiFetch<LicenseUsage>(`/api/platform/businesses/${id}/usage`),
   updateBusiness: (
     id: string,
-    body: Partial<{ name: string; timezone: string }>,
+    body: Partial<{
+      name: string;
+      timezone: string;
+      plan: string;
+      license_status: string;
+      license_expires_at: string | null;
+      max_appointments_month: number | null;
+      max_messages_month: number | null;
+      max_seats: number | null;
+      enabled_channels: string[];
+      apply_plan_defaults: boolean;
+      clear_expiry: boolean;
+    }>,
   ) =>
-    apiFetch<Business>(`/api/platform/businesses/${id}`, {
+    apiFetch<PlatformBusiness>(`/api/platform/businesses/${id}`, {
       method: "PATCH",
       body: JSON.stringify(body),
     }),

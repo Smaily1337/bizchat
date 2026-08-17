@@ -61,6 +61,44 @@ export type Business = {
   timezone: string;
   google_calendar_id: string | null;
   settings: Record<string, unknown>;
+  plan?: string;
+  license_status?: string;
+  license_expires_at?: string | null;
+  max_appointments_month?: number | null;
+  max_messages_month?: number | null;
+  max_seats?: number | null;
+  enabled_channels?: string[] | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type LicenseUsage = {
+  plan: string;
+  license_status: string;
+  license_expires_at: string | null;
+  is_active: boolean;
+  appointments_month: number;
+  max_appointments_month: number | null;
+  messages_month: number;
+  max_messages_month: number | null;
+  seats: number;
+  max_seats: number | null;
+  enabled_channels: string[];
+  period_start: string;
+  period_end: string;
+};
+
+export type PlanCatalogItem = {
+  id: string;
+  max_appointments_month: number | null;
+  max_messages_month: number | null;
+  max_seats: number | null;
+  enabled_channels: string[];
+  trial_days: number;
+};
+
+export type PlatformBusiness = Business & {
+  usage?: LicenseUsage | null;
 };
 
 export type Service = {

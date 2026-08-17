@@ -1,8 +1,8 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { platformApi } from "@/api";
 import type {
-  Business,
   PlatformAccount,
+  PlatformBusiness,
   PlatformPageviewStats,
   UserRole,
 } from "@/api/types";
@@ -15,6 +15,16 @@ const ROLE_LABEL: Record<UserRole, string> = {
   admin: "Admin",
   pracownik: "Pracownik",
 };
+
+const PLAN_OPTIONS = ["free", "starter", "pro", "enterprise"] as const;
+const STATUS_OPTIONS = ["trial", "active", "suspended", "expired"] as const;
+const CHANNEL_OPTIONS = [
+  "widget",
+  "telegram",
+  "messenger",
+  "instagram",
+  "admin",
+] as const;
 
 type Tab = "accounts" | "businesses" | "stats";
 
@@ -29,6 +39,11 @@ function formatWhen(iso: string) {
   }
 }
 
+function fmtLimit(used: number, max: number | null | undefined) {
+  if (max == null) return `${used} / ∞`;
+  return `${used} / ${max}`;
+}
+
 export function PlatformPage() {
   const { owner } = useAuth();
   const canAccess = Boolean(owner?.is_platform_admin);
@@ -37,8 +52,20 @@ export function PlatformPage() {
   const [msg, setMsg] = useState<string | null>(null);
 
   const [accounts, setAccounts] = useState<PlatformAccount[]>([]);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businesses, setBusinesses] = useState<PlatformBusiness[]>([]);
   const [stats, setStats] = useState<PlatformPageviewStats | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [licenseForm, setLicenseForm] = useState({
+    plan: "free",
+    license_status: "active",
+    license_expires_at: "",
+    max_appointments_month: "",
+    max_messages_month: "",
+    max_seats: "",
+    enabled_channels: [] as string[],
+    apply_plan_defaults: true,
+    clear_expiry: false,
+  });
 
   const [form, setForm] = useState({
     email: "",
@@ -134,7 +161,7 @@ export function PlatformPage() {
     }
   }
 
-  async function renameBusiness(biz: Business) {
+  async function renameBusiness(biz: PlatformBusiness) {
     const next = prompt("Nowa nazwa firmy", biz.name);
     if (next === null || !next.trim()) return;
     setError(null);
@@ -147,9 +174,74 @@ export function PlatformPage() {
     }
   }
 
+  function openLicenseEditor(biz: PlatformBusiness) {
+    setEditingId(biz.id);
+    const exp = biz.license_expires_at
+      ? biz.license_expires_at.slice(0, 10)
+      : "";
+    setLicenseForm({
+      plan: biz.plan || "free",
+      license_status: biz.license_status || "active",
+      license_expires_at: exp,
+      max_appointments_month:
+        biz.max_appointments_month == null
+          ? ""
+          : String(biz.max_appointments_month),
+      max_messages_month:
+        biz.max_messages_month == null ? "" : String(biz.max_messages_month),
+      max_seats: biz.max_seats == null ? "" : String(biz.max_seats),
+      enabled_channels: [...(biz.enabled_channels || [])],
+      apply_plan_defaults: true,
+      clear_expiry: false,
+    });
+  }
+
+  async function saveLicense(e: FormEvent) {
+    e.preventDefault();
+    if (!editingId) return;
+    setError(null);
+    setMsg(null);
+    try {
+      const parseOptInt = (v: string) => {
+        const t = v.trim();
+        if (!t) return null;
+        const n = Number(t);
+        return Number.isFinite(n) ? n : null;
+      };
+      await platformApi.updateBusiness(editingId, {
+        plan: licenseForm.plan,
+        license_status: licenseForm.license_status,
+        apply_plan_defaults: licenseForm.apply_plan_defaults,
+        clear_expiry: licenseForm.clear_expiry,
+        license_expires_at: licenseForm.clear_expiry
+          ? null
+          : licenseForm.license_expires_at
+            ? `${licenseForm.license_expires_at}T23:59:59Z`
+            : undefined,
+        max_appointments_month: licenseForm.apply_plan_defaults
+          ? undefined
+          : parseOptInt(licenseForm.max_appointments_month),
+        max_messages_month: licenseForm.apply_plan_defaults
+          ? undefined
+          : parseOptInt(licenseForm.max_messages_month),
+        max_seats: licenseForm.apply_plan_defaults
+          ? undefined
+          : parseOptInt(licenseForm.max_seats),
+        enabled_channels: licenseForm.apply_plan_defaults
+          ? undefined
+          : licenseForm.enabled_channels,
+      });
+      setEditingId(null);
+      await reloadBusinesses();
+      setMsg("Licencja / limity zapisane");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Błąd");
+    }
+  }
+
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: "accounts", label: "Konta" },
-    { id: "businesses", label: "Firmy" },
+    { id: "businesses", label: "Firmy / licencje" },
     { id: "stats", label: "Statystyki" },
   ];
 
@@ -160,7 +252,7 @@ export function PlatformPage() {
       <header className="animate-fade-up">
         <h1 className="font-display text-3xl font-bold">Platforma</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Superadmin BizChat — konta właścicieli, firmy i ruch na landingu
+          Superadmin BizChat — konta, licencje firm i ruch na landingu
         </p>
       </header>
 
@@ -196,8 +288,8 @@ export function PlatformPage() {
               Nowe konto platformy
             </p>
             <p className="mt-1 text-xs text-[var(--muted)]">
-              Generuje firmę (jeśli podasz nazwę) i hasło tymczasowe — pokazywane
-              raz.
+              Generuje firmę (plan free + trial 14 dni) i hasło tymczasowe —
+              pokazywane raz.
             </p>
             <form
               className="mt-4 grid gap-3 sm:grid-cols-2"
@@ -304,28 +396,246 @@ export function PlatformPage() {
 
       {tab === "businesses" && (
         <div className="space-y-3">
-          {businesses.map((biz) => (
-            <GlassCard key={biz.id} className="animate-fade-up">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="font-display text-lg font-semibold">
-                    {biz.name}
-                  </p>
-                  <p className="text-xs text-[var(--muted)]">
-                    {biz.timezone} · {biz.id}
-                  </p>
+          {businesses.map((biz) => {
+            const u = biz.usage;
+            const isEditing = editingId === biz.id;
+            return (
+              <GlassCard key={biz.id} className="animate-fade-up">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-display text-lg font-semibold">
+                      {biz.name}
+                    </p>
+                    <p className="text-xs text-[var(--muted)]">
+                      {biz.timezone} · {biz.id}
+                    </p>
+                    <p className="mt-2 text-sm">
+                      Plan{" "}
+                      <span className="text-canary">{biz.plan || "—"}</span>
+                      {" · "}
+                      status{" "}
+                      <span className="text-canary">
+                        {biz.license_status || "—"}
+                      </span>
+                      {u && !u.is_active ? (
+                        <span className="ml-2 text-[var(--danger)]">
+                          nieaktywna
+                        </span>
+                      ) : null}
+                    </p>
+                    {u && (
+                      <p className="mt-1 text-xs text-[var(--muted)]">
+                        Rezerwacje:{" "}
+                        {fmtLimit(
+                          u.appointments_month,
+                          u.max_appointments_month,
+                        )}
+                        {" · "}Wiadomości:{" "}
+                        {fmtLimit(u.messages_month, u.max_messages_month)}
+                        {" · "}Seats: {fmtLimit(u.seats, u.max_seats)}
+                        {" · "}Kanały:{" "}
+                        {(u.enabled_channels || []).join(", ") || "—"}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <GlassButton
+                      type="button"
+                      variant="ghost"
+                      className="!px-3 !py-1.5 text-xs"
+                      onClick={() => void renameBusiness(biz)}
+                    >
+                      Zmień nazwę
+                    </GlassButton>
+                    <GlassButton
+                      type="button"
+                      variant="ghost"
+                      className="!px-3 !py-1.5 text-xs"
+                      onClick={() =>
+                        isEditing
+                          ? setEditingId(null)
+                          : openLicenseEditor(biz)
+                      }
+                    >
+                      {isEditing ? "Anuluj" : "Licencja"}
+                    </GlassButton>
+                  </div>
                 </div>
-                <GlassButton
-                  type="button"
-                  variant="ghost"
-                  className="!px-3 !py-1.5 text-xs"
-                  onClick={() => void renameBusiness(biz)}
-                >
-                  Zmień nazwę
-                </GlassButton>
-              </div>
-            </GlassCard>
-          ))}
+
+                {isEditing && (
+                  <form
+                    className="mt-4 grid gap-3 border-t border-glass-border pt-4 sm:grid-cols-2"
+                    onSubmit={saveLicense}
+                  >
+                    <label className="space-y-1 text-sm">
+                      <span className="text-[var(--muted)]">Plan</span>
+                      <select
+                        className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                        value={licenseForm.plan}
+                        onChange={(e) =>
+                          setLicenseForm({
+                            ...licenseForm,
+                            plan: e.target.value,
+                          })
+                        }
+                      >
+                        {PLAN_OPTIONS.map((p) => (
+                          <option key={p} value={p}>
+                            {p}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-1 text-sm">
+                      <span className="text-[var(--muted)]">Status</span>
+                      <select
+                        className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                        value={licenseForm.license_status}
+                        onChange={(e) =>
+                          setLicenseForm({
+                            ...licenseForm,
+                            license_status: e.target.value,
+                          })
+                        }
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-1 text-sm">
+                      <span className="text-[var(--muted)]">
+                        Wygasa (data, opcjonalnie)
+                      </span>
+                      <GlassInput
+                        type="date"
+                        value={licenseForm.license_expires_at}
+                        onChange={(e) =>
+                          setLicenseForm({
+                            ...licenseForm,
+                            license_expires_at: e.target.value,
+                            clear_expiry: false,
+                          })
+                        }
+                        disabled={licenseForm.clear_expiry}
+                      />
+                    </label>
+                    <label className="flex items-center gap-2 text-sm mt-6">
+                      <input
+                        type="checkbox"
+                        checked={licenseForm.clear_expiry}
+                        onChange={(e) =>
+                          setLicenseForm({
+                            ...licenseForm,
+                            clear_expiry: e.target.checked,
+                          })
+                        }
+                      />
+                      <span className="text-[var(--muted)]">
+                        Bez daty wygaśnięcia
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        checked={licenseForm.apply_plan_defaults}
+                        onChange={(e) =>
+                          setLicenseForm({
+                            ...licenseForm,
+                            apply_plan_defaults: e.target.checked,
+                          })
+                        }
+                      />
+                      <span className="text-[var(--muted)]">
+                        Nadpisz limity wartościami katalogowymi planu
+                      </span>
+                    </label>
+                    {!licenseForm.apply_plan_defaults && (
+                      <>
+                        <label className="space-y-1 text-sm">
+                          <span className="text-[var(--muted)]">
+                            Max rezerwacji / mies. (puste = ∞)
+                          </span>
+                          <GlassInput
+                            value={licenseForm.max_appointments_month}
+                            onChange={(e) =>
+                              setLicenseForm({
+                                ...licenseForm,
+                                max_appointments_month: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+                        <label className="space-y-1 text-sm">
+                          <span className="text-[var(--muted)]">
+                            Max wiadomości / mies. (puste = ∞)
+                          </span>
+                          <GlassInput
+                            value={licenseForm.max_messages_month}
+                            onChange={(e) =>
+                              setLicenseForm({
+                                ...licenseForm,
+                                max_messages_month: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+                        <label className="space-y-1 text-sm">
+                          <span className="text-[var(--muted)]">
+                            Max użytkowników panelu (puste = ∞)
+                          </span>
+                          <GlassInput
+                            value={licenseForm.max_seats}
+                            onChange={(e) =>
+                              setLicenseForm({
+                                ...licenseForm,
+                                max_seats: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+                        <div className="space-y-2 text-sm sm:col-span-2">
+                          <span className="text-[var(--muted)]">Kanały</span>
+                          <div className="flex flex-wrap gap-3">
+                            {CHANNEL_OPTIONS.map((ch) => (
+                              <label
+                                key={ch}
+                                className="flex items-center gap-2 text-xs"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={licenseForm.enabled_channels.includes(
+                                    ch,
+                                  )}
+                                  onChange={(e) => {
+                                    const next = e.target.checked
+                                      ? [...licenseForm.enabled_channels, ch]
+                                      : licenseForm.enabled_channels.filter(
+                                          (c) => c !== ch,
+                                        );
+                                    setLicenseForm({
+                                      ...licenseForm,
+                                      enabled_channels: next,
+                                    });
+                                  }}
+                                />
+                                {ch}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <div className="sm:col-span-2">
+                      <GlassButton type="submit">Zapisz licencję</GlassButton>
+                    </div>
+                  </form>
+                )}
+              </GlassCard>
+            );
+          })}
           {businesses.length === 0 && (
             <p className="text-sm text-[var(--muted)]">Brak firm.</p>
           )}
@@ -437,7 +747,9 @@ export function PlatformPage() {
           <GlassButton
             type="button"
             variant="ghost"
-            onClick={() => void reloadStats().catch((e: Error) => setError(e.message))}
+            onClick={() =>
+              void reloadStats().catch((e: Error) => setError(e.message))
+            }
           >
             Odśwież
           </GlassButton>
