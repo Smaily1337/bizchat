@@ -6,6 +6,7 @@ import { GlassNav } from "@/components/ui";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { AppointmentsPage } from "@/pages/AppointmentsPage";
 import { ChannelsPage } from "@/pages/ChannelsPage";
+import { CustomersPage } from "@/pages/CustomersPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { FeedbackPage } from "@/pages/FeedbackPage";
 import { HoursPage } from "@/pages/HoursPage";
@@ -47,6 +48,7 @@ export default function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/appointments" element={<AppointmentsPage />} />
               <Route path="/inbox" element={<InboxPage />} />
+              <Route path="/customers" element={<CustomersPage />} />
               <Route path="/hours" element={<HoursPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/users" element={<UsersPage />} />

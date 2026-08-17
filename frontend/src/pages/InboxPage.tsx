@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { inboxApi } from "@/api";
-import type { Conversation, InboxMessage } from "@/api/types";
+import { Link } from "react-router-dom";
+import { customersApi, inboxApi } from "@/api";
+import type { Channel, Conversation, Customer, InboxMessage } from "@/api/types";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassTextarea } from "@/components/ui/GlassInput";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
@@ -15,11 +16,19 @@ const CHANNEL_LABEL: Record<string, string> = {
 
 export function InboxPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [reply, setReply] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [compose, setCompose] = useState({
+    customer_id: "",
+    channel: "messenger" as Channel,
+    text: "",
+  });
 
   async function reloadList() {
     const list = await inboxApi.conversations();
@@ -33,7 +42,8 @@ export function InboxPage() {
   }
 
   useEffect(() => {
-    void reloadList()
+    void Promise.all([reloadList(), customersApi.list()])
+      .then(([, cust]) => setCustomers(cust))
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -77,27 +87,148 @@ export function InboxPage() {
     }
   }
 
+  async function onStart(e: FormEvent) {
+    e.preventDefault();
+    if (!compose.customer_id || !compose.text.trim()) return;
+    setError(null);
+    setInfo(null);
+    try {
+      const res = await inboxApi.start({
+        customer_id: compose.customer_id,
+        text: compose.text.trim(),
+        channel: compose.channel,
+      });
+      setComposeOpen(false);
+      setCompose({ customer_id: "", channel: "messenger", text: "" });
+      await reloadList();
+      setSelectedId(res.conversation.id);
+      if (res.delivered) {
+        setInfo("Wiadomość wysłana na Messenger.");
+      } else {
+        setError(
+          res.detail ||
+            "Zapisano rozmowę, ale Meta nie dostarczyła wiadomości.",
+        );
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Błąd startu rozmowy");
+    }
+  }
+
   const selected = conversations.find((c) => c.id === selectedId);
+  const messengerReady = customers.filter(
+    (c) => c.external_ids?.messenger || c.external_ids?.instagram || c.external_ids?.telegram,
+  );
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Inbox</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Rozmowy z botem na żywo · odpowiedź ręczna właściciela
-        </p>
+      <header className="animate-fade-up flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Inbox</h1>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Rozmowy na żywo · odpowiedź właściciela · start wiadomości bez wcześniejszego czatu
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <GlassButton type="button" onClick={() => setComposeOpen((v) => !v)}>
+            {composeOpen ? "Anuluj" : "Nowa wiadomość"}
+          </GlassButton>
+          <Link to="/customers">
+            <GlassButton type="button" variant="ghost">
+              Klienci
+            </GlassButton>
+          </Link>
+        </div>
       </header>
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+      {info && <p className="text-sm text-[var(--success)]">{info}</p>}
       {loading && (
         <p className="text-sm text-[var(--muted)]">Ładowanie rozmów…</p>
+      )}
+
+      {composeOpen && (
+        <GlassCard className="animate-fade-up">
+          <p className="font-display text-lg font-semibold">
+            Napisz do klienta (Messenger)
+          </p>
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            Nie trzeba mieć wcześniejszej rozmowy w Inbox — wystarczy PSID w
+            karcie klienta. Meta wymaga, by klient kiedyś napisał do fanpage.
+          </p>
+          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={onStart}>
+            <label className="space-y-1 text-sm sm:col-span-2">
+              <span className="text-[var(--muted)]">Klient</span>
+              <select
+                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                value={compose.customer_id}
+                onChange={(e) =>
+                  setCompose({ ...compose, customer_id: e.target.value })
+                }
+                required
+              >
+                <option value="">Wybierz…</option>
+                {messengerReady.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name || "Bez nazwy"}
+                    {c.external_ids?.messenger
+                      ? " · Messenger"
+                      : c.external_ids?.instagram
+                        ? " · Instagram"
+                        : " · Telegram"}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {messengerReady.length === 0 && (
+              <p className="sm:col-span-2 text-xs text-[var(--muted)]">
+                Brak klientów z ID kanału.{" "}
+                <Link className="underline" to="/customers">
+                  Dodaj klienta z Messenger PSID
+                </Link>
+                .
+              </p>
+            )}
+            <label className="space-y-1 text-sm">
+              <span className="text-[var(--muted)]">Kanał</span>
+              <select
+                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                value={compose.channel}
+                onChange={(e) =>
+                  setCompose({
+                    ...compose,
+                    channel: e.target.value as Channel,
+                  })
+                }
+              >
+                <option value="messenger">Messenger</option>
+                <option value="instagram">Instagram</option>
+                <option value="telegram">Telegram</option>
+              </select>
+            </label>
+            <label className="space-y-1 text-sm sm:col-span-2">
+              <span className="text-[var(--muted)]">Treść</span>
+              <GlassTextarea
+                value={compose.text}
+                onChange={(e) =>
+                  setCompose({ ...compose, text: e.target.value })
+                }
+                placeholder="Cześć! Piszę w sprawie wizyty…"
+                required
+              />
+            </label>
+            <div className="sm:col-span-2">
+              <GlassButton type="submit">Wyślij i otwórz wątek</GlassButton>
+            </div>
+          </form>
+        </GlassCard>
       )}
 
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <GlassCard padding="none" className="max-h-[70vh] overflow-y-auto">
           {conversations.length === 0 && !loading && (
             <p className="p-4 text-sm text-[var(--muted)]">
-              Brak rozmów. Napisz coś przez widget WWW.
+              Brak rozmów. Użyj „Nowa wiadomość” albo poczekaj na klienta.
             </p>
           )}
           <ul>

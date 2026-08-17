@@ -116,6 +116,9 @@ export type Customer = {
   name: string | null;
   phone: string | null;
   email: string | null;
+  external_ids?: Record<string, string>;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type Appointment = {

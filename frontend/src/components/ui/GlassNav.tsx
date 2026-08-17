@@ -46,6 +46,18 @@ const baseNavItems: NavItem[] = [
     ),
   },
   {
+    to: "/customers",
+    label: "Klienci",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3 19a6 6 0 0 1 12 0" />
+        <circle cx="17" cy="9" r="2.5" />
+        <path d="M16 19a4.5 4.5 0 0 1 5 0" />
+      </svg>
+    ),
+  },
+  {
     to: "/hours",
     label: "Godziny",
     icon: (

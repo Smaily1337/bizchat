@@ -152,12 +152,23 @@ class CustomerCreate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    messenger_psid: Optional[str] = Field(
+        default=None,
+        description="Page-Scoped ID Messengera (z webhooka / narzędzi Meta)",
+    )
+    instagram_id: Optional[str] = None
+    telegram_id: Optional[str] = None
+    external_ids: Optional[dict[str, Any]] = None
 
 
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    messenger_psid: Optional[str] = None
+    instagram_id: Optional[str] = None
+    telegram_id: Optional[str] = None
+    external_ids: Optional[dict[str, Any]] = None
 
 
 # ---------------------------------------------------------------------------

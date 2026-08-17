@@ -110,28 +110,65 @@ class MetaAdapter(ChannelAdapter):
             raw_payload=event,
         )
 
-    async def send_outbound(self, message: OutboundMessage) -> bool:
-        """Send a Messenger/IG message. Returns True on success."""
+    async def send_outbound(
+        self,
+        message: OutboundMessage,
+        *,
+        messaging_type: str = "RESPONSE",
+        tag: str | None = None,
+    ) -> bool:
+        """Send a Messenger/IG message. Returns True on success.
+
+        For panel outreach outside the standard reply window, pass
+        messaging_type=\"MESSAGE_TAG\" and tag=\"HUMAN_AGENT\".
+        """
         token = settings.meta_page_access_token
         if not token:
             logger.info(
-                "Meta stub send → recipient=%s text=%r",
+                "Meta stub send → recipient=%s text=%r type=%s tag=%s",
                 message.external_thread_id,
                 message.text,
+                messaging_type,
+                tag,
             )
             return False
 
         url = "https://graph.facebook.com/v21.0/me/messages"
+        payload: dict[str, Any] = {
+            "recipient": {"id": message.external_thread_id},
+            "message": {"text": message.text},
+            "messaging_type": messaging_type,
+        }
+        if tag:
+            payload["tag"] = tag
+
         async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.post(
                 url,
                 params={"access_token": token},
-                json={
-                    "recipient": {"id": message.external_thread_id},
-                    "message": {"text": message.text},
-                    "messaging_type": "RESPONSE",
-                },
+                json=payload,
             )
+            # Cold/panel outreach: retry with HUMAN_AGENT if RESPONSE rejected
+            if (
+                resp.is_error
+                and messaging_type == "RESPONSE"
+                and tag is None
+            ):
+                logger.info(
+                    "Meta RESPONSE failed — retry HUMAN_AGENT recipient=%s body=%s",
+                    message.external_thread_id,
+                    resp.text[:300],
+                )
+                resp = await client.post(
+                    url,
+                    params={"access_token": token},
+                    json={
+                        "recipient": {"id": message.external_thread_id},
+                        "message": {"text": message.text},
+                        "messaging_type": "MESSAGE_TAG",
+                        "tag": "HUMAN_AGENT",
+                    },
+                )
             if resp.is_error:
                 logger.error(
                     "Meta send failed recipient=%s status=%s body=%s",
@@ -139,5 +176,16 @@ class MetaAdapter(ChannelAdapter):
                     resp.status_code,
                     resp.text[:500],
                 )
+                # Stash last error for API surfaces
+                message.metadata["meta_error"] = resp.text[:500]
+                message.metadata["meta_status"] = resp.status_code
                 return False
             return True
+
+    async def send_proactive(self, message: OutboundMessage) -> bool:
+        """Owner-initiated outreach (no prior inbound in this session)."""
+        return await self.send_outbound(
+            message,
+            messaging_type="MESSAGE_TAG",
+            tag="HUMAN_AGENT",
+        )

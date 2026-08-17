@@ -47,6 +47,19 @@ class ReplyIn(BaseModel):
     text: str = Field(min_length=1, max_length=4000)
 
 
+class StartConversationIn(BaseModel):
+    customer_id: UUID
+    text: str = Field(min_length=1, max_length=4000)
+    channel: Channel = Channel.messenger
+
+
+class StartConversationOut(BaseModel):
+    conversation: ConversationOut
+    message: MessageOut
+    delivered: bool
+    detail: str | None = None
+
+
 def _last_msg(conv: Conversation) -> Message | None:
     if not conv.messages:
         return None
@@ -107,6 +120,159 @@ async def list_messages(
         )
         for m in result.scalars().all()
     ]
+
+
+@router.post(
+    "/start",
+    response_model=StartConversationOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def start_conversation(
+    body: StartConversationIn,
+    db: DbSession,
+    owner: CurrentOwner,
+) -> StartConversationOut:
+    """Start (or reuse) a thread and send an owner message — no prior chat required.
+
+    For Messenger/Instagram the customer must have a PSID in external_ids
+    (from a previous page interaction or entered manually).
+    """
+    if body.channel not in {
+        Channel.messenger,
+        Channel.instagram,
+        Channel.telegram,
+        Channel.widget,
+    }:
+        raise HTTPException(
+            status_code=400,
+            detail="Kanał nieobsługiwany do ręcznego startu rozmowy",
+        )
+
+    customer = await db.get(Customer, body.customer_id)
+    if customer is None or customer.business_id != owner.business_id:
+        raise HTTPException(status_code=404, detail="Klient nie znaleziony")
+
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Pusta wiadomość")
+
+    ext = dict(customer.external_ids or {})
+    thread_id = str(ext.get(body.channel.value) or "").strip()
+    if not thread_id:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Brak ID kanału „{body.channel.value}” u klienta. "
+                "Dodaj Messenger PSID (lub ID Instagrama/Telegrama) w karcie klienta."
+            ),
+        )
+
+    # Reuse existing conversation for this customer+channel+thread if present
+    existing = await db.execute(
+        select(Conversation)
+        .where(
+            Conversation.customer_id == customer.id,
+            Conversation.channel == body.channel,
+            Conversation.external_thread_id == thread_id,
+        )
+        .options(
+            selectinload(Conversation.customer),
+            selectinload(Conversation.messages),
+        )
+    )
+    conv = existing.scalar_one_or_none()
+    if conv is None:
+        conv = Conversation(
+            customer_id=customer.id,
+            channel=body.channel,
+            external_thread_id=thread_id,
+            state=ConversationState.idle,
+            context={},
+        )
+        db.add(conv)
+        await db.flush()
+        await db.refresh(conv)
+
+    msg = Message(
+        conversation_id=conv.id,
+        role=MessageRole.owner,
+        content=text,
+        raw_payload={"source": "admin_outreach"},
+    )
+    db.add(msg)
+    conv.updated_at = utc_now()
+    await db.flush()
+    await db.refresh(msg)
+
+    outbound = OutboundMessage(
+        channel=body.channel,
+        external_thread_id=thread_id,
+        text=text,
+        metadata={"proactive": True},
+    )
+    delivered = False
+    detail: str | None = None
+    if body.channel in {Channel.messenger, Channel.instagram}:
+        adapter = MetaAdapter(business_id=owner.business_id)
+        delivered = await adapter.send_proactive(outbound)
+        if not delivered:
+            detail = (
+                outbound.metadata.get("meta_error")
+                or "Meta nie przyjęła wiadomości (sprawdź PSID, token strony "
+                "i okno wiadomości HUMAN_AGENT — klient musiał kiedyś napisać do fanpage)."
+            )
+    elif body.channel == Channel.telegram:
+        delivered = await TelegramAdapter(
+            business_id=owner.business_id
+        ).send_outbound(outbound)
+        if not delivered:
+            detail = "Nie udało się wysłać na Telegram"
+    elif body.channel == Channel.widget:
+        delivered = await WidgetAdapter(
+            business_id=owner.business_id
+        ).send_outbound(outbound)
+        if not delivered:
+            detail = "Widget nie jest podłączony do aktywnej sesji"
+
+    await hub.publish(
+        owner.business_id,
+        "chat.message",
+        {
+            "conversation_id": str(conv.id),
+            "role": "owner",
+            "channel": body.channel.value,
+            "proactive": True,
+        },
+        title="Wiadomość do klienta",
+        message=text[:120],
+    )
+
+    # Reload conversation with customer for response shape
+    conv = await _get_owned_conversation(db, owner.business_id, conv.id)
+    last = msg
+    conversation_out = ConversationOut(
+        id=conv.id,
+        customer_id=conv.customer_id,
+        customer_name=conv.customer.name if conv.customer else None,
+        channel=conv.channel,
+        state=conv.state,
+        external_thread_id=conv.external_thread_id,
+        updated_at=conv.updated_at,
+        last_message=last.content,
+        last_role=last.role,
+    )
+    return StartConversationOut(
+        conversation=conversation_out,
+        message=MessageOut(
+            id=msg.id,
+            conversation_id=msg.conversation_id,
+            role=msg.role,
+            content=msg.content,
+            created_at=msg.created_at,
+        ),
+        delivered=delivered,
+        detail=detail,
+    )
 
 
 @router.post(

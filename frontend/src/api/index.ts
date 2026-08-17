@@ -2,6 +2,7 @@ import { apiFetch } from "./client";
 import type {
   Appointment,
   Business,
+  Channel,
   Conversation,
   Customer,
   DashboardAnalytics,
@@ -147,11 +148,35 @@ export const servicesApi = {
 
 export const customersApi = {
   list: () => apiFetch<Customer[]>("/api/customers"),
-  create: (body: { name?: string; phone?: string; email?: string }) =>
+  create: (body: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    messenger_psid?: string;
+    instagram_id?: string;
+    telegram_id?: string;
+  }) =>
     apiFetch<Customer>("/api/customers", {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  update: (
+    id: string,
+    body: Partial<{
+      name: string | null;
+      phone: string | null;
+      email: string | null;
+      messenger_psid: string | null;
+      instagram_id: string | null;
+      telegram_id: string | null;
+    }>,
+  ) =>
+    apiFetch<Customer>(`/api/customers/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  remove: (id: string) =>
+    apiFetch<void>(`/api/customers/${id}`, { method: "DELETE" }),
 };
 
 export const hoursApi = {
@@ -258,6 +283,20 @@ export const inboxApi = {
     apiFetch<InboxMessage>(`/api/inbox/conversations/${id}/reply`, {
       method: "POST",
       body: JSON.stringify({ text }),
+    }),
+  start: (body: {
+    customer_id: string;
+    text: string;
+    channel?: Channel;
+  }) =>
+    apiFetch<{
+      conversation: Conversation;
+      message: InboxMessage;
+      delivered: boolean;
+      detail: string | null;
+    }>("/api/inbox/start", {
+      method: "POST",
+      body: JSON.stringify(body),
     }),
 };
 
