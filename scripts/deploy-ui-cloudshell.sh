@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Redeploy panel + landing with Automovia Core (no yellow).
-# Cloud Shell (from anywhere):
-#   curl -fsSL https://raw.githubusercontent.com/Smaily1337/bizchat/cursor/automovia-design-0cd1/scripts/deploy-ui-cloudshell.sh | bash
+# Redeploy panel + landing with salon features (Raporty, Zespół, …).
+#
+# Cloud Shell — używaj TYLKO tej gałęzi (nie automovia-design):
+#   curl -fsSL https://raw.githubusercontent.com/Smaily1337/bizchat/cursor/salon-features-0cd1/scripts/deploy-ui-cloudshell.sh | bash
+#
 # Or after clone:
 #   cd ~/bizchat && bash scripts/deploy-ui-cloudshell.sh
 set -euo pipefail
@@ -22,10 +24,14 @@ fi
 cd "$REPO_DIR"
 echo "==> Updating branch $BRANCH…"
 git fetch origin
-git checkout "$BRANCH"
-git pull --ff-only origin "$BRANCH"
+git checkout -B "$BRANCH" "origin/$BRANCH"
+git reset --hard "origin/$BRANCH"
+git clean -fd
 
-echo "==> Building panel image (salon features)…"
+COMMIT=$(git rev-parse --short HEAD)
+echo "==> Building panel from $BRANCH @ $COMMIT"
+echo "    Expected nav: Raporty, Zespół, Kanały, Więcej, Wyloguj (top bar)"
+
 gcloud builds submit --project="$PROJECT" \
   --config=cloudbuild.panel.yaml \
   --substitutions=_VITE_API_URL="$API_URL",_IMAGE="$IMAGE"
@@ -41,7 +47,12 @@ gcloud run deploy bizchat-landing \
   --project="$PROJECT" --region="$REGION" --source=./docs \
   --allow-unauthenticated --max-instances=1 --min-instances=0
 
-echo "Done. Hard-refresh the panel (Ctrl+Shift+R)."
+echo ""
+echo "Done. Hard-refresh the panel (Ctrl+Shift+R / Cmd+Shift+R)."
 echo "Panel:   https://bizchat-panel-702906501614.europe-central2.run.app"
-echo "Look for: Raporty, Zespół, Kanały, Klienci, Samouczek"
+echo "Look for: Raporty, Zespół (primary row) + Więcej menu + Wyloguj top-right"
 echo "Landing: https://bizchat-landing-702906501614.europe-central2.run.app"
+echo ""
+echo "API also needs salon-features for /reports and staff endpoints:"
+echo "  cd $REPO_DIR && git checkout $BRANCH && git pull"
+echo "  gcloud run deploy bizchat-api --project=$PROJECT --region=$REGION --source=./backend --allow-unauthenticated --max-instances=2 --min-instances=0"
