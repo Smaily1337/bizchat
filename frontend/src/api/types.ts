@@ -114,6 +114,12 @@ export type Service = {
   description: string | null;
 };
 
+export type CustomerTag = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
 export type Customer = {
   id: string;
   business_id: string;
@@ -121,6 +127,7 @@ export type Customer = {
   phone: string | null;
   email: string | null;
   external_ids?: Record<string, string>;
+  tags?: CustomerTag[];
   created_at?: string;
   updated_at?: string;
 };

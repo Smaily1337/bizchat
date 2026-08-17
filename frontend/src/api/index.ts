@@ -5,6 +5,7 @@ import type {
   Channel,
   Conversation,
   Customer,
+  CustomerTag,
   DashboardAnalytics,
   DashboardSummary,
   Feedback,
@@ -180,6 +181,11 @@ export const customersApi = {
     }),
   remove: (id: string) =>
     apiFetch<void>(`/api/customers/${id}`, { method: "DELETE" }),
+  setTags: (customerId: string, tagIds: string[]) =>
+    apiFetch<CustomerTag[]>(`/api/tags/customers/${customerId}`, {
+      method: "PUT",
+      body: JSON.stringify({ tag_ids: tagIds }),
+    }),
   importCsv: async (file: File) => {
     const fd = new FormData();
     fd.append("file", file);
@@ -199,6 +205,22 @@ export const customersApi = {
       errors: string[];
     }>;
   },
+};
+
+export const tagsApi = {
+  list: () => apiFetch<CustomerTag[]>("/api/tags"),
+  create: (body: { name: string; color?: string | null }) =>
+    apiFetch<CustomerTag>("/api/tags", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  update: (id: string, body: { name?: string; color?: string | null }) =>
+    apiFetch<CustomerTag>(`/api/tags/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  remove: (id: string) =>
+    apiFetch<void>(`/api/tags/${id}`, { method: "DELETE" }),
 };
 
 export const staffApi = {

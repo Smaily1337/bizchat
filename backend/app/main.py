@@ -30,6 +30,7 @@ from app.api import (
     public_booking,
     services,
     staff,
+    tags,
     users,
     ws,
 )
@@ -81,6 +82,7 @@ app.include_router(business.router)
 app.include_router(services.router)
 app.include_router(staff.router)
 app.include_router(customers.router)
+app.include_router(tags.router)
 app.include_router(hours.router)
 app.include_router(knowledge.router)
 app.include_router(feedback_router)

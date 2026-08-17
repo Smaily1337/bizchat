@@ -10,6 +10,7 @@ from uuid import UUID
 from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy import or_, select
+from sqlalchemy.orm import selectinload
 
 from app.api.deps import CurrentOwner, DbSession
 from app.models import Customer
@@ -63,9 +64,10 @@ async def list_customers(db: DbSession, owner: CurrentOwner) -> list[Customer]:
     result = await db.execute(
         select(Customer)
         .where(Customer.business_id == owner.business_id)
+        .options(selectinload(Customer.tags))
         .order_by(Customer.name.nulls_last(), Customer.created_at.desc())
     )
-    return list(result.scalars().all())
+    return list(result.scalars().unique().all())
 
 
 @router.post("/import", response_model=ImportResult)
@@ -172,6 +174,7 @@ async def create_customer(
     )
     db.add(customer)
     await db.flush()
+    customer.tags = []
     return customer
 
 
@@ -182,7 +185,13 @@ async def update_customer(
     customer_id: UUID,
     body: CustomerUpdate,
 ) -> Customer:
-    customer = await db.get(Customer, customer_id)
+    customer = (
+        await db.execute(
+            select(Customer)
+            .where(Customer.id == customer_id)
+            .options(selectinload(Customer.tags))
+        )
+    ).scalars().first()
     if customer is None or customer.business_id != owner.business_id:
         raise HTTPException(status_code=404, detail="Customer not found")
 

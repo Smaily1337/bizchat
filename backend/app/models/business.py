@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from app.models.customer import Customer
     from app.models.knowledge import KnowledgeItem
     from app.models.staff import Staff
+    from app.models.tag import Tag
 
 
 class Business(Base, TimestampMixin):
@@ -66,6 +67,7 @@ class Business(Base, TimestampMixin):
         back_populates="business"
     )
     staff_members: Mapped[list[Staff]] = relationship(back_populates="business")
+    tags: Mapped[list["Tag"]] = relationship(back_populates="business")
 
 
 class Owner(Base, TimestampMixin):

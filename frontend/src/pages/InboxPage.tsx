@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { customersApi, inboxApi } from "@/api";
 import type { Channel, Conversation, Customer, InboxMessage } from "@/api/types";
@@ -13,6 +13,8 @@ const CHANNEL_LABEL: Record<string, string> = {
   widget: "Widget",
   admin: "Admin",
 };
+
+const THREAD_HEIGHT = "h-[min(70vh,calc(100dvh-13rem))]";
 
 export function InboxPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -29,6 +31,7 @@ export function InboxPage() {
     channel: "messenger" as Channel,
     text: "",
   });
+  const messagesRef = useRef<HTMLDivElement>(null);
 
   async function reloadList() {
     const list = await inboxApi.conversations();
@@ -55,6 +58,12 @@ export function InboxPage() {
     }
     void reloadMessages(selectedId).catch((e: Error) => setError(e.message));
   }, [selectedId]);
+
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages, selectedId]);
 
   useRealtimeEvents(
     true,
@@ -116,6 +125,7 @@ export function InboxPage() {
   }
 
   const selected = conversations.find((c) => c.id === selectedId);
+  const selectedCustomer = customers.find((c) => c.id === selected?.customer_id);
   const messengerReady = customers.filter(
     (c) => c.external_ids?.messenger || c.external_ids?.instagram || c.external_ids?.telegram,
   );
@@ -224,55 +234,81 @@ export function InboxPage() {
         </GlassCard>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <GlassCard padding="none" className="max-h-[70vh] overflow-y-auto">
-          {conversations.length === 0 && !loading && (
-            <p className="p-4 text-sm text-[var(--muted)]">
-              Brak rozmów. Użyj „Nowa wiadomość” albo poczekaj na klienta.
-            </p>
-          )}
-          <ul>
-            {conversations.map((c) => (
-              <li key={c.id}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedId(c.id)}
-                  className={[
-                    "w-full border-b border-glass-border px-4 py-3 text-left transition",
-                    selectedId === c.id
-                      ? "bg-white/5"
-                      : "hover:bg-glass-fill",
-                  ].join(" ")}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate font-display text-sm font-semibold">
-                      {c.customer_name || "Klient"}
+      <div className={`grid gap-4 lg:grid-cols-[320px_1fr] ${THREAD_HEIGHT}`}>
+        <GlassCard
+          padding="none"
+          className={`!overflow-hidden flex flex-col ${THREAD_HEIGHT}`}
+        >
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {conversations.length === 0 && !loading && (
+              <p className="p-4 text-sm text-[var(--muted)]">
+                Brak rozmów. Użyj „Nowa wiadomość” albo poczekaj na klienta.
+              </p>
+            )}
+            <ul>
+              {conversations.map((c) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(c.id)}
+                    className={[
+                      "w-full border-b border-glass-border px-4 py-3 text-left transition",
+                      selectedId === c.id
+                        ? "bg-white/5"
+                        : "hover:bg-glass-fill",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate font-display text-sm font-semibold">
+                        {c.customer_name || "Klient"}
+                      </p>
+                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-canary">
+                        {CHANNEL_LABEL[c.channel] || c.channel}
+                      </span>
+                    </div>
+                    <p className="mt-1 truncate text-xs text-[var(--muted)]">
+                      {c.last_message || "—"}
                     </p>
-                    <span className="shrink-0 text-[10px] uppercase tracking-wider text-canary">
-                      {CHANNEL_LABEL[c.channel] || c.channel}
-                    </span>
-                  </div>
-                  <p className="mt-1 truncate text-xs text-[var(--muted)]">
-                    {c.last_message || "—"}
-                  </p>
-                </button>
-              </li>
-            ))}
-          </ul>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </GlassCard>
 
-        <GlassCard className="flex min-h-[70vh] flex-col">
+        <GlassCard
+          padding="none"
+          className={`!overflow-hidden flex flex-col ${THREAD_HEIGHT}`}
+        >
           {selected ? (
-            <>
-              <div className="mb-4 border-b border-glass-border pb-3">
+            <div className="flex h-full min-h-0 flex-col p-5">
+              <div className="mb-3 shrink-0 border-b border-glass-border pb-3">
                 <p className="font-display text-lg font-semibold">
                   {selected.customer_name || "Klient"}
                 </p>
                 <p className="text-xs text-[var(--muted)]">
                   {CHANNEL_LABEL[selected.channel]} · stan: {selected.state}
                 </p>
+                {selectedCustomer?.tags && selectedCustomer.tags.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {selectedCustomer.tags.map((t) => (
+                      <span
+                        key={t.id}
+                        className="rounded-control px-2 py-0.5 text-[11px] font-medium text-white"
+                        style={{
+                          backgroundColor: t.color || "rgba(255,255,255,0.15)",
+                        }}
+                      >
+                        {t.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex-1 space-y-3 overflow-y-auto pr-1">
+              <div
+                ref={messagesRef}
+                className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1"
+              >
                 {messages.map((m) => (
                   <div
                     key={m.id}
@@ -302,20 +338,20 @@ export function InboxPage() {
                   </div>
                 ))}
               </div>
-              <form className="mt-4 flex gap-2" onSubmit={onReply}>
+              <form className="mt-3 flex shrink-0 gap-2" onSubmit={onReply}>
                 <GlassTextarea
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   placeholder="Odpowiedz jako właściciel…"
-                  className="min-h-[3rem] flex-1"
+                  className="min-h-[3rem] max-h-28 flex-1"
                 />
                 <GlassButton type="submit" className="self-end">
                   Wyślij
                 </GlassButton>
               </form>
-            </>
+            </div>
           ) : (
-            <p className="text-sm text-[var(--muted)]">Wybierz rozmowę</p>
+            <p className="p-5 text-sm text-[var(--muted)]">Wybierz rozmowę</p>
           )}
         </GlassCard>
       </div>

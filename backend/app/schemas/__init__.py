@@ -142,6 +142,12 @@ class ServiceUpdate(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class TagBrief(ORMModel):
+    id: UUID
+    name: str
+    color: Optional[str] = None
+
+
 class CustomerOut(ORMModel):
     id: UUID
     business_id: UUID
@@ -149,6 +155,7 @@ class CustomerOut(ORMModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     external_ids: dict[str, Any] = Field(default_factory=dict)
+    tags: list[TagBrief] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 

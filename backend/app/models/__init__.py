@@ -26,6 +26,7 @@ from app.models.notification import (
     NotificationTemplate,
 )
 from app.models.staff import Staff
+from app.models.tag import Tag, customer_tags
 
 __all__ = [
     "Appointment",
@@ -52,9 +53,11 @@ __all__ = [
     "PageView",
     "Service",
     "Staff",
+    "Tag",
     "TimeOff",
     "UserRole",
     "WaitlistEntry",
     "WaitlistStatus",
     "WorkingHours",
+    "customer_tags",
 ]

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.models.appointment import Appointment
     from app.models.business import Business
     from app.models.conversation import Conversation
+    from app.models.tag import Tag
 
 
 class Customer(Base, TimestampMixin):
@@ -35,4 +36,8 @@ class Customer(Base, TimestampMixin):
     )
     appointments: Mapped[list[Appointment]] = relationship(
         back_populates="customer"
+    )
+    tags: Mapped[list["Tag"]] = relationship(
+        secondary="customer_tags",
+        back_populates="customers",
     )
