@@ -10,7 +10,7 @@ PROJECT=bizchat-504420
 REGION=europe-central2
 API_URL=https://bizchat-api-702906501614.europe-central2.run.app
 IMAGE=europe-central2-docker.pkg.dev/${PROJECT}/cloud-run-source-deploy/bizchat-panel
-BRANCH=cursor/automovia-design-0cd1
+BRANCH=cursor/salon-features-0cd1
 REPO_URL=https://github.com/Smaily1337/bizchat.git
 REPO_DIR="${REPO_DIR:-$HOME/bizchat}"
 
@@ -25,7 +25,7 @@ git fetch origin
 git checkout "$BRANCH"
 git pull --ff-only origin "$BRANCH"
 
-echo "==> Building panel image (Automovia)…"
+echo "==> Building panel image (salon features)…"
 gcloud builds submit --project="$PROJECT" \
   --config=cloudbuild.panel.yaml \
   --substitutions=_VITE_API_URL="$API_URL",_IMAGE="$IMAGE"
@@ -43,4 +43,5 @@ gcloud run deploy bizchat-landing \
 
 echo "Done. Hard-refresh the panel (Ctrl+Shift+R)."
 echo "Panel:   https://bizchat-panel-702906501614.europe-central2.run.app"
+echo "Look for: Raporty, Zespół, Kanały, Klienci, Samouczek"
 echo "Landing: https://bizchat-landing-702906501614.europe-central2.run.app"
