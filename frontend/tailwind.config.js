@@ -6,7 +6,7 @@ export default {
       colors: {
         graphite: "var(--bg)",
         void: "var(--bg)",
-        surface: "var(--surface)",
+        surface: "var(--surface-solid)",
         canary: "var(--accent)",
         accent: "var(--accent)",
         frost: "var(--text)",
@@ -23,17 +23,17 @@ export default {
         label: ["Fira Sans", "sans-serif"],
       },
       boxShadow: {
-        glass: "none",
-        canary: "0 0 20px rgba(255, 255, 255, 0.08)",
-        active: "0 0 16px rgba(255, 255, 255, 0.05)",
+        glass: "var(--shadow-glass)",
+        canary: "0 10px 36px rgba(255, 255, 255, 0.14)",
+        active: "0 0 28px rgba(255, 255, 255, 0.1)",
       },
       backdropBlur: {
-        glass: "16px",
+        glass: "28px",
       },
       borderRadius: {
-        soft: "4px",
-        glass: "4px",
-        control: "8px",
+        soft: "1.25rem",
+        glass: "1.25rem",
+        control: "0.9rem",
       },
       maxWidth: {
         shell: "1440px",

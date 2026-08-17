@@ -1,23 +1,23 @@
-/* BizChat landing — Automovia Core (Architectural Liquidity) */
+/* BizChat landing — Automovia palette + Liquid Glass */
 
 :root {
-  --bg: #0a0a0a;
-  --surface: #161616;
+  --bg: #0b0c0e;
+  --surface: #16181c;
   --accent: #ffffff;
-  --on-accent: #2f3131;
+  --on-accent: #141618;
   --text: #ededed;
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-fill: rgba(255, 255, 255, 0.03);
-  --glass-fill-strong: rgba(255, 255, 255, 0.06);
-  --glass-highlight: rgba(255, 255, 255, 0.2);
-  --muted: #c4c7c8;
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-fill: rgba(255, 255, 255, 0.07);
+  --glass-fill-strong: rgba(255, 255, 255, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.28);
+  --muted: rgba(229, 226, 225, 0.62);
   --font-body: "Geist", "Geist Sans", system-ui, sans-serif;
   --font-display: "Geist", "Geist Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --font-label: "Fira Sans", sans-serif;
-  --radius: 4px;
-  --radius-control: 8px;
-  --shadow: none;
+  --radius: 1.25rem;
+  --radius-control: 0.9rem;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 *,
@@ -36,9 +36,10 @@ body {
   color: var(--text);
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 70% 45% at 15% -5%, rgba(255, 255, 255, 0.04), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 90% 0%, rgba(255, 255, 255, 0.025), transparent 50%),
-    linear-gradient(180deg, #0e0e0e 0%, var(--bg) 45%, #050505 100%);
+    radial-gradient(ellipse 90% 55% at 8% -8%, rgba(255, 255, 255, 0.09), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 92% 5%, rgba(255, 255, 255, 0.05), transparent 52%),
+    radial-gradient(ellipse 50% 40% at 50% 110%, rgba(255, 255, 255, 0.03), transparent 55%),
+    linear-gradient(180deg, #14161a 0%, var(--bg) 42%, #070809 100%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -106,12 +107,18 @@ code {
 
 .glass {
   position: relative;
-  background: var(--glass-fill);
+  overflow: hidden;
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.04) 42%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: none;
+  backdrop-filter: blur(28px) saturate(1.35);
+  -webkit-backdrop-filter: blur(28px) saturate(1.35);
+  box-shadow: var(--shadow);
 }
 
 .glass::before {
@@ -120,21 +127,14 @@ code {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
   background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.04) 40%,
-    transparent 70%
+    125deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 28%,
+    transparent 55%
   );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  opacity: 0.55;
+  mix-blend-mode: soft-light;
 }
 
 /* ---------- Przyciski ---------- */
@@ -145,41 +145,45 @@ code {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.85rem 1.7rem;
-  border-radius: 0;
+  border-radius: var(--radius-control);
   font-weight: 600;
   font-size: 1rem;
   border: 1px solid transparent;
   cursor: pointer;
   transition:
+    transform 0.2s ease,
+    box-shadow 0.25s ease,
     background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
+    border-color 0.2s ease;
 }
 
 .btn-primary {
   background: var(--accent);
   color: var(--on-accent);
-  box-shadow: none;
+  box-shadow: 0 10px 36px rgba(255, 255, 255, 0.14);
 }
 
 .btn-primary:hover {
-  background: #e2e2e2;
+  transform: translateY(-2px);
+  filter: brightness(1.05);
 }
 
 .btn-primary:active {
-  background: #c6c6c7;
+  transform: translateY(0);
 }
 
 .btn-ghost {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.8);
+  background: var(--glass-fill);
+  border-color: var(--glass-border);
   border-radius: var(--radius-control);
   color: var(--text);
+  backdrop-filter: blur(16px);
 }
 
 .btn-ghost:hover {
   background: var(--glass-fill-strong);
-  border-color: #fff;
+  border-color: var(--glass-highlight);
+  transform: translateY(-2px);
 }
 
 .btn-sm {
@@ -195,20 +199,17 @@ code {
 
 .nav {
   position: sticky;
-  top: 0;
+  top: 14px;
   z-index: 50;
-  margin: 0 auto;
-  max-width: 1440px;
-  width: 100%;
+  margin: 14px auto 0;
+  max-width: 1080px;
+  width: calc(100% - 32px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem clamp(1.25rem, 4vw, 4rem);
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  border-top: none;
+  padding: 0.75rem 1.15rem;
+  border-radius: 999px;
 }
 
 .nav-brand {

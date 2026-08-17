@@ -253,7 +253,7 @@ export function LoginPage() {
             </div>
             <a
               href={`${API_BASE}/api/auth/google/start`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-none bg-white px-4 py-2.5 text-sm font-semibold tracking-wide text-[var(--on-accent)] transition duration-200 ease-out hover:bg-[#e2e2e2] active:bg-[#c6c6c7]"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-control bg-white px-4 py-2.5 text-sm font-semibold tracking-wide text-[var(--on-accent)] shadow-canary transition duration-200 ease-out hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:brightness-95"
             >
               <GoogleMark />
               Zaloguj przez Google

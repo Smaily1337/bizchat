@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 const fieldClass =
-  "w-full rounded-none border-0 border-b border-white/70 bg-surface px-3.5 py-2.5 text-sm text-frost outline-none transition placeholder:text-[var(--muted)] focus:border-b-2 focus:border-white focus:text-white";
+  "w-full rounded-control border border-glass-border bg-glass-fill px-3.5 py-2.5 text-sm text-frost outline-none backdrop-blur-glass transition placeholder:text-[var(--muted)] focus:border-white/45 focus:bg-glass-fillStrong focus:shadow-active";
 
 export function GlassInput(props: InputHTMLAttributes<HTMLInputElement>) {
   const { className = "", ...rest } = props;
@@ -19,10 +19,5 @@ export function GlassSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
 
 export function GlassTextarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const { className = "", ...rest } = props;
-  return (
-    <textarea
-      className={`${fieldClass} min-h-[88px] resize-y rounded-soft border border-glass-border border-b-white/70 ${className}`}
-      {...rest}
-    />
-  );
+  return <textarea className={`${fieldClass} min-h-[88px] resize-y ${className}`} {...rest} />;
 }

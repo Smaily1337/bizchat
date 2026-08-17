@@ -19,11 +19,8 @@ export function GlassCard({
   ...props
 }: GlassCardProps) {
   return (
-    <div
-      className={`glass-panel ${paddingClasses[padding]} ${className}`}
-      {...props}
-    >
-      {children}
+    <div className={`glass-panel ${className}`} {...props}>
+      <div className={`relative z-10 ${paddingClasses[padding]}`}>{children}</div>
     </div>
   );
 }

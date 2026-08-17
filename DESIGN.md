@@ -99,9 +99,7 @@ spacing:
 ---
 
 ## Brand & Style
-The design system embodies "Architectural Liquidity"—a fusion of structural solidity and ethereal glass effects. It is engineered for high-end technical environments, evoking a sense of precision, premium craftsmanship, and deep-space engineering. 
-
-The aesthetic leverages **Dark Glassmorphism** and **Tech Monochrome**. Interfaces should feel like looking through polished obsidian or floating panels in a high-tech cockpit. Use 3D abstract dark glass objects as environmental decor to provide depth without color interference. The emotional response is one of calm, focused authority and cutting-edge technological sophistication.
+The design system blends **Automovia Core** monochrome with **Liquid Glass** fluidity: soft glass panels, luminous edges, and calm motion on a void-black canvas. Keep the palette strictly monochromatic (white accent, no yellow). Prefer rounded glass containers, richer blur, and gentle depth over hard industrial edges.
 
 ## Colors
 The palette is strictly monochromatic to emphasize form, texture, and light. 
@@ -135,9 +133,7 @@ Depth is not achieved through shadows, but through **refraction and transparency
 Avoid drop shadows entirely; they muddy the dark aesthetic. Use subtle outer glows (white, 5% opacity) only for active states.
 
 ## Shapes
-The shape language is "Soft Industrial." Everything follows a disciplined 4px (Soft) radius. This provides just enough curvature to feel modern and premium while maintaining the architectural rigidity required by the brand. 
-
-Interactive elements like buttons or small chips may use the `rounded-lg` (8px) variant to feel more tactile, but primary layout containers must stay at 4px.
+Prefer Liquid Glass softness: ~20px radius on panels, ~14px on controls and buttons. Avoid sharp 0px industrial corners for primary UI. Keep status dots and tiny chips tighter if needed.
 
 ## Components
 
