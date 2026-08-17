@@ -32,7 +32,7 @@
       "#" + ROOT_ID + " .bc-msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}" +
       "#" + ROOT_ID + " .bc-bubble{max-width:85%;padding:8px 11px;border-radius:12px;font-size:13px;line-height:1.4;white-space:pre-wrap}" +
       "#" + ROOT_ID + " .bc-bot{align-self:flex-start;background:rgba(255,255,255,.08)}" +
-      "#" + ROOT_ID + " .bc-user{align-self:flex-end;background:rgba(244,224,77,.2);border:1px solid rgba(244,224,77,.35)}" +
+      "#" + ROOT_ID + " .bc-user{align-self:flex-end;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25)}" +
       "#" + ROOT_ID + " .bc-form{display:flex;gap:8px;padding:10px;border-top:1px solid rgba(255,255,255,.12)}" +
       "#" + ROOT_ID + " .bc-form input{flex:1;border-radius:10px;border:1px solid rgba(255,255,255,.14);" +
       "background:rgba(255,255,255,.06);color:#fff;padding:10px 12px;outline:none}" +
