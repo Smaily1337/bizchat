@@ -150,58 +150,79 @@ export function GlassNav() {
     return owner?.role && item.roles.includes(owner.role);
   });
 
+  const accountLabel = [
+    owner?.email,
+    owner?.is_platform_admin
+      ? "platforma"
+      : owner?.role
+        ? owner.role
+        : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <header className="sticky top-0 z-40 animate-fade-in px-3 pt-3 sm:px-5 lg:px-8">
-      {/* Top bar ONLY: brand + logout — never share row with nav links */}
-      <div className="glass-panel !overflow-visible mx-auto flex max-w-shell items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <NavLink to="/" className="group relative z-10 flex min-w-0 items-center gap-3">
-          <div className="animate-glow-pulse flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-glass-border bg-glass-fillStrong transition group-hover:border-white/35 sm:h-11 sm:w-11">
-            <span className="font-display text-base font-bold tracking-tight text-white">
-              B
-            </span>
-          </div>
-          <div className="min-w-0">
-            <p className="font-display text-xl font-bold tracking-[-0.03em] text-white transition group-hover:text-frost sm:text-2xl">
-              BizChat
-            </p>
-            <p className="label-caps mt-0.5 truncate text-[10px] text-[var(--muted)]">
-              {business?.name || "Admin"}
-            </p>
-          </div>
-        </NavLink>
+      <div className="glass-panel !overflow-visible mx-auto flex max-w-shell flex-col gap-3 px-4 py-4 sm:px-6">
+        <div className="flex items-start justify-between gap-4">
+          <NavLink
+            to="/"
+            className="group relative z-10 flex min-w-0 items-center gap-3"
+          >
+            <div className="animate-glow-pulse flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-glass-border bg-glass-fillStrong transition group-hover:border-white/35 sm:h-12 sm:w-12">
+              <span className="font-display text-lg font-bold tracking-tight text-white">
+                B
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="font-display text-2xl font-bold tracking-[-0.03em] text-white transition group-hover:text-frost sm:text-[1.75rem]">
+                BizChat
+              </p>
+              <p className="label-caps mt-1 text-[10px] text-[var(--muted)]">
+                {business?.name || "Admin"}
+              </p>
+            </div>
+          </NavLink>
 
-        <div className="relative z-20 flex shrink-0 items-center gap-2">
-          <GlassButton
-            variant="subtle"
-            className="!hidden !px-2.5 !py-1.5 sm:!inline-flex"
-            onClick={start}
-            data-tour="nav-tour"
-          >
-            Samouczek
-          </GlassButton>
-          <button
-            type="button"
-            onClick={logout}
-            className="inline-flex items-center gap-1.5 rounded-control border border-white/25 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur-glass transition hover:border-white/45 hover:bg-white/15"
-            aria-label="Wyloguj"
-          >
-            <svg
-              aria-hidden
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="relative z-20 flex shrink-0 flex-wrap items-center justify-end gap-2">
+            <GlassButton
+              variant="subtle"
+              className="!hidden !px-3 !py-2 sm:!inline-flex"
+              onClick={start}
+              data-tour="nav-tour"
             >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <path d="M16 17l5-5-5-5" />
-              <path d="M21 12H9" />
-            </svg>
-            Wyloguj
-          </button>
+              Samouczek
+            </GlassButton>
+            <button
+              type="button"
+              onClick={logout}
+              className="inline-flex items-center gap-1.5 rounded-control border border-white/25 bg-white/10 px-3.5 py-2 text-sm font-semibold text-white backdrop-blur-glass transition hover:border-white/45 hover:bg-white/15"
+              aria-label="Wyloguj"
+            >
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <path d="M16 17l5-5-5-5" />
+                <path d="M21 12H9" />
+              </svg>
+              Wyloguj
+            </button>
+          </div>
         </div>
+
+        {accountLabel ? (
+          <p className="relative z-10 break-all font-mono text-xs leading-relaxed text-[var(--muted)] sm:text-sm">
+            {accountLabel}
+          </p>
+        ) : null}
       </div>
 
       {owner && !owner.email_verified && (
@@ -217,9 +238,8 @@ export function GlassNav() {
         </div>
       )}
 
-      {/* Links always on second row (scroll), never push Wyloguj away */}
       <nav
-        className="glass-panel relative z-10 mx-auto mt-2 flex max-w-shell gap-1 overflow-x-auto px-3 py-2"
+        className="glass-panel relative z-10 mx-auto mt-2 flex max-w-shell gap-1.5 overflow-x-auto px-3 py-2.5 sm:px-4"
         aria-label="Główna nawigacja"
       >
         {navItems.map((item) => (
@@ -230,7 +250,7 @@ export function GlassNav() {
             data-tour={item.tourId}
             className={({ isActive }) =>
               [
-                "relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium sm:px-3 sm:py-2 sm:text-sm",
+                "relative z-10 inline-flex shrink-0 items-center gap-2 rounded-control px-3 py-2 text-sm font-medium",
                 isActive
                   ? "bg-glass-fillStrong text-white shadow-active"
                   : "text-[var(--muted)] hover:bg-glass-fill hover:text-white",
@@ -244,7 +264,7 @@ export function GlassNav() {
         <button
           type="button"
           onClick={start}
-          className="relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium text-[var(--muted)] sm:hidden"
+          className="relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-control px-3 py-2 text-sm font-medium text-[var(--muted)] sm:hidden"
         >
           Samouczek
         </button>
