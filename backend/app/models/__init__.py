@@ -14,6 +14,9 @@ from app.models.enums import (
     NotificationChannel,
     NotificationKind,
     NotificationStatus,
+    TaskMailStatus,
+    TaskPriority,
+    TaskStatus,
     UserRole,
     WaitlistStatus,
 )
@@ -24,6 +27,7 @@ from app.models.notification import (
     NotificationSettings,
     NotificationTemplate,
 )
+from app.models.task import Task, TaskAssignee, TaskAttachment
 
 __all__ = [
     "Appointment",
@@ -48,6 +52,12 @@ __all__ = [
     "Owner",
     "PageView",
     "Service",
+    "Task",
+    "TaskAssignee",
+    "TaskAttachment",
+    "TaskMailStatus",
+    "TaskPriority",
+    "TaskStatus",
     "TimeOff",
     "UserRole",
     "WaitlistEntry",

@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiDownload, apiFetch } from "./client";
 import type {
   Appointment,
   Business,
@@ -16,6 +16,7 @@ import type {
   PlatformAccount,
   PlatformPageviewStats,
   Service,
+  Task,
   TimeOff,
   WaitlistEntry,
   WorkingHours,
@@ -305,4 +306,43 @@ export const platformApi = {
     }),
   pageviewStats: () =>
     apiFetch<PlatformPageviewStats>("/api/platform/stats/pageviews"),
+};
+
+export const tasksApi = {
+  list: (params?: {
+    status?: string;
+    assignee_id?: string;
+    priority?: string;
+    overdue?: boolean;
+  }) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.set("status", params.status);
+    if (params?.assignee_id) q.set("assignee_id", params.assignee_id);
+    if (params?.priority) q.set("priority", params.priority);
+    if (params?.overdue === true) q.set("overdue", "true");
+    if (params?.overdue === false) q.set("overdue", "false");
+    const qs = q.toString();
+    return apiFetch<Task[]>(`/api/tasks${qs ? `?${qs}` : ""}`);
+  },
+  create: (form: FormData) =>
+    apiFetch<Task>("/api/tasks", { method: "POST", body: form }),
+  update: (
+    id: string,
+    body: Partial<{
+      title: string;
+      description: string;
+      priority: string;
+      due_at: string | null;
+      clear_due_at: boolean;
+      status: string;
+      assignee_ids: string[];
+    }>,
+  ) =>
+    apiFetch<Task>(`/api/tasks/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  remove: (id: string) => apiFetch<void>(`/api/tasks/${id}`, { method: "DELETE" }),
+  download: (taskId: string, attachmentId: string, filename: string) =>
+    apiDownload(`/api/tasks/${taskId}/attachments/${attachmentId}`, filename),
 };

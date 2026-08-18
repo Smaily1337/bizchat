@@ -12,6 +12,9 @@ from app.models.enums import (
     NotificationChannel,
     NotificationKind,
     NotificationStatus,
+    TaskMailStatus,
+    TaskPriority,
+    TaskStatus,
     UserRole,
     WaitlistStatus,
 )
@@ -419,6 +422,61 @@ class NotificationLogOut(ORMModel):
     created_at: datetime
     customer_name: Optional[str] = None
     service_name: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Tasks
+# ---------------------------------------------------------------------------
+
+
+class TaskAssigneeOut(ORMModel):
+    id: UUID
+    owner_id: UUID
+    name: Optional[str] = None
+    email: str
+    mail_status: TaskMailStatus = TaskMailStatus.pending
+    mail_error: Optional[str] = None
+
+
+class TaskAttachmentOut(ORMModel):
+    id: UUID
+    filename: str
+    content_type: str
+    size_bytes: int
+    created_at: datetime
+
+
+class TaskCreatedByOut(ORMModel):
+    id: UUID
+    name: Optional[str] = None
+    email: str
+
+
+class TaskOut(ORMModel):
+    id: UUID
+    business_id: UUID
+    title: str
+    description: str
+    priority: TaskPriority
+    due_at: Optional[datetime] = None
+    status: TaskStatus
+    completed_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    is_overdue: bool = False
+    created_by: Optional[TaskCreatedByOut] = None
+    assignees: list[TaskAssigneeOut] = Field(default_factory=list)
+    attachments: list[TaskAttachmentOut] = Field(default_factory=list)
+
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    priority: Optional[TaskPriority] = None
+    due_at: Optional[datetime] = None
+    clear_due_at: bool = False
+    status: Optional[TaskStatus] = None
+    assignee_ids: Optional[list[UUID]] = None
 
 
 # ---------------------------------------------------------------------------

@@ -37,7 +37,7 @@ export function UsersPage() {
   if (!canManage) {
     return (
       <div className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Użytkownicy</h1>
+        <h1 className="font-display text-3xl font-bold">Pracownicy</h1>
         <p className="mt-3 text-sm text-[var(--muted)]">
           Brak uprawnień — tylko właściciel i admin mogą zarządzać kontami.
         </p>
@@ -114,9 +114,9 @@ export function UsersPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Użytkownicy</h1>
+        <h1 className="font-display text-3xl font-bold">Pracownicy</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Role: właściciel, admin, pracownik — z kontrolą uprawnień na backendzie
+          Dodawaj ludzi, nadawaj role i resetuj hasła. Stąd trafiają na listę przy przydzielaniu zadań.
         </p>
       </header>
 

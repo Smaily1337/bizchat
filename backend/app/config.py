@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     smtp_from: str = "BizChat <noreply@bizchat.local>"
     smtp_tls: bool = True
 
+    # Task attachment storage. Empty → next to SQLite file, else ./data/uploads
+    upload_dir: str = ""
+    max_upload_bytes: int = 10 * 1024 * 1024
+
     telegram_bot_token: str = ""
     telegram_webhook_secret: str = ""
 

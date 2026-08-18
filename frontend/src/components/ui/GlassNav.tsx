@@ -3,23 +3,28 @@ import { useAuth } from "@/auth/AuthContext";
 import { GlassButton } from "./GlassButton";
 
 const baseNavItems = [
-  { to: "/", label: "Kalendarz", end: true },
-  { to: "/appointments", label: "Wizyty" },
-  { to: "/inbox", label: "Inbox" },
-  { to: "/hours", label: "Godziny" },
-  { to: "/settings", label: "Ustawienia" },
-  { to: "/users", label: "Użytkownicy", roles: ["owner", "admin"] as const },
+  { to: "/tasks", label: "Zadania", employeeLabel: "Moje zadania" },
+  { to: "/", label: "Kalendarz", end: true, hideForEmployee: true },
+  { to: "/appointments", label: "Wizyty", hideForEmployee: true },
+  { to: "/inbox", label: "Inbox", hideForEmployee: true },
+  { to: "/hours", label: "Godziny", hideForEmployee: true },
+  { to: "/settings", label: "Ustawienia", hideForEmployee: true },
+  { to: "/users", label: "Pracownicy", roles: ["owner", "admin"] as const },
   { to: "/platform", label: "Platforma", platformAdmin: true },
-  { to: "/feedback", label: "Feedback" },
-  { to: "/notifications", label: "Powiadomienia" },
-  { to: "/channels", label: "Kanały" },
+  { to: "/feedback", label: "Feedback", hideForEmployee: true },
+  { to: "/notifications", label: "Powiadomienia", hideForEmployee: true },
+  { to: "/channels", label: "Kanały", hideForEmployee: true },
 ] as const;
 
 export function GlassNav() {
   const { business, owner, logout, resendVerification } = useAuth();
+  const isEmployee = owner?.role === "pracownik";
   const navItems = baseNavItems.filter((item) => {
     if ("platformAdmin" in item && item.platformAdmin) {
       return Boolean(owner?.is_platform_admin);
+    }
+    if ("hideForEmployee" in item && item.hideForEmployee && isEmployee) {
+      return false;
     }
     if (!("roles" in item) || !item.roles) return true;
     return owner?.role && (item.roles as readonly string[]).includes(owner.role);
@@ -28,7 +33,7 @@ export function GlassNav() {
   return (
     <header className="sticky top-0 z-40 animate-fade-in border-b border-glass-border bg-[rgba(18,20,23,0.55)] backdrop-blur-glass">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <NavLink to="/" className="group flex items-center gap-3">
+        <NavLink to={isEmployee ? "/tasks" : "/"} className="group flex items-center gap-3">
           <div className="animate-glow-pulse flex h-11 w-11 items-center justify-center rounded-xl border border-glass-border bg-glass-fill transition group-hover:border-canary/40">
             <span className="font-display text-base font-extrabold text-canary">
               B
@@ -39,7 +44,7 @@ export function GlassNav() {
               BizChat
             </p>
             <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">
-              {business?.name || "Admin"}
+              {business?.name || (isEmployee ? "Panel" : "Admin")}
             </p>
           </div>
         </NavLink>
@@ -62,7 +67,9 @@ export function GlassNav() {
                 ].join(" ")
               }
             >
-              {item.label}
+              {isEmployee && "employeeLabel" in item && item.employeeLabel
+                ? item.employeeLabel
+                : item.label}
             </NavLink>
           ))}
         </nav>
@@ -113,7 +120,9 @@ export function GlassNav() {
               ].join(" ")
             }
           >
-            {item.label}
+            {isEmployee && "employeeLabel" in item && item.employeeLabel
+              ? item.employeeLabel
+              : item.label}
           </NavLink>
         ))}
       </nav>

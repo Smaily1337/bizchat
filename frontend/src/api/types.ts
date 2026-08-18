@@ -238,3 +238,47 @@ export type InboxMessage = {
   content: string;
   created_at: string;
 };
+
+export type TaskPriority = "low" | "normal" | "high" | "urgent";
+export type TaskStatus = "open" | "done" | "cancelled";
+export type TaskMailStatus = "pending" | "sent" | "failed";
+
+export type TaskAssignee = {
+  id: string;
+  owner_id: string;
+  name?: string | null;
+  email: string;
+  mail_status: TaskMailStatus;
+  mail_error?: string | null;
+};
+
+export type TaskAttachment = {
+  id: string;
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  created_at: string;
+};
+
+export type TaskCreatedBy = {
+  id: string;
+  name?: string | null;
+  email: string;
+};
+
+export type Task = {
+  id: string;
+  business_id: string;
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  due_at: string | null;
+  status: TaskStatus;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  is_overdue: boolean;
+  created_by?: TaskCreatedBy | null;
+  assignees: TaskAssignee[];
+  attachments: TaskAttachment[];
+};

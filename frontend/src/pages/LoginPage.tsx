@@ -33,7 +33,7 @@ function loginErrorMessage(err: unknown): string {
 }
 
 export function LoginPage() {
-  const { token, loading, login, acceptToken } = useAuth();
+  const { token, loading, login, acceptToken, owner } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -87,7 +87,8 @@ export function LoginPage() {
   if (!loading && token) {
     const from = (location.state as { from?: { pathname?: string } } | null)?.from
       ?.pathname;
-    return <Navigate to={from || "/"} replace />;
+    const home = owner?.role === "pracownik" ? "/tasks" : "/";
+    return <Navigate to={from || home} replace />;
   }
 
   async function onSubmit(e: FormEvent) {
@@ -125,7 +126,7 @@ export function LoginPage() {
           BizChat
         </p>
         <h1 className="mt-2 font-display text-xl font-semibold text-canary">
-          {mode === "login" ? "Panel admina" : "Rejestracja"}
+          {mode === "login" ? "Logowanie" : "Rejestracja"}
         </h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           {mode === "login"

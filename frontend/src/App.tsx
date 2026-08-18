@@ -14,6 +14,7 @@ import { LoginPage } from "@/pages/LoginPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { PlatformPage } from "@/pages/PlatformPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { TasksPage } from "@/pages/TasksPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
 
@@ -35,6 +36,19 @@ function AppLayout() {
   );
 }
 
+function HomeRoute() {
+  const { owner, loading } = useAuth();
+  if (loading) {
+    return (
+      <p className="text-sm text-[var(--muted)]">Ładowanie…</p>
+    );
+  }
+  if (owner?.role === "pracownik") {
+    return <Navigate to="/tasks" replace />;
+  }
+  return <DashboardPage />;
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -44,12 +58,13 @@ export default function App() {
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<DashboardPage />} />
+              <Route path="/" element={<HomeRoute />} />
               <Route path="/appointments" element={<AppointmentsPage />} />
               <Route path="/inbox" element={<InboxPage />} />
               <Route path="/hours" element={<HoursPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/users" element={<UsersPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
               <Route path="/platform" element={<PlatformPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />

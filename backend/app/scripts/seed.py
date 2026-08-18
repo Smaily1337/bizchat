@@ -145,6 +145,26 @@ async def _ensure_platform_admin(session, business_id: uuid.UUID) -> bool:
     return True
 
 
+async def _ensure_demo_employee(session, business_id: uuid.UUID) -> bool:
+    existing = await session.execute(
+        select(Owner).where(Owner.email == "pracownik@bizchat.local")
+    )
+    if existing.scalar_one_or_none():
+        return False
+    session.add(
+        Owner(
+            email="pracownik@bizchat.local",
+            password_hash=hash_password("changeme"),
+            name="Demo Pracownik",
+            role=UserRole.pracownik,
+            email_verified=True,
+            is_active=True,
+            business_id=business_id,
+        )
+    )
+    return True
+
+
 async def seed() -> None:
     async with AsyncSessionLocal() as session:
         existing = await session.execute(
@@ -158,11 +178,15 @@ async def seed() -> None:
             topped = await _ensure_platform_admin(
                 session, existing_owner.business_id
             ) or topped
+            topped = await _ensure_demo_employee(
+                session, existing_owner.business_id
+            ) or topped
             if topped:
                 await session.commit()
                 print(
                     "Seed top-up: notification defaults / platform admin "
-                    "(admin@bizchat.local / changeme)"
+                    "(admin@bizchat.local / changeme) / "
+                    "pracownik (pracownik@bizchat.local / changeme)"
                 )
             else:
                 print("Seed already applied (owner@bizchat.local exists)")
@@ -188,6 +212,7 @@ async def seed() -> None:
         )
         session.add(owner)
         await _ensure_platform_admin(session, business.id)
+        await _ensure_demo_employee(session, business.id)
 
         services = [
             Service(
@@ -346,6 +371,7 @@ async def seed() -> None:
         print(f"Seeded business={business.id}")
         print("Login (salon): owner@bizchat.local / changeme")
         print("Login (platform admin): admin@bizchat.local / changeme")
+        print("Login (pracownik): pracownik@bizchat.local / changeme")
 
 
 if __name__ == "__main__":

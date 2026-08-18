@@ -27,6 +27,7 @@ from app.api import (
     notifications,
     platform,
     services,
+    tasks,
     users,
     ws,
 )
@@ -69,6 +70,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(tasks.router)
 app.include_router(platform.router)
 app.include_router(analytics.router)
 app.include_router(appointments.router)

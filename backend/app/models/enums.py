@@ -71,3 +71,22 @@ class UserRole(str, enum.Enum):
     owner = "owner"
     admin = "admin"
     pracownik = "pracownik"
+
+
+class TaskPriority(str, enum.Enum):
+    low = "low"
+    normal = "normal"
+    high = "high"
+    urgent = "urgent"
+
+
+class TaskStatus(str, enum.Enum):
+    open = "open"
+    done = "done"
+    cancelled = "cancelled"
+
+
+class TaskMailStatus(str, enum.Enum):
+    pending = "pending"
+    sent = "sent"
+    failed = "failed"
