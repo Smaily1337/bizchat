@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -19,6 +19,7 @@ from app.models.enums import Channel, ConversationState, MessageRole
 from app.models.mixins import utc_now
 from app.schemas import ORMModel, OutboundMessage
 from app.services.events import hub
+from app.services.meta_import import MetaImportError, import_messenger_conversations
 
 router = APIRouter(prefix="/api/inbox", tags=["inbox"])
 
@@ -58,6 +59,47 @@ class StartConversationOut(BaseModel):
     message: MessageOut
     delivered: bool
     detail: str | None = None
+
+
+class MessengerImportOut(BaseModel):
+    page_id: str
+    threads_seen: int
+    skipped_threads: int
+    customers_created: int
+    conversations_created: int
+    messages_created: int
+    imported_names: list[str]
+
+
+@router.post("/import-messenger", response_model=MessengerImportOut)
+async def import_messenger(
+    db: DbSession,
+    owner: CurrentOwner,
+    limit: int = Query(50, ge=1, le=100),
+) -> MessengerImportOut:
+    """Ściągnij historyczne rozmowy Page Inbox z Meta Graph → Wiadomości."""
+    try:
+        result = await import_messenger_conversations(
+            db,
+            business_id=owner.business_id,
+            limit_threads=max(1, min(limit, 100)),
+        )
+    except MetaImportError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    await hub.publish(
+        owner.business_id,
+        "chat.message",
+        {"imported": True},
+        title="Import Messenger",
+        message=(
+            f"Zaimportowano {result['conversations_created']} rozmów, "
+            f"{result['messages_created']} wiadomości"
+        ),
+    )
+    return MessengerImportOut(**result)
 
 
 def _last_msg(conv: Conversation) -> Message | None:

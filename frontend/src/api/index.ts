@@ -417,6 +417,16 @@ export const inboxApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  importMessenger: (limit = 50) =>
+    apiFetch<{
+      page_id: string;
+      threads_seen: number;
+      skipped_threads: number;
+      customers_created: number;
+      conversations_created: number;
+      messages_created: number;
+      imported_names: string[];
+    }>(`/api/inbox/import-messenger?limit=${limit}`, { method: "POST" }),
 };
 
 export const platformApi = {

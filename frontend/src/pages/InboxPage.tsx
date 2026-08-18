@@ -26,6 +26,7 @@ export function InboxPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [compose, setCompose] = useState({
     customer_id: "",
     channel: "messenger" as Channel,
@@ -124,6 +125,33 @@ export function InboxPage() {
     }
   }
 
+  async function onImportMessenger() {
+    setError(null);
+    setInfo(null);
+    setImporting(true);
+    try {
+      const res = await inboxApi.importMessenger(50);
+      await reloadList();
+      await customersApi.list().then(setCustomers);
+      const names =
+        res.imported_names.length > 0
+          ? `: ${res.imported_names.slice(0, 8).join(", ")}`
+          : "";
+      setInfo(
+        `Import Meta: ${res.threads_seen} wątków, +${res.customers_created} klientów, ` +
+          `+${res.conversations_created} rozmów, +${res.messages_created} wiadomości${names}`,
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Import z Messengera nieudany — sprawdź META_PAGE_ACCESS_TOKEN",
+      );
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const selected = conversations.find((c) => c.id === selectedId);
   const selectedCustomer = customers.find((c) => c.id === selected?.customer_id);
   const messengerReady = customers.filter(
@@ -134,12 +162,23 @@ export function InboxPage() {
     <div className="space-y-6">
       <header className="animate-fade-up flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold">Inbox</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--text-bright)] sm:text-3xl">
+            Wiadomości
+          </h1>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            Rozmowy na żywo · odpowiedź właściciela · start wiadomości bez wcześniejszego czatu
+            Rozmowy z Messengera i innych kanałów. Jeśli ktoś pisał wcześniej —
+            użyj „Importuj z Messengera”.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <GlassButton
+            type="button"
+            variant="ghost"
+            disabled={importing}
+            onClick={() => void onImportMessenger()}
+          >
+            {importing ? "Importuję…" : "Importuj z Messengera"}
+          </GlassButton>
           <GlassButton type="button" onClick={() => setComposeOpen((v) => !v)}>
             {composeOpen ? "Anuluj" : "Nowa wiadomość"}
           </GlassButton>
