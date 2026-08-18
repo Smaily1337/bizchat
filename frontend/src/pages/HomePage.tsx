@@ -149,15 +149,16 @@ const SALON: HubTile[] = [
 function TileGrid({ tiles }: { tiles: HubTile[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {tiles.map((t) => (
+      {tiles.map((t, i) => (
         <Link
           key={t.to}
           to={t.to}
           data-tour={t.tourId}
-          className="group flex gap-4 rounded-soft border border-glass-border bg-[var(--bg-elevated)] p-4 transition hover:border-[var(--accent)]"
+          className="hub-tile group animate-fade-up"
+          style={{ animationDelay: `${i * 40}ms` }}
         >
           <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-[var(--surface-solid)] text-[var(--tile-icon)]"
+            className="hub-tile-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-[var(--surface-solid)] text-[var(--tile-icon)] transition"
             aria-hidden
           >
             {t.icon}
@@ -192,23 +193,20 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="space-y-10">
-      <header className="animate-fade-up border-b border-glass-border pb-8">
+    <div className="space-y-8">
+      <header className="page-hero animate-fade-up">
         <p className="font-display text-4xl font-extrabold tracking-tight text-[var(--text-bright)] sm:text-5xl">
           BizChat
         </p>
-        <h1 className="mt-3 font-display text-xl font-semibold text-[var(--text-bright)]">
+        <h1 className="mt-2 font-display text-xl font-semibold text-[var(--text-bright)] sm:text-2xl">
           {business?.name || "Twój salon"}
         </h1>
         <p className="mt-2 max-w-xl text-sm text-[var(--muted)]">
-          Wybierz kategorię poniżej — każda sekcja ma swój ekran, bez przeładowania
-          jednym widokiem.
+          Dziś w skrócie poniżej — potem skróty do pracy dnia, ludzi i ustawień
+          salonu.
         </p>
-      </header>
 
-      <section className="animate-fade-up">
-        <p className="label-caps mb-3">Dziś w skrócie</p>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="stat-chip">
             <p className="label-caps">Wizyty dziś</p>
             <p className="font-display text-3xl font-bold text-[var(--text-bright)]">
@@ -228,7 +226,8 @@ export function HomePage() {
             </p>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
+
+        <div className="mt-5 flex flex-wrap gap-2">
           <Link to="/calendar">
             <GlassButton>Otwórz kalendarz</GlassButton>
           </Link>
@@ -239,9 +238,9 @@ export function HomePage() {
             <GlassButton variant="ghost">Wiadomości</GlassButton>
           </Link>
         </div>
-      </section>
+      </header>
 
-      <section className="animate-fade-up space-y-3">
+      <section className="space-y-3">
         <div>
           <h2 className="font-display text-lg font-semibold text-[var(--text-bright)]">
             Praca dnia
@@ -253,7 +252,7 @@ export function HomePage() {
         <TileGrid tiles={WORK} />
       </section>
 
-      <section className="animate-fade-up space-y-3">
+      <section className="space-y-3">
         <div>
           <h2 className="font-display text-lg font-semibold text-[var(--text-bright)]">
             Ludzie
@@ -263,13 +262,13 @@ export function HomePage() {
         <TileGrid tiles={PEOPLE} />
       </section>
 
-      <section className="animate-fade-up space-y-3">
+      <section className="space-y-3">
         <div>
           <h2 className="font-display text-lg font-semibold text-[var(--text-bright)]">
             Salon
           </h2>
           <p className="text-sm text-[var(--muted)]">
-            Kanały, raporty, godziny i konfiguracja
+            Kanały, raporty, godziny i konfiguracja — też w menu <strong>Salon</strong>
           </p>
         </div>
         <TileGrid tiles={SALON} />
@@ -277,20 +276,20 @@ export function HomePage() {
 
       <GlassCard className="animate-fade-up">
         <p className="font-display text-base font-semibold text-[var(--text-bright)]">
-          Jak to czytać?
+          Nawigacja
         </p>
         <ul className="mt-3 grid gap-2 text-sm text-[var(--muted)] sm:grid-cols-3">
           <li className="rounded-control border border-glass-border bg-[var(--surface-solid)] p-3">
-            <strong className="text-[var(--text-bright)]">1.</strong> Start = przegląd
-            i skróty
+            <strong className="text-[var(--text-bright)]">Góra:</strong> Start,
+            Kalendarz, Wizyty, Wiadomości, Klienci
           </li>
           <li className="rounded-control border border-glass-border bg-[var(--surface-solid)] p-3">
-            <strong className="text-[var(--text-bright)]">2.</strong> Kafelki prowadzą
-            do osobnych ekranów
+            <strong className="text-[var(--text-bright)]">Salon ▾:</strong>{" "}
+            pracownicy, kanały, godziny, ustawienia…
           </li>
           <li className="rounded-control border border-glass-border bg-[var(--surface-solid)] p-3">
-            <strong className="text-[var(--text-bright)]">3.</strong> Menu u góry = szybka
-            nawigacja
+            <strong className="text-[var(--text-bright)]">Konto:</strong> motyw i
+            wylogowanie
           </li>
         </ul>
       </GlassCard>

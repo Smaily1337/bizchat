@@ -8,14 +8,25 @@
     overflow: hidden;
     border-radius: theme("borderRadius.glass");
     border: 1px solid var(--glass-border);
-    background: var(--glass-fill);
-    box-shadow: none;
+    background:
+      linear-gradient(
+        165deg,
+        var(--glass-highlight),
+        transparent 42%
+      ),
+      var(--glass-fill);
+    box-shadow: var(--shadow-glass);
     color: var(--text);
   }
 
   .glass-panel-interactive {
-    background: var(--glass-fill);
-    box-shadow: none;
+    transition: border-color 0.18s ease, transform 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .glass-panel-interactive:hover {
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--glass-border));
+    transform: translateY(-1px);
   }
 
   .panel-quiet {
@@ -27,28 +38,143 @@
   .stat-chip {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding: 1rem 1.1rem;
+    gap: 0.35rem;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--glass-border);
+    border-radius: theme("borderRadius.glass");
+    background:
+      linear-gradient(160deg, var(--glass-highlight), transparent 50%),
+      var(--bg-elevated);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .hub-tile {
+    display: flex;
+    gap: 1rem;
+    padding: 1.05rem 1.15rem;
     border: 1px solid var(--glass-border);
     border-radius: theme("borderRadius.glass");
     background: var(--bg-elevated);
+    box-shadow: var(--shadow-glass);
+    transition: border-color 0.18s ease, transform 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .hub-tile:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-border));
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(20, 40, 32, 0.1);
+  }
+
+  .hub-tile:hover .hub-tile-icon {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .page-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    border-radius: calc(theme("borderRadius.glass") + 2px);
+    background:
+      radial-gradient(520px 220px at 0% 0%, var(--accent-soft), transparent 60%),
+      var(--bg-elevated);
+    box-shadow: var(--shadow-glass);
+    padding: 1.5rem 1.35rem;
+  }
+
+  @media (min-width: 640px) {
+    .page-hero {
+      padding: 1.85rem 1.75rem;
+    }
+  }
+
+  .customer-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .customer-table th {
+    text-align: left;
+    padding: 0.65rem 1rem;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-solid);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .customer-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    vertical-align: middle;
+  }
+
+  .customer-table tbody tr {
+    background: var(--bg-elevated);
+    transition: background 0.12s ease;
+  }
+
+  .customer-table tbody tr:nth-child(even) {
+    background: var(--stripe);
+  }
+
+  .customer-table tbody tr:hover {
+    background: var(--row-hover);
+  }
+
+  .avatar-chip {
+    display: inline-flex;
+    height: 2.35rem;
+    width: 2.35rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .nav-shell {
+    border-bottom: 1px solid var(--glass-border);
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 8px 24px rgba(20, 40, 32, 0.05);
+  }
+
+  .menu-panel {
+    border: 1px solid var(--glass-border);
+    border-radius: theme("borderRadius.glass");
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow-glass);
   }
 }
 
 @layer utilities {
   .animate-fade-up {
-    animation: fade-up 0.35s ease-out both;
+    animation: fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .animate-fade-in {
-    animation: fade-in 0.3s ease-out both;
+    animation: fade-in 0.35s ease-out both;
+  }
+
+  .animate-soft-pop {
+    animation: soft-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -62,5 +188,16 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes soft-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
