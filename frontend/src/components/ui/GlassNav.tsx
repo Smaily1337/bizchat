@@ -15,17 +15,27 @@ type NavItem = {
   icon: ReactNode;
 };
 
-const iconClass = "h-3.5 w-3.5 shrink-0";
+const iconClass = "h-4 w-4 shrink-0";
 
 const baseNavItems: NavItem[] = [
   {
     to: "/",
-    label: "Kalendarz",
+    label: "Start",
     end: true,
+    primary: true,
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
+      </svg>
+    ),
+  },
+  {
+    to: "/calendar",
+    label: "Kalendarz",
     primary: true,
     tourId: "nav-calendar",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <rect x="3" y="5" width="18" height="16" rx="2" />
         <path d="M16 3v4M8 3v4M3 11h18" />
       </svg>
@@ -37,7 +47,7 @@ const baseNavItems: NavItem[] = [
     primary: true,
     tourId: "nav-appointments",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M9 11h6M9 15h3" />
         <path d="M8 3h8v3H8z" />
         <path d="M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
@@ -46,11 +56,11 @@ const baseNavItems: NavItem[] = [
   },
   {
     to: "/inbox",
-    label: "Inbox",
+    label: "Wiadomości",
     primary: true,
     tourId: "nav-inbox",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <rect x="3" y="5" width="18" height="14" rx="2" />
         <path d="m3 7 9 7 9-7" />
       </svg>
@@ -62,34 +72,29 @@ const baseNavItems: NavItem[] = [
     primary: true,
     tourId: "nav-customers",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <circle cx="9" cy="8" r="3" />
         <path d="M3 19a6 6 0 0 1 12 0" />
-        <circle cx="17" cy="9" r="2.5" />
-        <path d="M16 19a4.5 4.5 0 0 1 5 0" />
       </svg>
     ),
   },
   {
     to: "/staff",
     label: "Zespół",
-    primary: true,
     tourId: "nav-staff",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
   },
   {
     to: "/reports",
     label: "Raporty",
-    primary: true,
     tourId: "nav-reports",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M4 19V5M10 19V9M16 19v-6M22 19H2" />
       </svg>
     ),
@@ -99,7 +104,7 @@ const baseNavItems: NavItem[] = [
     label: "Godziny",
     tourId: "nav-hours",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <circle cx="12" cy="12" r="9" />
         <path d="M12 7v5l3 2" />
       </svg>
@@ -110,7 +115,7 @@ const baseNavItems: NavItem[] = [
     label: "Kanały",
     tourId: "nav-channels",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
         <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
       </svg>
@@ -121,7 +126,7 @@ const baseNavItems: NavItem[] = [
     label: "Powiadomienia",
     tourId: "nav-notifications",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
         <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
       </svg>
@@ -132,7 +137,7 @@ const baseNavItems: NavItem[] = [
     label: "Ustawienia",
     tourId: "nav-settings",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <circle cx="12" cy="12" r="3" />
         <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
       </svg>
@@ -142,7 +147,7 @@ const baseNavItems: NavItem[] = [
     to: "/feedback",
     label: "Feedback",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7z" />
       </svg>
     ),
@@ -152,11 +157,9 @@ const baseNavItems: NavItem[] = [
     label: "Użytkownicy",
     roles: ["owner", "admin"],
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <circle cx="9" cy="8" r="3" />
         <path d="M3 19a6 6 0 0 1 12 0" />
-        <circle cx="17" cy="9" r="2.5" />
-        <path d="M16 19a4.5 4.5 0 0 1 5 0" />
       </svg>
     ),
   },
@@ -165,20 +168,19 @@ const baseNavItems: NavItem[] = [
     label: "Platforma",
     platformAdmin: true,
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4z" />
       </svg>
     ),
   },
 ];
 
-function linkClass(isActive: boolean, compact = false) {
+function linkClass(isActive: boolean) {
   return [
-    "inline-flex items-center gap-2 rounded-control font-medium transition duration-200",
-    compact ? "px-3 py-2 text-sm" : "px-3.5 py-2.5 text-sm",
+    "inline-flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium transition",
     isActive
-      ? "bg-glass-fillStrong text-[var(--text-bright)] shadow-active"
-      : "text-[var(--muted)] hover:bg-glass-fill hover:text-[var(--text-bright)]",
+      ? "bg-[var(--accent)] text-[var(--on-accent)]"
+      : "text-[var(--muted)] hover:bg-[var(--surface-solid)] hover:text-[var(--text-bright)]",
   ].join(" ");
 }
 
@@ -223,103 +225,41 @@ export function GlassNav() {
     };
   }, [moreOpen]);
 
-  const accountLabel = [
-    owner?.email,
-    owner?.is_platform_admin
-      ? "platforma"
-      : owner?.role
-        ? owner.role
-        : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
   return (
-    <header className="sticky top-0 z-40 animate-fade-in px-3 pt-3 sm:px-5 lg:px-8">
-      <div className="glass-panel !overflow-visible mx-auto flex max-w-shell flex-col gap-3 px-4 py-4 sm:px-6">
-        <div className="flex items-start justify-between gap-4">
-          <NavLink
-            to="/"
-            className="group relative z-10 flex min-w-0 items-center gap-3"
-          >
-            <div className="animate-glow-pulse flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-glass-border bg-glass-fillStrong transition group-hover:border-white/35 sm:h-12 sm:w-12">
-              <span className="font-display text-lg font-bold tracking-tight text-white">
-                B
-              </span>
-            </div>
-            <div className="min-w-0">
-              <p className="font-display text-2xl font-bold tracking-[-0.03em] text-white transition group-hover:text-frost sm:text-[1.75rem]">
-                BizChat
-              </p>
-              <p className="label-caps mt-1 text-[10px] text-[var(--muted)]">
-                {business?.name || "Admin"}
-              </p>
-            </div>
-          </NavLink>
-
-          <div className="relative z-20 flex shrink-0 flex-wrap items-center justify-end gap-2">
-            <GlassButton
-              variant="subtle"
-              className="!px-3 !py-2"
-              onClick={logout}
-              aria-label="Wyloguj"
-            >
-              Wyloguj
-            </GlassButton>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="inline-flex items-center gap-1.5 rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm font-semibold text-[var(--text-bright)] transition hover:bg-glass-fillStrong"
-              aria-label={
-                theme === "dark" ? "Włącz jasny motyw" : "Włącz ciemny motyw"
-              }
-              title={theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}
-            >
-              {theme === "dark" ? (
-                <svg
-                  aria-hidden
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="4" />
-                  <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-                </svg>
-              ) : (
-                <svg
-                  aria-hidden
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z" />
-                </svg>
-              )}
-              <span className="hidden sm:inline">
-                {theme === "dark" ? "Jasny" : "Ciemny"}
-              </span>
-            </button>
+    <header className="sticky top-0 z-40 border-b border-glass-border bg-[var(--nav-bg)]">
+      <div className="mx-auto flex max-w-shell items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <NavLink to="/" className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-[var(--accent)] text-[var(--on-accent)]">
+            <span className="font-display text-sm font-bold">B</span>
           </div>
-        </div>
+          <div className="min-w-0">
+            <p className="font-display text-lg font-bold tracking-tight text-[var(--text-bright)]">
+              BizChat
+            </p>
+            <p className="truncate text-xs text-[var(--muted)]">
+              {business?.name || "Panel"}
+            </p>
+          </div>
+        </NavLink>
 
-        {accountLabel ? (
-          <p className="relative z-10 break-all font-mono text-xs leading-relaxed text-[var(--muted)] sm:text-sm">
-            {accountLabel}
-          </p>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-2">
+          <GlassButton variant="subtle" className="!px-3 !py-2" onClick={logout}>
+            Wyloguj
+          </GlassButton>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="inline-flex items-center gap-1.5 rounded-control border border-glass-border px-3 py-2 text-sm font-medium text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+            aria-label={theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}
+          >
+            {theme === "dark" ? "Jasny" : "Ciemny"}
+          </button>
+        </div>
       </div>
 
       {owner && !owner.email_verified && (
-        <div className="mx-auto mt-2 max-w-shell rounded-control border border-glass-border bg-white/[0.05] px-4 py-2 text-center text-xs text-frost backdrop-blur-glass sm:px-5">
-          Potwierdź e-mail — link jest w logach API (console mailer) albo SMTP.{" "}
+        <div className="border-t border-glass-border bg-[var(--surface-solid)] px-4 py-2 text-center text-xs text-[var(--muted)]">
+          Potwierdź e-mail.{" "}
           <button
             type="button"
             className="font-mono underline underline-offset-2"
@@ -331,50 +271,37 @@ export function GlassNav() {
       )}
 
       <nav
-        className="glass-panel !overflow-visible relative z-10 mx-auto mt-2 flex max-w-shell items-center gap-1.5 px-3 py-2.5 sm:px-4"
+        className="mx-auto flex max-w-shell items-center gap-1 overflow-x-auto px-4 py-2 sm:px-6"
         aria-label="Główna nawigacja"
       >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
-          {primary.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              data-tour={item.tourId}
-              className={({ isActive }) =>
-                `${linkClass(isActive, true)} shrink-0`
-              }
-            >
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
-
+        {primary.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            data-tour={item.tourId}
+            className={({ isActive }) => `${linkClass(isActive)} shrink-0`}
+          >
+            {item.icon}
+            {item.label}
+          </NavLink>
+        ))}
         <div className="relative shrink-0" ref={moreRef}>
           <button
             type="button"
             aria-expanded={moreOpen}
-            aria-haspopup="menu"
             onClick={() => setMoreOpen((v) => !v)}
-            className={linkClass(moreActive || moreOpen, true)}
+            className={linkClass(moreActive || moreOpen)}
           >
             Więcej
-            <svg
-              aria-hidden
-              viewBox="0 0 24 24"
-              className="h-3.5 w-3.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="m6 9 6 6 6-6" />
             </svg>
           </button>
           {moreOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-full z-50 mt-1 max-h-[70vh] min-w-[220px] overflow-y-auto rounded-soft border border-glass-border bg-[var(--bg-elevated)] p-1.5 shadow-glass backdrop-blur-glass"
+              className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-soft border border-glass-border bg-[var(--bg-elevated)] p-1.5"
             >
               {more.map((item) => (
                 <NavLink
@@ -387,8 +314,8 @@ export function GlassNav() {
                     [
                       "flex w-full items-center gap-2 rounded-control px-3 py-2.5 text-sm",
                       isActive
-                        ? "bg-glass-fillStrong text-[var(--text-bright)]"
-                        : "text-[var(--muted)] hover:bg-glass-fill hover:text-[var(--text-bright)]",
+                        ? "bg-[var(--surface-solid)] font-semibold text-[var(--text-bright)]"
+                        : "text-[var(--muted)] hover:bg-[var(--surface-solid)] hover:text-[var(--text-bright)]",
                     ].join(" ")
                   }
                 >
@@ -400,6 +327,13 @@ export function GlassNav() {
           )}
         </div>
       </nav>
+
+      {owner?.email && (
+        <p className="mx-auto max-w-shell break-all px-4 pb-2 font-mono text-[11px] text-[var(--muted)] sm:px-6">
+          {owner.email}
+          {owner.is_platform_admin ? " · platforma" : owner.role ? ` · ${owner.role}` : ""}
+        </p>
+      )}
     </header>
   );
 }

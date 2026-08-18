@@ -10,7 +10,7 @@ import {
 
 export type ThemeMode = "dark" | "light";
 
-const STORAGE_KEY = "bizchat_theme";
+const STORAGE_KEY = "bizchat_theme_v2";
 
 type ThemeContextValue = {
   theme: ThemeMode;
@@ -27,7 +27,7 @@ export function readStoredTheme(): ThemeMode {
   } catch {
     /* ignore */
   }
-  return "dark";
+  return "light";
 }
 
 export function applyTheme(mode: ThemeMode) {

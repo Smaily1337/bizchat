@@ -17,15 +17,15 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: "welcome",
     title: "Witaj w BizChat",
-    body: "Krótki samouczek pokaże, gdzie rezerwujesz wizyty, odpowiadasz klientom i podłączasz Messenger, Telegram oraz widget na stronę.",
+    body: "Start to przegląd salonu. Stąd wchodzisz w kategorie — kalendarz, wizyty, wiadomości — każda na osobnym ekranie.",
     route: "/",
     placement: "center",
   },
   {
     id: "calendar",
     title: "Kalendarz",
-    body: "Tu widzisz dzień lub tydzień wizyt. Kliknij wizytę, żeby zobaczyć szczegóły, albo przejdź do listy w zakładce Wizyty.",
-    route: "/",
+    body: "Osobny ekran: dzień lub tydzień wizyt. Szczegóły i lista są w zakładce Wizyty.",
+    route: "/calendar",
     target: '[data-tour="nav-calendar"]',
     placement: "bottom",
   },

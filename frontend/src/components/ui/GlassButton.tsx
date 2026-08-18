@@ -9,11 +9,11 @@ type GlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<GlassButtonVariant, string> = {
   primary:
-    "rounded-control bg-[var(--accent)] text-[var(--on-accent)] shadow-canary hover:brightness-105 hover:-translate-y-px active:translate-y-0 active:brightness-95",
+    "rounded-control bg-[var(--accent)] text-[var(--on-accent)] hover:opacity-90 active:opacity-80",
   ghost:
-    "rounded-control border border-glass-border bg-glass-fill/60 text-[var(--text-bright)] backdrop-blur-glass hover:bg-glass-fillStrong active:bg-glass-fill",
+    "rounded-control border border-glass-border bg-transparent text-[var(--text-bright)] hover:bg-glass-fillStrong",
   subtle:
-    "rounded-control border border-glass-border/80 bg-transparent font-mono text-xs uppercase tracking-[0.08em] text-frost hover:bg-glass-fill hover:underline underline-offset-4",
+    "rounded-control border border-glass-border bg-transparent font-mono text-xs uppercase tracking-[0.06em] text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]",
 };
 
 export function GlassButton({
@@ -26,7 +26,7 @@ export function GlassButton({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold tracking-wide transition duration-200 ease-out will-change-transform disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0 ${variantClasses[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold tracking-wide transition duration-150 disabled:cursor-not-allowed disabled:opacity-45 ${variantClasses[variant]} ${className}`}
       {...props}
     >
       {children}

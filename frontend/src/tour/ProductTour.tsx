@@ -113,13 +113,13 @@ export function ProductTour() {
       aria-labelledby="tour-title"
     >
       <div
-        className="pointer-events-auto absolute inset-0 bg-black/55 transition-opacity"
+        className="pointer-events-auto absolute inset-0 bg-black/40 transition-opacity"
         onClick={skip}
         aria-hidden
       />
       {rect && (
         <div
-          className="pointer-events-none absolute rounded-control border border-white/55 shadow-[0_0_0_9999px_rgba(0,0,0,0.72)] transition-all duration-200"
+          className="pointer-events-none absolute rounded-control border-2 border-[var(--accent)] shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] transition-all duration-200"
           style={{
             top: rect.top,
             left: rect.left,
@@ -130,7 +130,7 @@ export function ProductTour() {
       )}
 
       <div
-        className="pointer-events-auto animate-fade-up rounded-soft border border-glass-border bg-[var(--bg-elevated)]/95 p-5 shadow-glass backdrop-blur-glass"
+        className="pointer-events-auto animate-fade-up rounded-soft border border-glass-border bg-[var(--bg-elevated)] p-5"
         style={tipStyle}
       >
         <p className="label-caps text-[10px] text-[var(--muted)]">
@@ -138,7 +138,7 @@ export function ProductTour() {
         </p>
         <h2
           id="tour-title"
-          className="mt-2 font-display text-xl font-bold text-white"
+          className="mt-2 font-display text-xl font-bold text-[var(--text-bright)]"
         >
           {step.title}
         </h2>

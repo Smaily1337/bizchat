@@ -7,10 +7,11 @@ import { ThemeProvider } from "@/theme";
 import { ProductTour, TourProvider } from "@/tour";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { AppointmentsPage } from "@/pages/AppointmentsPage";
+import { CalendarPage } from "@/pages/CalendarPage";
 import { ChannelsPage } from "@/pages/ChannelsPage";
 import { CustomersPage } from "@/pages/CustomersPage";
-import { DashboardPage } from "@/pages/DashboardPage";
 import { FeedbackPage } from "@/pages/FeedbackPage";
+import { HomePage } from "@/pages/HomePage";
 import { HoursPage } from "@/pages/HoursPage";
 import { InboxPage } from "@/pages/InboxPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -32,10 +33,10 @@ function RealtimeBridge() {
 function AppLayout() {
   return (
     <TourProvider>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-[var(--bg)]">
         <RealtimeBridge />
         <GlassNav />
-        <main className="mx-auto max-w-shell px-5 py-6 sm:px-10 sm:py-8 lg:px-16">
+        <main className="mx-auto max-w-shell px-4 py-6 sm:px-6 sm:py-8">
           <Outlet />
         </main>
         <ProductTour />
@@ -55,7 +56,8 @@ export default function App() {
             <Route path="/book/:key" element={<PublicBookingPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
-                <Route path="/" element={<DashboardPage />} />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/appointments" element={<AppointmentsPage />} />
                 <Route path="/inbox" element={<InboxPage />} />
                 <Route path="/customers" element={<CustomersPage />} />

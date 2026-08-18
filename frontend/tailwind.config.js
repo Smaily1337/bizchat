@@ -4,7 +4,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Theme-aware ink — white in dark mode, near-black in light
         white: "var(--text-bright)",
         graphite: "var(--bg)",
         void: "var(--bg)",
@@ -19,26 +18,26 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Geist", "Geist Sans", "system-ui", "sans-serif"],
-        sans: ["Geist", "Geist Sans", "system-ui", "sans-serif"],
+        display: ["Sora", "Geist", "system-ui", "sans-serif"],
+        sans: ["Sora", "Geist", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "monospace"],
-        label: ["Fira Sans", "sans-serif"],
+        label: ["Sora", "sans-serif"],
       },
       boxShadow: {
-        glass: "var(--shadow-glass)",
-        canary: "var(--shadow-accent)",
-        active: "var(--shadow-active)",
+        glass: "none",
+        canary: "none",
+        active: "none",
       },
       backdropBlur: {
-        glass: "28px",
+        glass: "0px",
       },
       borderRadius: {
-        soft: "1.25rem",
-        glass: "1.25rem",
-        control: "0.9rem",
+        soft: "0.75rem",
+        glass: "0.75rem",
+        control: "0.5rem",
       },
       maxWidth: {
-        shell: "1440px",
+        shell: "1120px",
       },
     },
   },
