@@ -9,7 +9,7 @@
     border-radius: theme("borderRadius.glass");
     border: 1px solid var(--glass-border);
     background: var(--glass-fill);
-    box-shadow: none;
+    box-shadow: var(--shadow-glass);
     color: var(--text);
   }
 
@@ -18,7 +18,8 @@
   }
 
   .glass-panel-interactive:hover {
-    background: var(--surface-solid);
+    border-color: color-mix(in srgb, var(--ink) 18%, var(--glass-border));
+    background: var(--bg-elevated);
   }
 
   .panel-quiet {
@@ -35,6 +36,7 @@
     border: 1px solid var(--glass-border);
     border-radius: theme("borderRadius.glass");
     background: var(--bg-elevated);
+    box-shadow: var(--shadow-glass);
   }
 
   .hub-tile {
@@ -44,11 +46,13 @@
     border: 1px solid var(--glass-border);
     border-radius: theme("borderRadius.glass");
     background: var(--bg-elevated);
-    transition: background 0.12s ease;
+    box-shadow: var(--shadow-glass);
+    transition: background 0.12s ease, border-color 0.12s ease;
   }
 
   .hub-tile:hover {
     background: var(--surface-solid);
+    border-color: color-mix(in srgb, var(--ink) 18%, var(--glass-border));
   }
 
   .hub-tile:hover .hub-tile-icon {
@@ -60,6 +64,7 @@
     border: 1px solid var(--glass-border);
     border-radius: theme("borderRadius.glass");
     background: var(--bg-elevated);
+    box-shadow: var(--shadow-glass);
     padding: 1.25rem 1.35rem;
   }
 

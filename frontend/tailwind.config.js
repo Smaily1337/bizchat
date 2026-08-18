@@ -24,8 +24,8 @@ export default {
         label: ["IBM Plex Sans", "sans-serif"],
       },
       boxShadow: {
-        glass: "none",
-        canary: "none",
+        glass: "var(--shadow-glass)",
+        canary: "var(--shadow-accent)",
         active: "var(--shadow-active)",
       },
       backdropBlur: {
