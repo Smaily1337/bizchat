@@ -364,11 +364,16 @@ wireForms();
 prefillCompany();
 initReveal();
 
+// Z landinga: ?plan=… → od razu dane firmy (pakiet już wybrany na stronie głównej)
+const fromLanding = Boolean(qs("plan") && PLANS[qs("plan")]);
+
 if (state.step === 4 && state.paidAt) {
   renderInvoice();
   setStep(4);
 } else if (state.step >= 2 && state.step <= 3) {
   setStep(state.step);
+} else if (fromLanding) {
+  setStep(2);
 } else {
   setStep(1);
 }

@@ -61,3 +61,41 @@ document.querySelectorAll(".reveal").forEach((el, i) => {
   el.style.transitionDelay = `${Math.min(i % 6, 3) * 60}ms`;
   observer.observe(el);
 });
+
+const PLAN_META = {
+  free: { name: "Trial", price: "0 zł (14 dni)" },
+  starter: { name: "Starter", price: "149 zł netto / mies." },
+  pro: { name: "Pro", price: "349 zł netto / mies." },
+  enterprise: { name: "Enterprise", price: "wycena indywidualna" },
+};
+
+function selectPlan(planId) {
+  const meta = PLAN_META[planId] || PLAN_META.starter;
+  document.querySelectorAll("#pricing-grid .price-card").forEach((card) => {
+    const on = card.dataset.plan === planId;
+    card.classList.toggle("is-selected", on);
+    card.setAttribute("aria-checked", on ? "true" : "false");
+    const label = card.querySelector(".price-select-label");
+    if (label) {
+      label.textContent = on
+        ? "Wybrany"
+        : `Wybierz ${PLAN_META[card.dataset.plan]?.name || ""}`.trim();
+    }
+  });
+  const nameEl = document.getElementById("selected-plan-label");
+  const priceEl = document.getElementById("selected-plan-price");
+  const cta = document.getElementById("continue-checkout");
+  if (nameEl) nameEl.textContent = meta.name;
+  if (priceEl) priceEl.textContent = meta.price;
+  if (cta) cta.href = `checkout.html?plan=${encodeURIComponent(planId)}`;
+}
+
+const pricingGrid = document.getElementById("pricing-grid");
+if (pricingGrid) {
+  pricingGrid.querySelectorAll(".price-card").forEach((card) => {
+    card.addEventListener("click", () => selectPlan(card.dataset.plan));
+  });
+  const preselected =
+    pricingGrid.querySelector(".price-card.is-selected")?.dataset.plan || "starter";
+  selectPlan(preselected);
+}

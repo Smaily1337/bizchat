@@ -32,7 +32,7 @@
         <a href="#demo">Demo</a>
       </nav>
       <div class="nav-actions">
-        <a class="btn btn-ghost btn-sm" href="checkout.html">Wybierz pakiet</a>
+        <a class="btn btn-ghost btn-sm" href="#cennik">Pakiety</a>
         <a
           class="btn btn-primary btn-sm"
           id="nav-login"
@@ -52,8 +52,8 @@
             Ty zarządzasz kalendarzem z jednego panelu.
           </p>
           <div class="hero-cta">
-            <a class="btn btn-primary" href="checkout.html?plan=starter">Zacznij z pakietem</a>
-            <a class="btn btn-ghost" href="#cennik">Zobacz cennik</a>
+            <a class="btn btn-primary" href="#cennik">Wybierz pakiet</a>
+            <a class="btn btn-ghost" href="#funkcje">Zobacz funkcje</a>
           </div>
         </div>
 
@@ -72,6 +72,110 @@
               Zarezerwowane. Przypomnę 2h przed wizytą.
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="section section-pricing" id="cennik">
+        <div class="section-head reveal">
+          <p class="eyebrow">Pakiety</p>
+          <h2>Wybierz pakiet</h2>
+          <p class="section-sub">
+            Kliknij kartę, potem przejdź do danych firmy i płatności demo.
+          </p>
+        </div>
+
+        <div
+          class="pricing-grid"
+          id="pricing-grid"
+          role="radiogroup"
+          aria-label="Wybór pakietu"
+        >
+          <button
+            type="button"
+            class="price-card glass reveal"
+            data-plan="free"
+            role="radio"
+            aria-checked="false"
+          >
+            <p class="price-name">Trial</p>
+            <p class="price-amount"><span>0</span> zł</p>
+            <p class="price-period">14 dni · potem Free</p>
+            <ul class="price-list">
+              <li>do 30 wizyt / mies.</li>
+              <li>200 wiadomości / mies.</li>
+              <li>2 stanowiska</li>
+              <li>wszystkie kanały czatu</li>
+            </ul>
+            <span class="price-select-label">Wybierz Trial</span>
+          </button>
+
+          <button
+            type="button"
+            class="price-card glass featured is-selected reveal"
+            data-plan="starter"
+            role="radio"
+            aria-checked="true"
+          >
+            <p class="price-badge">Najczęściej wybierany</p>
+            <p class="price-name">Starter</p>
+            <p class="price-amount"><span>149</span> zł</p>
+            <p class="price-period">netto / miesiąc</p>
+            <ul class="price-list">
+              <li>do 150 wizyt / mies.</li>
+              <li>2000 wiadomości / mies.</li>
+              <li>5 stanowisk</li>
+              <li>wszystkie kanały + support</li>
+            </ul>
+            <span class="price-select-label">Wybrany</span>
+          </button>
+
+          <button
+            type="button"
+            class="price-card glass reveal"
+            data-plan="pro"
+            role="radio"
+            aria-checked="false"
+          >
+            <p class="price-name">Pro</p>
+            <p class="price-amount"><span>349</span> zł</p>
+            <p class="price-period">netto / miesiąc</p>
+            <ul class="price-list">
+              <li>bez limitu wizyt</li>
+              <li>bez limitu wiadomości</li>
+              <li>20 stanowisk</li>
+              <li>priorytetowe wdrożenie</li>
+            </ul>
+            <span class="price-select-label">Wybierz Pro</span>
+          </button>
+
+          <button
+            type="button"
+            class="price-card glass reveal"
+            data-plan="enterprise"
+            role="radio"
+            aria-checked="false"
+          >
+            <p class="price-name">Enterprise</p>
+            <p class="price-amount price-amount-sm"><span>indywidualnie</span></p>
+            <p class="price-period">sieci · multi-salon</p>
+            <ul class="price-list">
+              <li>bez limitów</li>
+              <li>SLA i onboarding</li>
+              <li>własne integracje</li>
+              <li>dedykowany opiekun</li>
+            </ul>
+            <span class="price-select-label">Wybierz Enterprise</span>
+          </button>
+        </div>
+
+        <div class="pricing-continue reveal">
+          <p class="pricing-continue-hint">
+            Wybrany pakiet: <strong id="selected-plan-label">Starter</strong>
+            · <span id="selected-plan-price">149 zł netto / mies.</span>
+          </p>
+          <a class="btn btn-primary btn-lg" id="continue-checkout" href="checkout.html?plan=starter">
+            Przejdź do zamówienia
+          </a>
         </div>
       </section>
 
@@ -105,69 +209,6 @@
           <article class="feature reveal">
             <h3>Raporty</h3>
             <p>Obłożenie, kanały i skuteczność bota w jednym widoku.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="cennik">
-        <div class="section-head reveal">
-          <p class="eyebrow">Cennik</p>
-          <h2>Wybierz pakiet pod swój salon</h2>
-          <p class="section-sub">Ceny netto miesięcznie. Po wyborze podasz dane firmy i dostaniesz demo faktury.</p>
-        </div>
-
-        <div class="pricing-grid">
-          <article class="price-card glass reveal" data-plan="free">
-            <p class="price-name">Trial</p>
-            <p class="price-amount"><span>0</span> zł</p>
-            <p class="price-period">14 dni · potem Free</p>
-            <ul class="price-list">
-              <li>do 30 wizyt / mies.</li>
-              <li>200 wiadomości / mies.</li>
-              <li>2 stanowiska</li>
-              <li>wszystkie kanały czatu</li>
-            </ul>
-            <a class="btn btn-ghost btn-block" href="checkout.html?plan=free">Wybierz Trial</a>
-          </article>
-
-          <article class="price-card glass featured reveal" data-plan="starter">
-            <p class="price-badge">Najczęściej wybierany</p>
-            <p class="price-name">Starter</p>
-            <p class="price-amount"><span>149</span> zł</p>
-            <p class="price-period">netto / miesiąc</p>
-            <ul class="price-list">
-              <li>do 150 wizyt / mies.</li>
-              <li>2000 wiadomości / mies.</li>
-              <li>5 stanowisk</li>
-              <li>wszystkie kanały + support</li>
-            </ul>
-            <a class="btn btn-primary btn-block" href="checkout.html?plan=starter">Wybierz Starter</a>
-          </article>
-
-          <article class="price-card glass reveal" data-plan="pro">
-            <p class="price-name">Pro</p>
-            <p class="price-amount"><span>349</span> zł</p>
-            <p class="price-period">netto / miesiąc</p>
-            <ul class="price-list">
-              <li>bez limitu wizyt</li>
-              <li>bez limitu wiadomości</li>
-              <li>20 stanowisk</li>
-              <li>priorytetowe wdrożenie</li>
-            </ul>
-            <a class="btn btn-ghost btn-block" href="checkout.html?plan=pro">Wybierz Pro</a>
-          </article>
-
-          <article class="price-card glass reveal" data-plan="enterprise">
-            <p class="price-name">Enterprise</p>
-            <p class="price-amount"><span>indywidualnie</span></p>
-            <p class="price-period">sieci · multi-salon</p>
-            <ul class="price-list">
-              <li>bez limitów</li>
-              <li>SLA i onboarding</li>
-              <li>własne integracje</li>
-              <li>dedykowany opiekun</li>
-            </ul>
-            <a class="btn btn-ghost btn-block" href="checkout.html?plan=enterprise">Zapytaj / demo</a>
           </article>
         </div>
       </section>

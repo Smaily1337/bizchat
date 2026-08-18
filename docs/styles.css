@@ -397,22 +397,92 @@ p {
   }
 }
 
+.section-pricing {
+  padding-top: 1.5rem;
+}
+
 .price-card {
   padding: 1.4rem 1.35rem 1.5rem;
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.15s ease,
+    background 0.15s ease;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .price-card:hover {
   transform: translateY(-3px);
+  border-color: rgba(15, 118, 110, 0.35);
 }
 
 .price-card.featured {
-  border-color: rgba(15, 118, 110, 0.35);
-  box-shadow: var(--shadow), 0 0 0 1px rgba(15, 118, 110, 0.2);
-  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(15, 118, 110, 0.28);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.price-card.is-selected {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow), 0 0 0 2px rgba(15, 118, 110, 0.28);
+}
+
+.price-card.is-selected .price-select-label {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.price-select-label {
+  display: block;
+  text-align: center;
+  margin-top: auto;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-control);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-bright);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border-outer);
+}
+
+.price-amount-sm {
+  font-size: 1.35rem !important;
+}
+
+.pricing-continue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--glass-border-outer);
+  box-shadow: var(--shadow);
+}
+
+.pricing-continue-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.pricing-continue-hint strong {
+  color: var(--text-bright);
+}
+
+.btn-lg {
+  padding: 0.85rem 1.4rem;
+  font-size: 1rem;
 }
 
 .price-badge {
