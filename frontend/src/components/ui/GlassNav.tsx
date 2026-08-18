@@ -393,7 +393,7 @@ export function GlassNav() {
       </aside>
 
       <div className="app-main">
-        <div className="sticky top-0 z-40 flex items-center justify-between border-b border-glass-border bg-[var(--bg-elevated)] px-4 py-3 lg:hidden">
+        <div className="sticky top-0 z-40 flex items-center justify-between border-b border-glass-border bg-[var(--glass-fill-strong)] px-4 py-3 backdrop-blur-glass lg:hidden">
           <div className="min-w-0">
             <p className="font-display text-base font-semibold text-[var(--text-bright)]">
               Automovia

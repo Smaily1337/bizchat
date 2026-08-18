@@ -29,12 +29,12 @@ export default {
         active: "var(--shadow-active)",
       },
       backdropBlur: {
-        glass: "0px",
+        glass: "22px",
       },
       borderRadius: {
-        soft: "0.5rem",
-        glass: "0.5rem",
-        control: "0.375rem",
+        soft: "1rem",
+        glass: "1rem",
+        control: "0.65rem",
       },
       maxWidth: {
         shell: "1120px",
