@@ -167,6 +167,48 @@ class CoreBotEngine:
         await self.adapter.send_outbound(outbound)
         return outbound
 
+    async def persist_inbound_only(self, inbound: InboundMessage) -> None:
+        """Zapisz wiadomość do Inbox bez odpowiedzi bota (np. postback potwierdzenia)."""
+        business_id = inbound.business_id
+        if business_id is None:
+            logger.warning("persist_inbound_only skipped: missing business_id")
+            return
+        business = await self.db.get(Business, business_id)
+        if business is None:
+            logger.warning(
+                "persist_inbound_only skipped: business %s not found", business_id
+            )
+            return
+
+        customer = await self._get_or_create_customer(inbound, business_id)
+        conversation = await self._get_or_create_conversation(inbound, customer.id)
+        self.db.add(
+            Message(
+                conversation_id=conversation.id,
+                role=MessageRole.customer,
+                content=inbound.text,
+                raw_payload=inbound.raw_payload,
+            )
+        )
+        conversation.updated_at = utc_now()
+        await self.db.flush()
+
+        preview = inbound.text.strip()[:100] or "…"
+        await hub.publish(
+            business_id,
+            "chat.message",
+            {
+                "conversation_id": str(conversation.id),
+                "channel": inbound.channel.value
+                if hasattr(inbound.channel, "value")
+                else str(inbound.channel),
+                "customer_name": customer.name,
+                "role": "customer",
+            },
+            title="Nowa wiadomość",
+            message=f"{customer.name or 'Klient'} ({inbound.channel}): {preview}",
+        )
+
     async def _dispatch(
         self,
         business_id: UUID,

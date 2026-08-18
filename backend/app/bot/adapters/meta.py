@@ -123,7 +123,14 @@ class MetaAdapter(ChannelAdapter):
             )
         text = msg.get("text")
         if not text:
-            return None
+            # Stickers / images / voice — still open an Inbox thread
+            if msg.get("attachments"):
+                kinds = []
+                for att in msg.get("attachments") or []:
+                    kinds.append(str(att.get("type") or "plik"))
+                text = f"[załącznik: {', '.join(kinds) or 'media'}]"
+            else:
+                return None
         return InboundMessage(
             channel=channel,
             business_id=self.business_id,

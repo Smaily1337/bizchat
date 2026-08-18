@@ -24,10 +24,10 @@ const CHANNELS: ChannelDef[] = [
       "Klienci piszą do fanpage — bot umawia wizyty, a Ty odpowiadasz w Inbox lub piszesz proaktywnie z karty klienta (PSID). Reminder ma przyciski Potwierdzam / Odwołuję.",
     steps: [
       "W Meta Developers utwórz aplikację z produktem Messenger.",
-      "Webhook Callback URL: skopiuj adres poniżej (z business_id).",
-      "Verify token: wartość META_VERIFY_TOKEN z serwera (domyślnie bizchat-verify).",
+      "Callback URL w Meta MUSI zawierać ?business_id=… (skopiuj pełny adres poniżej) — bez tego wiadomości nie trafią do Wiadomości.",
+      "Verify token: META_VERIFY_TOKEN (domyślnie bizchat-verify).",
       "Subskrypcje: messages, messaging_postbacks.",
-      "Wklej META_PAGE_ACCESS_TOKEN do zmiennych środowiskowych API i zredeployuj.",
+      "Ustaw META_PAGE_ACCESS_TOKEN na API i zredeployuj. Opcjonalnie META_DEFAULT_BUSINESS_ID = Twój business_id.",
     ],
     webhookPath: "/webhooks/meta",
     envVars: [
