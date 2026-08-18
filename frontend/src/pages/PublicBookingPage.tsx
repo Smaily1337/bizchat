@@ -102,7 +102,7 @@ export function PublicBookingPage() {
       <div className="mx-auto max-w-xl space-y-6">
         <header className="animate-fade-up text-center">
           <p className="label-caps text-[10px] text-[var(--muted)]">Rezerwacja online</p>
-          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-white">
+          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-[var(--text-bright)]">
             {bizName}
           </h1>
           <p className="mt-2 text-sm text-[var(--muted)]">

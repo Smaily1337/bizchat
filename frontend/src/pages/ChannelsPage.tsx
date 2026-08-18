@@ -25,7 +25,7 @@ const CHANNELS: ChannelDef[] = [
     steps: [
       "W Meta Developers utwórz aplikację z produktem Messenger.",
       "Callback URL w Meta MUSI zawierać ?business_id=… (skopiuj pełny adres poniżej) — bez tego wiadomości nie trafią do Wiadomości.",
-      "Verify token: META_VERIFY_TOKEN (domyślnie bizchat-verify).",
+      "Verify token: META_VERIFY_TOKEN (domyślnie bizchat-verify — zostaw, jeśli już jest w Meta).",
       "Subskrypcje: messages, messaging_postbacks.",
       "Ustaw META_PAGE_ACCESS_TOKEN na API i zredeployuj. Opcjonalnie META_DEFAULT_BUSINESS_ID = Twój business_id.",
     ],
@@ -143,7 +143,7 @@ export function ChannelsPage() {
   );
   const widgetSnippet = useMemo(
     () =>
-      `<script src="https://YOUR_CDN/bizchat-widget.js"
+      `<script src="https://YOUR_CDN/automovia-widget.js"
   data-api="${API_BASE}"
   data-business-id="${businessId}"></script>`,
     [businessId],
@@ -225,7 +225,7 @@ export function ChannelsPage() {
                   className={[
                     "shrink-0 rounded-control px-2 py-0.5 text-[10px] uppercase tracking-wider",
                     on
-                      ? "border border-white/30 text-white"
+                      ? "border border-[var(--accent)]/40 text-[var(--text-bright)]"
                       : "border border-glass-border text-[var(--muted)]",
                   ].join(" ")}
                 >

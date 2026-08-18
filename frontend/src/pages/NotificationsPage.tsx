@@ -416,7 +416,7 @@ export function NotificationsPage() {
                 <p className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)]">
                   Podgląd — jak zobaczy klient
                 </p>
-                <p className="mt-1.5 text-sm text-white">{preview}</p>
+                <p className="mt-1.5 text-sm text-[var(--text-bright)]">{preview}</p>
               </div>
             )}
 
@@ -445,7 +445,7 @@ export function NotificationsPage() {
               className={[
                 "relative h-6 w-11 shrink-0 rounded-full border transition",
                 settingsForm.reminders_enabled
-                  ? "border-white/60 bg-white/80"
+                  ? "border-[var(--accent)]/50 bg-[var(--accent)]"
                   : "border-glass-border bg-glass-fill",
               ].join(" ")}
             >
@@ -650,7 +650,7 @@ export function NotificationsPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-medium text-white">{t.name}</p>
+                  <p className="font-medium text-[var(--text-bright)]">{t.name}</p>
                   <p className="text-xs text-canary/90">
                     {KIND_LABEL[t.kind]}
                     {t.is_default ? " · domyślny" : ""}
@@ -695,7 +695,7 @@ export function NotificationsPage() {
                 className="flex flex-col gap-1 rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-white">{entry.body}</p>
+                  <p className="truncate text-[var(--text-bright)]">{entry.body}</p>
                   <p className="mt-0.5 text-xs text-[var(--muted)]">
                     {entry.customer_name || "Klient"}
                     {entry.service_name ? ` · ${entry.service_name}` : ""}

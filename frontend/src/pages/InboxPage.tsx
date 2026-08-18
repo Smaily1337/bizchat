@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { customersApi, inboxApi } from "@/api";
 import { ApiError } from "@/api/client";
 import type { Channel, Conversation, Customer, InboxMessage } from "@/api/types";
@@ -18,9 +18,12 @@ const CHANNEL_LABEL: Record<string, string> = {
 const THREAD_HEIGHT = "h-[min(70vh,calc(100dvh-13rem))]";
 
 export function InboxPage() {
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => searchParams.get("c") || null,
+  );
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [reply, setReply] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +43,12 @@ export function InboxPage() {
   async function reloadList() {
     const list = await inboxApi.conversations();
     setConversations(list);
-    setSelectedId((prev) => prev || list[0]?.id || null);
+    const fromQuery = searchParams.get("c");
+    setSelectedId((prev) => {
+      if (prev && list.some((c) => c.id === prev)) return prev;
+      if (fromQuery && list.some((c) => c.id === fromQuery)) return fromQuery;
+      return list[0]?.id || null;
+    });
   }
 
   async function reloadMessages(id: string) {
@@ -302,7 +310,7 @@ export function InboxPage() {
             <label className="space-y-1 text-sm sm:col-span-2">
               <span className="text-[var(--muted)]">Klient</span>
               <select
-                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-[var(--text-bright)]"
                 value={compose.customer_id}
                 onChange={(e) =>
                   setCompose({ ...compose, customer_id: e.target.value })
@@ -334,7 +342,7 @@ export function InboxPage() {
             <label className="space-y-1 text-sm">
               <span className="text-[var(--muted)]">Kanał</span>
               <select
-                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white"
+                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-[var(--text-bright)]"
                 value={compose.channel}
                 onChange={(e) =>
                   setCompose({
@@ -386,8 +394,8 @@ export function InboxPage() {
                     className={[
                       "w-full border-b border-glass-border px-4 py-3 text-left transition",
                       selectedId === c.id
-                        ? "bg-white/5"
-                        : "hover:bg-glass-fill",
+                        ? "bg-[var(--accent-soft)]"
+                        : "hover:bg-[var(--row-hover)]",
                     ].join(" ")}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -426,7 +434,7 @@ export function InboxPage() {
                     {selectedCustomer.tags.map((t) => (
                       <span
                         key={t.id}
-                        className="rounded-control px-2 py-0.5 text-[11px] font-medium text-white"
+                        className="rounded-control px-2 py-0.5 text-[11px] font-medium text-[var(--text-bright)]"
                         style={{
                           backgroundColor: t.color || "rgba(255,255,255,0.15)",
                         }}
@@ -447,9 +455,9 @@ export function InboxPage() {
                     className={[
                       "max-w-[85%] rounded-soft border px-3 py-2 text-sm",
                       m.role === "customer"
-                        ? "ml-0 border-glass-border bg-glass-fill"
+                        ? "mr-auto border-glass-border bg-glass-fill"
                         : m.role === "owner"
-                          ? "ml-auto border-white/40 bg-white/10"
+                          ? "ml-auto border-[var(--accent)]/40 bg-[var(--accent-soft)]"
                           : "ml-auto border-glass-border bg-glass-fillStrong",
                     ].join(" ")}
                   >
@@ -460,7 +468,9 @@ export function InboxPage() {
                           ? "Ty"
                           : "Bot"}
                     </p>
-                    <p className="whitespace-pre-wrap text-white">{m.content}</p>
+                    <p className="whitespace-pre-wrap text-[var(--text-bright)]">
+                      {m.content}
+                    </p>
                     <p className="mt-1 text-[10px] text-[var(--muted)]">
                       {new Date(m.created_at).toLocaleString("pl-PL", {
                         dateStyle: "short",

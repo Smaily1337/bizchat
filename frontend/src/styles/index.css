@@ -256,7 +256,9 @@
     box-shadow: var(--shadow-glass);
     -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(var(--saturate-glass));
     backdrop-filter: blur(var(--blur-glass)) saturate(var(--saturate-glass));
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: calc(100dvh - 1.5rem);
   }
 
   .app-sidebar::before {
@@ -273,11 +275,24 @@
     z-index: 1;
   }
 
+  @media (min-width: 1024px) {
+    .app-sidebar {
+      display: flex;
+    }
+  }
+
   .app-main {
     display: flex;
     min-width: 0;
     flex: 1;
     flex-direction: column;
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 1024px) {
+    .app-main {
+      padding-bottom: 0;
+    }
   }
 
   .sidebar-link {

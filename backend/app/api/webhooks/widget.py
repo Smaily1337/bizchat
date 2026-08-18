@@ -26,7 +26,14 @@ class WidgetSessionResponse(BaseModel):
 
 
 @router.post("/session", response_model=WidgetSessionResponse)
-async def create_widget_session(body: WidgetSessionRequest) -> WidgetSessionResponse:
+async def create_widget_session(
+    body: WidgetSessionRequest, db: DbSession
+) -> WidgetSessionResponse:
+    from app.models import Business
+
+    biz = await db.get(Business, body.business_id)
+    if biz is None:
+        raise HTTPException(status_code=404, detail="Salon nie znaleziony")
     session_id = str(uuid4())
     token = WidgetAdapter.create_session_token(
         business_id=body.business_id,

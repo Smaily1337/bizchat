@@ -4,7 +4,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        white: "var(--text-bright)",
         graphite: "var(--bg)",
         void: "var(--bg)",
         surface: "var(--surface-solid)",

@@ -188,9 +188,9 @@ export function SettingsPage() {
                   {fmtLimit(row.used, row.max)}
                 </p>
                 {row.max != null && (
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--ink)]/10">
                     <div
-                      className="h-full rounded-full bg-white/80"
+                      className="h-full rounded-full bg-[var(--accent)]"
                       style={{ width: `${usagePct(row.used, row.max)}%` }}
                     />
                   </div>

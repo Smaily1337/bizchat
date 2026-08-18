@@ -166,7 +166,10 @@ export function HomePage() {
             )}
             {openChats.map((c) => (
               <li key={c.id} className="px-4 py-3">
-                <Link to="/inbox" className="block hover:opacity-80">
+                <Link
+                  to={`/inbox?c=${c.id}`}
+                  className="block hover:opacity-80"
+                >
                   <p className="truncate text-sm font-medium text-[var(--text-bright)]">
                     {c.customer_name || "Klient"}
                   </p>

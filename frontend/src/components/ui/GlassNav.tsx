@@ -176,10 +176,10 @@ const salonItems: NavItem[] = [
 ];
 
 const mobilePrimary = [
-  todayItems[0],
-  todayItems[1],
-  todayItems[3],
-  peopleItems[0],
+  todayItems[0], // Dziś
+  todayItems[1], // Kalendarz
+  todayItems[2], // Wizyty
+  todayItems[3], // Wiadomości
 ];
 
 function visible(
@@ -473,7 +473,7 @@ export function GlassNav() {
           <div className="absolute bottom-0 left-0 right-0 max-h-[70vh] overflow-y-auto rounded-t-soft border border-glass-border bg-[var(--bg-elevated)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <p className="label-caps mb-2">Więcej</p>
             <div className="grid grid-cols-2 gap-1">
-              {[...peopleItems.slice(1), ...salon].map((item) => (
+              {[...peopleItems, ...salon].map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}

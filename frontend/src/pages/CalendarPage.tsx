@@ -368,7 +368,7 @@ export function CalendarPage() {
                     <span>{name}</span>
                     <span
                       className={
-                        on ? "text-white" : "text-[var(--muted)]"
+                        on ? "text-[var(--text-bright)]" : "text-[var(--muted)]"
                       }
                     >
                       {on ? "w planie" : "poza planem"}
