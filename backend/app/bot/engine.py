@@ -48,7 +48,7 @@ class CoreBotEngine:
         business_id = inbound.business_id
         if business_id is None:
             reply_text = (
-                "BizChat: brak business_id — skonfiguruj webhook z identyfikatorem salonu."
+                "Automovia: brak business_id — skonfiguruj webhook z identyfikatorem salonu."
             )
             outbound = OutboundMessage(
                 channel=inbound.channel,
@@ -60,7 +60,7 @@ class CoreBotEngine:
 
         business = await self.db.get(Business, business_id)
         if business is None:
-            reply_text = "BizChat: salon nie został znaleziony."
+            reply_text = "Automovia: salon nie został znaleziony."
             outbound = OutboundMessage(
                 channel=inbound.channel,
                 external_thread_id=inbound.external_thread_id,
@@ -249,7 +249,7 @@ class CoreBotEngine:
         if intent == Intent.feedback:
             return (
                 "Dziękujemy za chęć zostawienia opinii! Po wizycie właściciel "
-                "może poprosić o ocenę 1–5 w panelu BizChat."
+                "może poprosić o ocenę 1–5 w panelu Automovia."
             )
 
         faq_answer = await self._match_faq(business_id, inbound.text)

@@ -94,7 +94,7 @@ def _event_body(appointment: Appointment) -> dict[str, Any]:
     summary = f"{what} — {who}{staff_name}"
     return {
         "summary": summary,
-        "description": appointment.notes or f"BizChat {appointment.id}",
+        "description": appointment.notes or f"Automovia {appointment.id}",
         "start": {"dateTime": appointment.start_at.isoformat()},
         "end": {"dateTime": appointment.end_at.isoformat()},
     }

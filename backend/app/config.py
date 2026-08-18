@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "BizChat"
+    app_name: str = "Automovia"
     environment: str = "development"
     debug: bool = True
     secret_key: str = "change-me-to-a-long-random-string"
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    smtp_from: str = "BizChat <noreply@bizchat.local>"
+    smtp_from: str = "Automovia <noreply@automovia.local>"
     smtp_tls: bool = True
 
     telegram_bot_token: str = ""

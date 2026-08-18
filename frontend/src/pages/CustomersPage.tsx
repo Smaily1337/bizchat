@@ -216,7 +216,7 @@ export function CustomersPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="label-caps">Baza</p>
-            <h1 className="font-display text-3xl font-bold text-[var(--text-bright)] sm:text-4xl">
+            <h1 className="font-display text-3xl font-semibold text-[var(--text-bright)] sm:text-4xl">
               Klienci
             </h1>
             <p className="mt-1 max-w-lg text-sm text-[var(--muted)]">

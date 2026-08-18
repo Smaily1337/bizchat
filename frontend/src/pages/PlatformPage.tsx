@@ -107,7 +107,7 @@ export function PlatformPage() {
         <h1 className="font-display text-3xl font-bold">Platforma</h1>
         <p className="mt-3 text-sm text-[var(--muted)]">
           Brak uprawnień — ten panel jest tylko dla administratora platformy
-          BizChat.
+          Automovia.
         </p>
       </div>
     );
@@ -252,7 +252,7 @@ export function PlatformPage() {
       <header className="animate-fade-up">
         <h1 className="font-display text-3xl font-bold">Platforma</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Superadmin BizChat — konta, licencje firm i ruch na landingu
+          Superadmin Automovia — konta, licencje firm i ruch na landingu
         </p>
       </header>
 

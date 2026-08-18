@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
@@ -7,7 +7,6 @@ import { GlassButton } from "./GlassButton";
 type NavItem = {
   to: string;
   label: string;
-  hint?: string;
   end?: boolean;
   tourId?: string;
   roles?: readonly ("owner" | "admin" | "pracownik")[];
@@ -15,20 +14,15 @@ type NavItem = {
   icon: ReactNode;
 };
 
-type NavGroup = {
-  title: string;
-  items: NavItem[];
-};
+const ic = "h-4 w-4 shrink-0";
 
-const iconClass = "h-4 w-4 shrink-0";
-
-const primaryItems: NavItem[] = [
+const todayItems: NavItem[] = [
   {
     to: "/",
-    label: "Start",
+    label: "Dziś",
     end: true,
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
       </svg>
     ),
@@ -38,7 +32,7 @@ const primaryItems: NavItem[] = [
     label: "Kalendarz",
     tourId: "nav-calendar",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
         <rect x="3" y="5" width="18" height="16" rx="2" />
         <path d="M16 3v4M8 3v4M3 11h18" />
       </svg>
@@ -49,7 +43,7 @@ const primaryItems: NavItem[] = [
     label: "Wizyty",
     tourId: "nav-appointments",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
         <path d="M9 11h6M9 15h3" />
         <path d="M8 3h8v3H8z" />
         <path d="M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
@@ -61,157 +55,134 @@ const primaryItems: NavItem[] = [
     label: "Wiadomości",
     tourId: "nav-inbox",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
         <rect x="3" y="5" width="18" height="14" rx="2" />
         <path d="m3 7 9 7 9-7" />
       </svg>
     ),
   },
+];
+
+const peopleItems: NavItem[] = [
   {
     to: "/customers",
     label: "Klienci",
     tourId: "nav-customers",
     icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
         <circle cx="9" cy="8" r="3" />
         <path d="M3 19a6 6 0 0 1 12 0" />
       </svg>
     ),
   },
-];
-
-const salonGroups: NavGroup[] = [
   {
-    title: "Zespół",
-    items: [
-      {
-        to: "/staff",
-        label: "Pracownicy",
-        hint: "Grafik i przypisania",
-        tourId: "nav-staff",
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-          </svg>
-        ),
-      },
-      {
-        to: "/reports",
-        label: "Raporty",
-        hint: "Statystyki i eksport",
-        tourId: "nav-reports",
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M4 19V5M10 19V9M16 19v-6M22 19H2" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    title: "Konfiguracja",
-    items: [
-      {
-        to: "/channels",
-        label: "Kanały",
-        hint: "Messenger, Telegram, widget",
-        tourId: "nav-channels",
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
-            <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
-          </svg>
-        ),
-      },
-      {
-        to: "/hours",
-        label: "Godziny",
-        hint: "Otwarcie i dni wolne",
-        tourId: "nav-hours",
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" />
-          </svg>
-        ),
-      },
-      {
-        to: "/notifications",
-        label: "Powiadomienia",
-        hint: "SMS, e-mail, przypomnienia",
-        tourId: "nav-notifications",
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-            <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
-          </svg>
-        ),
-      },
-      {
-        to: "/settings",
-        label: "Ustawienia",
-        hint: "Salon, usługi, wygląd",
-        tourId: "nav-settings",
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    title: "Konto",
-    items: [
-      {
-        to: "/feedback",
-        label: "Feedback",
-        hint: "Zgłoś uwagę",
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7z" />
-          </svg>
-        ),
-      },
-      {
-        to: "/users",
-        label: "Użytkownicy",
-        hint: "Dostępy do panelu",
-        roles: ["owner", "admin"],
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <circle cx="9" cy="8" r="3" />
-            <path d="M3 19a6 6 0 0 1 12 0" />
-          </svg>
-        ),
-      },
-      {
-        to: "/platform",
-        label: "Platforma",
-        hint: "Administracja BizChat",
-        platformAdmin: true,
-        icon: (
-          <svg aria-hidden viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4z" />
-          </svg>
-        ),
-      },
-    ],
+    to: "/staff",
+    label: "Zespół",
+    tourId: "nav-staff",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+      </svg>
+    ),
   },
 ];
 
-function linkClass(isActive: boolean) {
-  return [
-    "inline-flex items-center gap-2 rounded-control px-3 py-2 text-sm font-semibold transition",
-    isActive
-      ? "bg-[var(--accent)] text-[var(--on-accent)] shadow-canary"
-      : "text-[var(--muted)] hover:bg-[var(--surface-solid)] hover:text-[var(--text-bright)]",
-  ].join(" ");
-}
+const salonItems: NavItem[] = [
+  {
+    to: "/channels",
+    label: "Kanały",
+    tourId: "nav-channels",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+        <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
+      </svg>
+    ),
+  },
+  {
+    to: "/hours",
+    label: "Godziny",
+    tourId: "nav-hours",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </svg>
+    ),
+  },
+  {
+    to: "/notifications",
+    label: "Powiadomienia",
+    tourId: "nav-notifications",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+        <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+      </svg>
+    ),
+  },
+  {
+    to: "/reports",
+    label: "Raporty",
+    tourId: "nav-reports",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M4 19V5M10 19V9M16 19v-6M22 19H2" />
+      </svg>
+    ),
+  },
+  {
+    to: "/settings",
+    label: "Ustawienia",
+    tourId: "nav-settings",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+      </svg>
+    ),
+  },
+  {
+    to: "/feedback",
+    label: "Feedback",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7z" />
+      </svg>
+    ),
+  },
+  {
+    to: "/users",
+    label: "Użytkownicy",
+    roles: ["owner", "admin"],
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3 19a6 6 0 0 1 12 0" />
+      </svg>
+    ),
+  },
+  {
+    to: "/platform",
+    label: "Platforma",
+    platformAdmin: true,
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4z" />
+      </svg>
+    ),
+  },
+];
 
-function visibleItem(
+const mobilePrimary = [
+  todayItems[0],
+  todayItems[1],
+  todayItems[3],
+  peopleItems[0],
+];
+
+function visible(
   item: NavItem,
   owner: { role?: string; is_platform_admin?: boolean } | null,
 ) {
@@ -223,87 +194,145 @@ function visibleItem(
   );
 }
 
-function SalonMenuBody({
-  groups,
-}: {
-  groups: NavGroup[];
-}) {
+function SideLink({ item }: { item: NavItem }) {
   return (
-    <>
-      {groups.map((group) => (
-        <div key={group.title} className="mb-1 last:mb-0">
-          <p className="label-caps px-2.5 py-1.5">{group.title}</p>
-          {group.items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              role="menuitem"
-              data-tour={item.tourId}
-              className={({ isActive }) =>
-                [
-                  "flex w-full items-start gap-3 rounded-control px-2.5 py-2.5 transition",
-                  isActive
-                    ? "bg-[var(--accent-soft)] text-[var(--text-bright)]"
-                    : "text-[var(--muted)] hover:bg-[var(--surface-solid)] hover:text-[var(--text-bright)]",
-                ].join(" ")
-              }
-            >
-              <span className="mt-0.5 text-[var(--accent)]">{item.icon}</span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold">{item.label}</span>
-                {item.hint && (
-                  <span className="mt-0.5 block text-xs text-[var(--muted)]">
-                    {item.hint}
-                  </span>
-                )}
-              </span>
-            </NavLink>
-          ))}
-        </div>
-      ))}
-    </>
+    <NavLink
+      to={item.to}
+      end={item.end}
+      data-tour={item.tourId}
+      className={({ isActive }) =>
+        `sidebar-link ${isActive ? "is-active" : ""}`
+      }
+    >
+      {item.icon}
+      {item.label}
+    </NavLink>
   );
 }
 
-export function GlassNav() {
-  const { business, owner, logout, resendVerification } = useAuth();
+function AccountMenu({
+  open,
+  onToggle,
+  menuRef,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  menuRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const { owner, logout, resendVerification } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  return (
+    <div ref={menuRef}>
+      {owner && !owner.email_verified && (
+        <p className="mb-2 px-1 text-[11px] leading-snug text-[var(--muted)]">
+          Potwierdź e-mail.{" "}
+          <button
+            type="button"
+            className="font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+            onClick={() => void resendVerification()}
+          >
+            Wyślij ponownie
+          </button>
+        </p>
+      )}
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={onToggle}
+        className="flex w-full items-center gap-2 rounded-control px-2 py-2 text-left hover:bg-[var(--surface-container)]"
+      >
+        <span className="avatar-chip">
+          {(owner?.email || "U").slice(0, 1).toUpperCase()}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium text-[var(--text-bright)]">
+            {owner?.email?.split("@")[0] || "Konto"}
+          </span>
+          <span className="block truncate text-[11px] text-[var(--muted)]">
+            {owner?.is_platform_admin ? "Platforma" : owner?.role || "Konto"}
+          </span>
+        </span>
+      </button>
+      {open && (
+        <div className="menu-panel mt-2 space-y-1 p-2">
+          <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
+            {owner?.email}
+          </p>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex w-full items-center justify-between rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+          >
+            Motyw
+            <span className="text-[var(--muted)]">
+              {theme === "dark" ? "Ciemny" : "Jasny"}
+            </span>
+          </button>
+          <GlassButton variant="subtle" className="!w-full" onClick={logout}>
+            Wyloguj
+          </GlassButton>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MobileAccountDropdown() {
+  const { owner, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <div className="menu-panel absolute right-0 top-full z-50 mt-2 w-56 space-y-1 p-2">
+      <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
+        {owner?.email}
+      </p>
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="flex w-full items-center justify-between rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+      >
+        Motyw
+        <span className="text-[var(--muted)]">
+          {theme === "dark" ? "Ciemny" : "Jasny"}
+        </span>
+      </button>
+      <GlassButton variant="subtle" className="!w-full" onClick={logout}>
+        Wyloguj
+      </GlassButton>
+    </div>
+  );
+}
+
+/** Full authenticated chrome: sidebar + main + mobile nav. */
+export function GlassNav() {
+  const { business, owner } = useAuth();
   const location = useLocation();
-  const [salonOpen, setSalonOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const salonRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
+  const mobileAccountRef = useRef<HTMLDivElement>(null);
 
-  const groups = salonGroups
-    .map((g) => ({
-      ...g,
-      items: g.items.filter((i) => visibleItem(i, owner)),
-    }))
-    .filter((g) => g.items.length > 0);
-
-  const salonPaths = groups.flatMap((g) => g.items.map((i) => i.to));
-  const salonActive = salonPaths.some(
-    (to) => location.pathname === to || location.pathname.startsWith(`${to}/`),
+  const salon = salonItems.filter((i) => visible(i, owner));
+  const moreActive = salon.some(
+    (i) =>
+      location.pathname === i.to || location.pathname.startsWith(`${i.to}/`),
   );
 
   useEffect(() => {
-    setSalonOpen(false);
+    setMoreOpen(false);
     setAccountOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
     if (!accountOpen) return;
     function onDoc(e: MouseEvent) {
-      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
-        setAccountOpen(false);
-      }
+      const t = e.target as Node;
+      const inDesk = accountRef.current?.contains(t);
+      const inMob = mobileAccountRef.current?.contains(t);
+      if (!inDesk && !inMob) setAccountOpen(false);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setSalonOpen(false);
-        setAccountOpen(false);
-      }
+      if (e.key === "Escape") setAccountOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
@@ -313,207 +342,153 @@ export function GlassNav() {
     };
   }, [accountOpen]);
 
-  useEffect(() => {
-    if (!salonOpen) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setSalonOpen(false);
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [salonOpen]);
-
-  const initials =
-    (business?.name || "B")
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() || "")
-      .join("") || "B";
-
   return (
-    <header className="nav-shell sticky top-0 z-40">
-      <div className="mx-auto flex max-w-shell items-center gap-3 px-4 py-3 sm:px-6">
-        <NavLink to="/" className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-[var(--accent)] text-[var(--on-accent)] shadow-canary">
-            <span className="font-display text-base font-bold">{initials}</span>
-          </div>
-          <div className="min-w-0">
-            <p className="font-display text-xl font-bold leading-none tracking-tight text-[var(--text-bright)]">
-              BizChat
+    <div className="app-shell">
+      <aside className="app-sidebar" aria-label="Nawigacja">
+        <div className="border-b border-glass-border px-4 py-4">
+          <NavLink to="/" className="block min-w-0">
+            <p className="font-display text-lg font-semibold text-[var(--text-bright)]">
+              Automovia
             </p>
             <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
               {business?.name || "Panel salonu"}
             </p>
-          </div>
-        </NavLink>
+          </NavLink>
+        </div>
 
-        <nav
-          className="ml-auto hidden items-center gap-1 lg:flex"
-          aria-label="Główna nawigacja"
-        >
-          {primaryItems.map((item) => (
+        <div className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+          <div>
+            <p className="label-caps mb-1.5 px-2">Praca</p>
+            <div className="space-y-0.5">
+              {todayItems.map((item) => (
+                <SideLink key={item.to} item={item} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="label-caps mb-1.5 px-2">Ludzie</p>
+            <div className="space-y-0.5">
+              {peopleItems.map((item) => (
+                <SideLink key={item.to} item={item} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="label-caps mb-1.5 px-2">Salon</p>
+            <div className="space-y-0.5">
+              {salon.map((item) => (
+                <SideLink key={item.to} item={item} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-glass-border p-3">
+          <AccountMenu
+            open={accountOpen}
+            onToggle={() => setAccountOpen((v) => !v)}
+            menuRef={accountRef}
+          />
+        </div>
+      </aside>
+
+      <div className="app-main">
+        <div className="sticky top-0 z-40 flex items-center justify-between border-b border-glass-border bg-[var(--bg-elevated)] px-4 py-3 lg:hidden">
+          <div className="min-w-0">
+            <p className="font-display text-base font-semibold text-[var(--text-bright)]">
+              Automovia
+            </p>
+            <p className="truncate text-xs text-[var(--muted)]">
+              {business?.name || "Panel"}
+            </p>
+          </div>
+          <div className="relative" ref={mobileAccountRef}>
+            <button
+              type="button"
+              aria-label="Konto"
+              onClick={() => setAccountOpen((v) => !v)}
+              className="avatar-chip"
+            >
+              {(owner?.email || "U").slice(0, 1).toUpperCase()}
+            </button>
+            {accountOpen && (
+              <MobileAccountDropdown />
+            )}
+          </div>
+        </div>
+
+        <main className="mx-auto w-full max-w-shell flex-1 px-4 py-6 sm:px-6 sm:py-8">
+          <Outlet />
+        </main>
+
+        <nav className="mobile-tabbar" aria-label="Szybka nawigacja">
+          {mobilePrimary.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
-              data-tour={item.tourId}
-              className={({ isActive }) => linkClass(isActive)}
+              className={({ isActive }) =>
+                [
+                  "flex flex-col items-center gap-0.5 rounded-control px-1 py-1.5 text-[10px] font-medium",
+                  isActive ? "text-[var(--accent)]" : "text-[var(--muted)]",
+                ].join(" ")
+              }
             >
               {item.icon}
               {item.label}
             </NavLink>
           ))}
-
-          <div className="relative" ref={salonRef}>
-            <button
-              type="button"
-              aria-expanded={salonOpen}
-              onClick={() => {
-                setSalonOpen((v) => !v);
-                setAccountOpen(false);
-              }}
-              className={linkClass(salonActive || salonOpen)}
-            >
-              Salon
-              <svg
-                viewBox="0 0 24 24"
-                className="h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-            {salonOpen && (
-              <div
-                role="menu"
-                className="menu-panel absolute right-0 top-full z-50 mt-2 w-[min(100vw-2rem,320px)] p-2 animate-soft-pop"
-              >
-                <SalonMenuBody groups={groups} />
-              </div>
-            )}
-          </div>
-        </nav>
-
-        <div className="relative ml-auto lg:ml-2" ref={accountRef}>
           <button
             type="button"
-            aria-expanded={accountOpen}
-            aria-label="Konto"
-            onClick={() => {
-              setAccountOpen((v) => !v);
-              setSalonOpen(false);
-            }}
-            className="inline-flex items-center gap-2 rounded-control border border-glass-border bg-[var(--bg-elevated)] px-2.5 py-1.5 text-sm font-semibold text-[var(--text-bright)] shadow-glass hover:border-[var(--accent)]"
+            onClick={() => setMoreOpen((v) => !v)}
+            className={[
+              "flex flex-col items-center gap-0.5 rounded-control px-1 py-1.5 text-[10px] font-medium",
+              moreOpen || moreActive
+                ? "text-[var(--accent)]"
+                : "text-[var(--muted)]",
+            ].join(" ")}
           >
-            <span className="avatar-chip !h-8 !w-8 !text-sm">
-              {(owner?.email || "U").slice(0, 1).toUpperCase()}
-            </span>
-            <span className="hidden max-w-[140px] truncate sm:inline">
-              {owner?.email?.split("@")[0] || "Konto"}
-            </span>
             <svg
               viewBox="0 0 24 24"
-              className="h-3.5 w-3.5 text-[var(--muted)]"
+              className={ic}
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.7"
             >
-              <path d="m6 9 6 6 6-6" />
+              <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
+            Więcej
           </button>
-          {accountOpen && (
-            <div className="menu-panel absolute right-0 top-full z-50 mt-2 w-64 p-3 animate-soft-pop">
-              <p className="break-all text-sm font-semibold text-[var(--text-bright)]">
-                {owner?.email}
-              </p>
-              <p className="mt-0.5 text-xs text-[var(--muted)]">
-                {owner?.is_platform_admin
-                  ? "Administrator platformy"
-                  : owner?.role
-                    ? `Rola: ${owner.role}`
-                    : "Konto"}
-              </p>
-              <div className="mt-3 space-y-2 border-t border-glass-border pt-3">
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="flex w-full items-center justify-between rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+        </nav>
+      </div>
+
+      {moreOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/30"
+            aria-label="Zamknij"
+            onClick={() => setMoreOpen(false)}
+          />
+          <div className="absolute bottom-0 left-0 right-0 max-h-[70vh] overflow-y-auto rounded-t-soft border border-glass-border bg-[var(--bg-elevated)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <p className="label-caps mb-2">Więcej</p>
+            <div className="grid grid-cols-2 gap-1">
+              {[...peopleItems.slice(1), ...salon].map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  data-tour={item.tourId}
+                  onClick={() => setMoreOpen(false)}
+                  className="sidebar-link"
                 >
-                  Motyw
-                  <span className="text-[var(--muted)]">
-                    {theme === "dark" ? "Ciemny" : "Jasny"}
-                  </span>
-                </button>
-                <GlassButton variant="subtle" className="!w-full" onClick={logout}>
-                  Wyloguj
-                </GlassButton>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="border-t border-glass-border lg:hidden">
-        <nav
-          className="mx-auto flex max-w-shell items-center gap-1 overflow-x-auto px-4 py-2 sm:px-6"
-          aria-label="Szybka nawigacja"
-        >
-          {primaryItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              data-tour={item.tourId}
-              className={({ isActive }) => `${linkClass(isActive)} shrink-0`}
-            >
-              {item.icon}
-              <span className="hidden xs:inline sm:inline">{item.label}</span>
-            </NavLink>
-          ))}
-          <button
-            type="button"
-            aria-expanded={salonOpen}
-            onClick={() => {
-              setSalonOpen((v) => !v);
-              setAccountOpen(false);
-            }}
-            className={`${linkClass(salonActive || salonOpen)} shrink-0`}
-          >
-            Salon
-            <svg
-              viewBox="0 0 24 24"
-              className="h-3.5 w-3.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-        </nav>
-
-        {salonOpen && (
-          <div className="border-t border-glass-border bg-[var(--bg-elevated)] px-4 py-3 sm:px-6">
-            <div className="mx-auto max-w-shell">
-              <SalonMenuBody groups={groups} />
+                  {item.icon}
+                  {item.label}
+                </NavLink>
+              ))}
             </div>
           </div>
-        )}
-      </div>
-
-      {owner && !owner.email_verified && (
-        <div className="border-t border-glass-border bg-[var(--accent-soft)] px-4 py-2 text-center text-xs text-[var(--text-bright)]">
-          Potwierdź e-mail, żeby włączyć pełne powiadomienia.{" "}
-          <button
-            type="button"
-            className="font-semibold underline underline-offset-2"
-            onClick={() => void resendVerification()}
-          >
-            Wyślij ponownie
-          </button>
         </div>
       )}
-    </header>
+    </div>
   );
 }

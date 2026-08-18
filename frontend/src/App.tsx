@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/auth/AuthContext";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { ToastProvider } from "@/components/ToastProvider";
@@ -33,14 +33,9 @@ function RealtimeBridge() {
 function AppLayout() {
   return (
     <TourProvider>
-      <div className="min-h-screen bg-[var(--bg)]">
-        <RealtimeBridge />
-        <GlassNav />
-        <main className="mx-auto max-w-shell px-4 py-6 sm:px-6 sm:py-8">
-          <Outlet />
-        </main>
-        <ProductTour />
-      </div>
+      <RealtimeBridge />
+      <GlassNav />
+      <ProductTour />
     </TourProvider>
   );
 }

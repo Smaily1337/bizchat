@@ -132,10 +132,10 @@ export function LoginPage() {
       </button>
       <GlassCard className="animate-fade-up w-full max-w-md">
         <p className="font-display text-4xl font-extrabold tracking-tight">
-          BizChat
+          Automovia
         </p>
-        <h1 className="mt-2 font-display text-xl font-semibold text-canary">
-          {mode === "login" ? "Panel admina" : "Rejestracja"}
+        <h1 className="mt-2 font-display text-xl font-semibold text-[var(--text-bright)]">
+          {mode === "login" ? "Panel salonu" : "Rejestracja"}
         </h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           {mode === "login"

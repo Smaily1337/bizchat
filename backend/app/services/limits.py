@@ -142,7 +142,7 @@ def assert_license_active(business: Business) -> None:
     status = (business.license_status or LICENSE_ACTIVE).lower()
     if status == LICENSE_SUSPENDED:
         raise LimitExceededError(
-            "Licencja salonu jest zawieszona. Skontaktuj się z BizChat.",
+            "Licencja salonu jest zawieszona. Skontaktuj się z Automovia.",
             code="license_suspended",
         )
     expires = business.license_expires_at

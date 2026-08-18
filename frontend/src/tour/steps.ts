@@ -16,7 +16,7 @@ export const TOUR_PENDING_KEY = "bizchat_tour_pending";
 export const TOUR_STEPS: TourStep[] = [
   {
     id: "welcome",
-    title: "Witaj w BizChat",
+    title: "Witaj w Automovia",
     body: "Start to przegląd salonu. Stąd wchodzisz w kategorie — kalendarz, wizyty, wiadomości — każda na osobnym ekranie.",
     route: "/",
     placement: "center",
