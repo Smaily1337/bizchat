@@ -56,10 +56,40 @@ async def _graph_request(url: str, params: dict[str, Any] | None = None) -> dict
         resp = await client.get(url, params=query or None)
         data = resp.json() if resp.content else {}
         if resp.is_error:
-            err = (data.get("error") or {}).get("message") or resp.text[:300]
+            err_obj = data.get("error") or {}
+            err = err_obj.get("message") or resp.text[:300]
             logger.error("Meta Graph failed url=%s err=%s", url[:120], err)
-            raise MetaImportError(f"Meta Graph API: {err}", code="graph_error")
+            raise MetaImportError(_friendly_graph_error(err), code=_graph_error_code(err))
         return data if isinstance(data, dict) else {}
+
+
+PERMISSION_HINT = (
+    "Meta blokuje odczyt historii rozmów. Token strony nie ma "
+    "pages_read_engagement (albo aplikacja nie przeszła App Review).\n\n"
+    "Szybka naprawa (tryb Development):\n"
+    "1. developers.facebook.com → Twoja aplikacja → App Review → Permissions\n"
+    "2. Dodaj pages_read_engagement (+ pages_messaging jeśli brak)\n"
+    "3. Graph API Explorer → User/Page token z tymi uprawnieniami → "
+    "wygeneruj Page Access Token i wklej jako META_PAGE_ACCESS_TOKEN\n"
+    "4. Zredeployuj API\n\n"
+    "Albo użyj „Import PSID” poniżej — wklej ID osób z Meta "
+    "(bez tej zgody też zadziała)."
+)
+
+
+def _graph_error_code(err: str) -> str:
+    low = err.lower()
+    if "pages_read_engagement" in low or "page public content" in low:
+        return "missing_pages_read_engagement"
+    if "permission" in low:
+        return "missing_permission"
+    return "graph_error"
+
+
+def _friendly_graph_error(err: str) -> str:
+    if _graph_error_code(err) == "missing_pages_read_engagement":
+        return PERMISSION_HINT
+    return f"Meta Graph API: {err}"
 
 
 async def _page_id() -> str:
@@ -76,8 +106,26 @@ async def _iter_conversations(limit_threads: int = 50) -> list[dict[str, Any]]:
         "participants{name,email,id},"
         "messages.limit(40){id,message,from,created_time}"
     )
+    page_id = await _page_id()
+    last_error: MetaImportError | None = None
+    for root in (f"{GRAPH}/{page_id}/conversations", f"{GRAPH}/me/conversations"):
+        try:
+            return await _paginate_conversations(root, fields, limit_threads)
+        except MetaImportError as exc:
+            if exc.code == "missing_pages_read_engagement":
+                raise
+            last_error = exc
+            logger.info("Conversations via %s failed: %s", root, exc)
+    if last_error:
+        raise last_error
+    raise MetaImportError("Nie udało się pobrać rozmów z Meta.")
+
+
+async def _paginate_conversations(
+    start_url: str, fields: str, limit_threads: int
+) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
-    url = f"{GRAPH}/me/conversations"
+    url = start_url
     params: dict[str, Any] | None = {
         "platform": "messenger",
         "fields": fields,
@@ -93,7 +141,7 @@ async def _iter_conversations(limit_threads: int = 50) -> list[dict[str, Any]]:
         if not next_url:
             break
         url = str(next_url)
-        params = None  # next URL already has query string
+        params = None
     return out[:limit_threads]
 
 
@@ -280,6 +328,112 @@ async def import_messenger_conversations(
         "page_id": page_id,
         "threads_seen": len(threads),
         "skipped_threads": skipped_threads,
+        "customers_created": created_customers,
+        "conversations_created": created_conversations,
+        "messages_created": created_messages,
+        "imported_names": imported_names[:30],
+    }
+
+
+def parse_psid_lines(raw: str) -> list[tuple[str, str | None]]:
+    """Parse lines: `PSID`, `Name | PSID`, `PSID Name`, `name,psid`."""
+    rows: list[tuple[str, str | None]] = []
+    seen: set[str] = set()
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        name: str | None = None
+        psid = ""
+        if "|" in line:
+            left, right = [p.strip() for p in line.split("|", 1)]
+            if left.isdigit():
+                psid, name = left, right or None
+            else:
+                name, psid = left, right
+        elif "," in line:
+            left, right = [p.strip() for p in line.split(",", 1)]
+            if left.isdigit():
+                psid, name = left, right or None
+            else:
+                name, psid = left, right
+        else:
+            parts = line.split()
+            if len(parts) == 1:
+                psid = parts[0]
+            elif parts[0].isdigit():
+                psid = parts[0]
+                name = " ".join(parts[1:]) or None
+            elif parts[-1].isdigit():
+                psid = parts[-1]
+                name = " ".join(parts[:-1]) or None
+            else:
+                continue
+        psid = "".join(ch for ch in psid if ch.isdigit())
+        if len(psid) < 5 or psid in seen:
+            continue
+        seen.add(psid)
+        rows.append((psid, name))
+    return rows
+
+
+async def import_messenger_psids(
+    db: AsyncSession,
+    *,
+    business_id: UUID,
+    entries: list[tuple[str, str | None]],
+) -> dict[str, Any]:
+    """Create Inbox threads for known PSIDs without reading Meta history."""
+    if not entries:
+        raise MetaImportError(
+            "Wklej co najmniej jeden PSID (np. z logów webhooka lub Meta).",
+            code="empty_psids",
+        )
+
+    created_customers = 0
+    created_conversations = 0
+    created_messages = 0
+    imported_names: list[str] = []
+
+    for psid, name in entries:
+        display = name
+        if not display and settings.meta_page_access_token:
+            try:
+                display = await fetch_messenger_profile_name(psid)
+            except Exception:  # noqa: BLE001
+                display = None
+
+        customer, is_new_c = await _get_or_create_customer(
+            db, business_id=business_id, psid=psid, name=display
+        )
+        if is_new_c:
+            created_customers += 1
+
+        conversation, is_new_conv = await _get_or_create_conversation(
+            db, customer_id=customer.id, psid=psid
+        )
+        if is_new_conv:
+            created_conversations += 1
+            # Placeholder so the thread is visible in Inbox
+            db.add(
+                Message(
+                    conversation_id=conversation.id,
+                    role=MessageRole.customer,
+                    content="[zaimportowano z PSID — napisz, by wznowić rozmowę]",
+                    raw_payload={"source": "psid_import", "psid": psid},
+                )
+            )
+            created_messages += 1
+            conversation.updated_at = utc_now()
+            imported_names.append(customer.name or psid)
+        elif is_new_c:
+            imported_names.append(customer.name or psid)
+
+    await db.flush()
+    return {
+        "page_id": "",
+        "threads_seen": len(entries),
+        "skipped_threads": 0,
         "customers_created": created_customers,
         "conversations_created": created_conversations,
         "messages_created": created_messages,

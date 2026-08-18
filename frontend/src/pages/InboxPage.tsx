@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { customersApi, inboxApi } from "@/api";
+import { ApiError } from "@/api/client";
 import type { Channel, Conversation, Customer, InboxMessage } from "@/api/types";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassTextarea } from "@/components/ui/GlassInput";
@@ -27,6 +28,8 @@ export function InboxPage() {
   const [loading, setLoading] = useState(true);
   const [composeOpen, setComposeOpen] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [importPanel, setImportPanel] = useState(false);
+  const [psidText, setPsidText] = useState("");
   const [compose, setCompose] = useState({
     customer_id: "",
     channel: "messenger" as Channel,
@@ -141,11 +144,45 @@ export function InboxPage() {
         `Import Meta: ${res.threads_seen} wątków, +${res.customers_created} klientów, ` +
           `+${res.conversations_created} rozmów, +${res.messages_created} wiadomości${names}`,
       );
+      setImportPanel(false);
+    } catch (err) {
+      const msg =
+        err instanceof ApiError
+          ? err.detail
+          : err instanceof Error
+            ? err.message
+            : "Import z Messengera nieudany";
+      setError(msg);
+      setImportPanel(true);
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function onImportPsids(e: FormEvent) {
+    e.preventDefault();
+    if (!psidText.trim()) return;
+    setError(null);
+    setInfo(null);
+    setImporting(true);
+    try {
+      const res = await inboxApi.importMessengerPsids(psidText.trim());
+      await reloadList();
+      await customersApi.list().then(setCustomers);
+      setInfo(
+        `Import PSID: +${res.customers_created} klientów, +${res.conversations_created} rozmów` +
+          (res.imported_names.length
+            ? `: ${res.imported_names.slice(0, 8).join(", ")}`
+            : ""),
+      );
+      setPsidText("");
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Import z Messengera nieudany — sprawdź META_PAGE_ACCESS_TOKEN",
+        err instanceof ApiError
+          ? err.detail
+          : err instanceof Error
+            ? err.message
+            : "Import PSID nieudany",
       );
     } finally {
       setImporting(false);
@@ -175,9 +212,12 @@ export function InboxPage() {
             type="button"
             variant="ghost"
             disabled={importing}
-            onClick={() => void onImportMessenger()}
+            onClick={() => {
+              setImportPanel((v) => !v);
+              setError(null);
+            }}
           >
-            {importing ? "Importuję…" : "Importuj z Messengera"}
+            {importPanel ? "Zamknij import" : "Import Messenger"}
           </GlassButton>
           <GlassButton type="button" onClick={() => setComposeOpen((v) => !v)}>
             {composeOpen ? "Anuluj" : "Nowa wiadomość"}
@@ -190,8 +230,61 @@ export function InboxPage() {
         </div>
       </header>
 
-      {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+      {error && (
+        <pre className="whitespace-pre-wrap rounded-control border border-[var(--danger)]/30 bg-[var(--danger)]/5 px-3 py-2 font-sans text-sm text-[var(--danger)]">
+          {error}
+        </pre>
+      )}
       {info && <p className="text-sm text-[var(--success)]">{info}</p>}
+
+      {importPanel && (
+        <GlassCard className="animate-fade-up space-y-4">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text-bright)]">
+              1. Automatycznie z Meta (wymaga pages_read_engagement)
+            </p>
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Token strony musi mieć pages_read_engagement. W trybie Live Meta
+              wymaga App Review — w Development wystarczy dodać uprawnienie i
+              wygenerować nowy Page token.
+            </p>
+            <div className="mt-3">
+              <GlassButton
+                type="button"
+                disabled={importing}
+                onClick={() => void onImportMessenger()}
+              >
+                {importing ? "Importuję…" : "Zaciągnij historię z Graph API"}
+              </GlassButton>
+            </div>
+          </div>
+          <div className="border-t border-glass-border pt-4">
+            <p className="text-sm font-semibold text-[var(--text-bright)]">
+              2. Import PSID (bez tej zgody)
+            </p>
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Wklej Page-Scoped ID osób, które pisały do fanpage — po jednym w
+              linii. Format: <code className="font-mono">123456789</code> albo{" "}
+              <code className="font-mono">Anna | 123456789</code>. PSID znajdziesz
+              w Meta Business Suite → Inbox (szczegóły rozmowy) lub w logach
+              webhooka.
+            </p>
+            <form className="mt-3 space-y-3" onSubmit={onImportPsids}>
+              <GlassTextarea
+                value={psidText}
+                onChange={(e) => setPsidText(e.target.value)}
+                placeholder={"Anna Kowalska | 1234567890123456\n9876543210987654"}
+                rows={5}
+                required
+              />
+              <GlassButton type="submit" disabled={importing}>
+                {importing ? "Importuję…" : "Dodaj do Wiadomości"}
+              </GlassButton>
+            </form>
+          </div>
+        </GlassCard>
+      )}
+
       {loading && (
         <p className="text-sm text-[var(--muted)]">Ładowanie rozmów…</p>
       )}

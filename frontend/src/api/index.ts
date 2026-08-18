@@ -427,6 +427,19 @@ export const inboxApi = {
       messages_created: number;
       imported_names: string[];
     }>(`/api/inbox/import-messenger?limit=${limit}`, { method: "POST" }),
+  importMessengerPsids: (text: string) =>
+    apiFetch<{
+      page_id: string;
+      threads_seen: number;
+      skipped_threads: number;
+      customers_created: number;
+      conversations_created: number;
+      messages_created: number;
+      imported_names: string[];
+    }>("/api/inbox/import-messenger-psids", {
+      method: "POST",
+      body: JSON.stringify({ text }),
+    }),
 };
 
 export const platformApi = {

@@ -19,7 +19,12 @@ from app.models.enums import Channel, ConversationState, MessageRole
 from app.models.mixins import utc_now
 from app.schemas import ORMModel, OutboundMessage
 from app.services.events import hub
-from app.services.meta_import import MetaImportError, import_messenger_conversations
+from app.services.meta_import import (
+    MetaImportError,
+    import_messenger_conversations,
+    import_messenger_psids,
+    parse_psid_lines,
+)
 
 router = APIRouter(prefix="/api/inbox", tags=["inbox"])
 
@@ -71,6 +76,14 @@ class MessengerImportOut(BaseModel):
     imported_names: list[str]
 
 
+class MessengerPsidImportIn(BaseModel):
+    text: str = Field(
+        min_length=1,
+        max_length=20000,
+        description="Linie: PSID albo „Imię | PSID”",
+    )
+
+
 @router.post("/import-messenger", response_model=MessengerImportOut)
 async def import_messenger(
     db: DbSession,
@@ -98,6 +111,35 @@ async def import_messenger(
             f"Zaimportowano {result['conversations_created']} rozmów, "
             f"{result['messages_created']} wiadomości"
         ),
+    )
+    return MessengerImportOut(**result)
+
+
+@router.post("/import-messenger-psids", response_model=MessengerImportOut)
+async def import_messenger_psids_endpoint(
+    body: MessengerPsidImportIn,
+    db: DbSession,
+    owner: CurrentOwner,
+) -> MessengerImportOut:
+    """Import bez pages_read_engagement — wklej PSID osób, które pisały do strony."""
+    entries = parse_psid_lines(body.text)
+    try:
+        result = await import_messenger_psids(
+            db,
+            business_id=owner.business_id,
+            entries=entries,
+        )
+    except MetaImportError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    await hub.publish(
+        owner.business_id,
+        "chat.message",
+        {"imported": True, "mode": "psid"},
+        title="Import PSID",
+        message=f"Dodano {result['conversations_created']} rozmów z PSID",
     )
     return MessengerImportOut(**result)
 
