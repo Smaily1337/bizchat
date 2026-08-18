@@ -782,12 +782,15 @@ function CustomerExtras({
                     className={[
                       "rounded-full border px-3 py-1 text-sm transition",
                       on
-                        ? "border-transparent text-white"
+                        ? "border-transparent"
                         : "border-glass-border text-[var(--muted)] hover:text-[var(--text-bright)]",
                     ].join(" ")}
                     style={
                       on
-                        ? { backgroundColor: t.color || "var(--accent)" }
+                        ? {
+                            backgroundColor: t.color || "var(--accent)",
+                            color: "#fff",
+                          }
                         : undefined
                     }
                   >
