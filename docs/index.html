@@ -3,347 +3,230 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BizChat — bot rezerwacyjny 24/7 dla salonów i gabinetów</title>
+    <title>Automovia — rezerwacje 24/7 dla salonów i gabinetów</title>
     <meta
       name="description"
-      content="BizChat odciąża recepcję: chatbot omnichannel (Telegram, Messenger, Instagram, widget WWW) rezerwuje wizyty 24/7, a panel admina daje pełną kontrolę nad kalendarzem."
+      content="Automovia: chatbot omnichannel rezerwuje wizyty 24/7 na Messengerze, Telegramie, Instagramie i WWW. Panel, cennik i faktura — w jednym miejscu."
     />
-    <link rel="icon" type="image/svg+xml" href="assets/bizchat.svg" />
+    <link rel="icon" type="image/svg+xml" href="assets/automovia.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@700&family=JetBrains+Mono:wght@500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="bg-blobs" aria-hidden="true"></div>
+
     <header class="nav glass">
       <a class="nav-brand" href="#top">
-        <img src="assets/bizchat.svg" alt="Logo BizChat" width="30" height="30" />
-        <span>BizChat</span>
+        <img src="assets/automovia.svg" alt="" width="28" height="28" />
+        <span>Automovia</span>
       </a>
       <nav class="nav-links">
         <a href="#funkcje">Funkcje</a>
-        <a href="#statystyki">Efekty</a>
-        <a href="#jak-to-dziala">Jak to działa</a>
+        <a href="#cennik">Cennik</a>
+        <a href="#jak-to-dziala">Jak działa</a>
         <a href="#demo">Demo</a>
       </nav>
-      <a class="btn btn-primary btn-sm" id="nav-login" href="https://bizchat-panel-702906501614.europe-central2.run.app/login">Zaloguj się do panelu</a>
+      <div class="nav-actions">
+        <a class="btn btn-ghost btn-sm" href="checkout.html">Wybierz pakiet</a>
+        <a
+          class="btn btn-primary btn-sm"
+          id="nav-login"
+          href="https://bizchat-panel-702906501614.europe-central2.run.app/login"
+          >Zaloguj</a
+        >
+      </div>
     </header>
 
     <main id="top">
-      <!-- HERO -->
       <section class="hero">
         <div class="hero-copy reveal">
-          <p class="eyebrow">Inteligentny system rezerwacyjny</p>
-          <h1>
-            Twoja recepcja śpi.<br />
-            <span class="accent">BizChat</span> rezerwuje.
-          </h1>
+          <p class="brand-mark">Automovia</p>
+          <h1>Recepcja, która nie śpi.</h1>
           <p class="lead">
-            Chatbot omnichannel przyjmuje rezerwacje 24/7 na Telegramie, Messengerze, Instagramie
-            i stronie WWW — a Ty zarządzasz wszystkim z jednego, eleganckiego panelu.
-            Mniej telefonów, mniej pustych okienek, więcej czasu dla klientów.
+            Bot zbiera rezerwacje z Messengera, Telegrama, Instagrama i strony WWW —
+            Ty zarządzasz kalendarzem z jednego panelu.
           </p>
           <div class="hero-cta">
-            <a class="btn btn-primary" id="hero-login" href="https://bizchat-panel-702906501614.europe-central2.run.app/login">Zaloguj się do panelu</a>
-            <a class="btn btn-ghost" href="#jak-to-dziala">Zobacz, jak to działa</a>
+            <a class="btn btn-primary" href="checkout.html?plan=starter">Zacznij z pakietem</a>
+            <a class="btn btn-ghost" href="#cennik">Zobacz cennik</a>
           </div>
-          <ul class="hero-badges">
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              Telegram
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 1 1 17 0z"/></svg>
-              Messenger
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-              Instagram
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
-              Widget WWW
-            </li>
-          </ul>
         </div>
 
         <div class="hero-visual reveal" aria-hidden="true">
           <div class="chat-mock glass">
             <div class="chat-mock-head">
               <span class="dot"></span>
-              <span>Bot BizChat • online</span>
+              <span>Automovia · online</span>
             </div>
-            <div class="chat-bubble in">Cześć! Chcę umówić strzyżenie na jutro po 16:00.</div>
+            <div class="chat-bubble in">Cześć! Strzyżenie jutro po 16?</div>
             <div class="chat-bubble out">
-              Jasne! Jutro mam wolne: <strong>16:30</strong>, <strong>17:15</strong> i
-              <strong>18:00</strong>. Który termin pasuje?
+              Mam wolne: <strong>16:30</strong>, <strong>17:15</strong>, <strong>18:00</strong>.
             </div>
-            <div class="chat-bubble in">17:15 poproszę</div>
+            <div class="chat-bubble in">17:15</div>
             <div class="chat-bubble out">
-              <span class="check-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              </span>
-              Zarezerwowane! Strzyżenie, jutro 17:15. Przypomnę Ci 2h przed wizytą.
+              Zarezerwowane. Przypomnę 2h przed wizytą.
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ZAUFALI NAM -->
-      <section class="logos reveal" aria-label="Firmy, z którymi współpracowaliśmy">
-        <p class="logos-title">Zaufali nam (demo)</p>
-        <div class="marquee" aria-hidden="true">
-          <div class="marquee-track">
-            <img src="assets/logos/spacex.svg" alt="SpaceX" />
-            <img src="assets/logos/tesla.svg" alt="Tesla" />
-            <img src="assets/logos/x.svg" alt="X" />
-            <img src="assets/logos/stripe.svg" alt="Stripe" />
-            <img src="assets/logos/netflix.svg" alt="Netflix" />
-            <img src="assets/logos/nvidia.svg" alt="NVIDIA" />
-            <img src="assets/logos/spotify.svg" alt="Spotify" />
-            <!-- duplikat dla płynnej pętli -->
-            <img src="assets/logos/spacex.svg" alt="" />
-            <img src="assets/logos/tesla.svg" alt="" />
-            <img src="assets/logos/x.svg" alt="" />
-            <img src="assets/logos/stripe.svg" alt="" />
-            <img src="assets/logos/netflix.svg" alt="" />
-            <img src="assets/logos/nvidia.svg" alt="" />
-            <img src="assets/logos/spotify.svg" alt="" />
-          </div>
-        </div>
-      </section>
-
-      <!-- FUNKCJE -->
       <section class="section" id="funkcje">
         <div class="section-head reveal">
           <p class="eyebrow">Funkcje</p>
-          <h2>Wszystko, czego potrzebuje salon lub gabinet</h2>
+          <h2>Jeden system dla salonu</h2>
+          <p class="section-sub">Bot, inbox, kalendarz i raporty — bez sklejania narzędzi.</p>
         </div>
         <div class="grid features">
-          <article class="card glass reveal">
-            <div class="card-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>
-            </div>
-            <h3>Bot omnichannel</h3>
-            <p>
-              Jeden bot, cztery kanały: Telegram, Messenger, Instagram i widget na Twojej stronie.
-              Odpowiada na pytania (FAQ) i prowadzi rezerwację krok po kroku.
-            </p>
+          <article class="feature reveal">
+            <h3>Omnichannel</h3>
+            <p>Messenger, Telegram, Instagram, WhatsApp i widget WWW w jednym wątku.</p>
           </article>
-          <article class="card glass reveal">
-            <div class="card-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/><path d="m9 16 2 2 4-4"/></svg>
-            </div>
-            <h3>Kalendarz + Google Calendar</h3>
-            <p>
-              Widok dnia i tygodnia, godziny otwarcia, urlopy oraz dwukierunkowa synchronizacja
-              wizyt z Google Calendar.
-            </p>
+          <article class="feature reveal">
+            <h3>Kalendarz</h3>
+            <p>Godziny otwarcia, urlopy, Google Calendar i statusy wizyt na żywo.</p>
           </article>
-          <article class="card glass reveal">
-            <div class="card-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
-            </div>
-            <h3>Powiadomienia i przypomnienia</h3>
-            <p>
-              Automatyczne przypomnienia 24h / 2h / 30 min przed wizytą, własne szablony wiadomości
-              i ręczna wysyłka jednym kliknięciem.
-            </p>
+          <article class="feature reveal">
+            <h3>Przypomnienia</h3>
+            <p>Automatyczne SMS/czat przed wizytą — mniej no-showów.</p>
           </article>
-          <article class="card glass reveal">
-            <div class="card-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-            </div>
-            <h3>Smart waitlist</h3>
-            <p>
-              Ktoś odwołał wizytę? Bot sam proponuje zwolniony termin osobom z kolejki oczekujących
-              — puste okienka zapełniają się same.
-            </p>
+          <article class="feature reveal">
+            <h3>Waitlista</h3>
+            <p>Zwolniony termin trafia do kolejki — okienka zapełniają się same.</p>
           </article>
-          <article class="card glass reveal">
-            <div class="card-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9 7.2 18l.9-5.4L4.2 8.7l5.4-.8z"/></svg>
-            </div>
-            <h3>Feedback po wizycie</h3>
-            <p>
-              Bot zbiera oceny i opinie po każdej wizycie. Niskie oceny trafiają do Ciebie jako
-              alert, zanim staną się publiczną recenzją.
-            </p>
+          <article class="feature reveal">
+            <h3>Zespół</h3>
+            <p>Role, limity stanowisk i wspólny inbox dla całego salonu.</p>
           </article>
-          <article class="card glass reveal">
-            <div class="card-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15v-4M12 15V8M16 15v-6"/></svg>
-            </div>
-            <h3>Analityka</h3>
-            <p>
-              Dashboard z podsumowaniem: liczba wizyt, obłożenie, najpopularniejsze usługi i
-              skuteczność bota — wszystko w jednym miejscu.
-            </p>
+          <article class="feature reveal">
+            <h3>Raporty</h3>
+            <p>Obłożenie, kanały i skuteczność bota w jednym widoku.</p>
           </article>
         </div>
       </section>
 
-      <!-- STATYSTYKI -->
-      <section class="section" id="statystyki">
+      <section class="section" id="cennik">
         <div class="section-head reveal">
-          <p class="eyebrow">Efekty</p>
-          <h2>Szybsza obsługa, niższe koszty</h2>
-          <p class="section-sub">
-            Przykładowe wyniki salonu demo po 3 miesiącach z BizChat — bot przejmuje rutynę,
-            a recepcja zajmuje się klientami na miejscu.
-          </p>
+          <p class="eyebrow">Cennik</p>
+          <h2>Wybierz pakiet pod swój salon</h2>
+          <p class="section-sub">Ceny netto miesięcznie. Po wyborze podasz dane firmy i dostaniesz demo faktury.</p>
         </div>
-        <div class="stats-wrap">
-          <div class="stats-grid">
-            <div class="stat glass reveal">
-              <p class="stat-value">
-                <span class="counter" data-target="42" data-prefix="−" data-suffix="%">0</span>
-              </p>
-              <p class="stat-label">kosztów obsługi recepcji</p>
-            </div>
-            <div class="stat glass reveal">
-              <p class="stat-value">
-                <span class="counter" data-target="68" data-prefix="−" data-suffix="%">0</span>
-              </p>
-              <p class="stat-label">telefonów do odebrania</p>
-            </div>
-            <div class="stat glass reveal">
-              <p class="stat-value">
-                <span class="counter" data-target="53" data-prefix="−" data-suffix="%">0</span>
-              </p>
-              <p class="stat-label">nieodwołanych nieobecności (no-show)</p>
-            </div>
-            <div class="stat glass reveal">
-              <p class="stat-value">
-                <span class="counter" data-target="24" data-suffix="/7">0</span>
-              </p>
-              <p class="stat-label">przyjmowanie rezerwacji — także po godzinach</p>
-            </div>
-          </div>
 
-          <figure class="chart-mock glass reveal" aria-hidden="true">
-            <figcaption class="chart-head">
-              <span>Rezerwacje przyjęte przez bota</span>
-              <span class="chart-badge">+184% w 3 mies.</span>
-            </figcaption>
-            <div class="chart-bars">
-              <div class="chart-col"><div class="bar" style="--h: 22%"></div><span>Sty</span></div>
-              <div class="chart-col"><div class="bar" style="--h: 34%"></div><span>Lut</span></div>
-              <div class="chart-col"><div class="bar" style="--h: 47%"></div><span>Mar</span></div>
-              <div class="chart-col"><div class="bar" style="--h: 58%"></div><span>Kwi</span></div>
-              <div class="chart-col"><div class="bar accent" style="--h: 76%"></div><span>Maj</span></div>
-              <div class="chart-col"><div class="bar accent" style="--h: 92%"></div><span>Cze</span></div>
-            </div>
-          </figure>
+        <div class="pricing-grid">
+          <article class="price-card glass reveal" data-plan="free">
+            <p class="price-name">Trial</p>
+            <p class="price-amount"><span>0</span> zł</p>
+            <p class="price-period">14 dni · potem Free</p>
+            <ul class="price-list">
+              <li>do 30 wizyt / mies.</li>
+              <li>200 wiadomości / mies.</li>
+              <li>2 stanowiska</li>
+              <li>wszystkie kanały czatu</li>
+            </ul>
+            <a class="btn btn-ghost btn-block" href="checkout.html?plan=free">Wybierz Trial</a>
+          </article>
+
+          <article class="price-card glass featured reveal" data-plan="starter">
+            <p class="price-badge">Najczęściej wybierany</p>
+            <p class="price-name">Starter</p>
+            <p class="price-amount"><span>149</span> zł</p>
+            <p class="price-period">netto / miesiąc</p>
+            <ul class="price-list">
+              <li>do 150 wizyt / mies.</li>
+              <li>2000 wiadomości / mies.</li>
+              <li>5 stanowisk</li>
+              <li>wszystkie kanały + support</li>
+            </ul>
+            <a class="btn btn-primary btn-block" href="checkout.html?plan=starter">Wybierz Starter</a>
+          </article>
+
+          <article class="price-card glass reveal" data-plan="pro">
+            <p class="price-name">Pro</p>
+            <p class="price-amount"><span>349</span> zł</p>
+            <p class="price-period">netto / miesiąc</p>
+            <ul class="price-list">
+              <li>bez limitu wizyt</li>
+              <li>bez limitu wiadomości</li>
+              <li>20 stanowisk</li>
+              <li>priorytetowe wdrożenie</li>
+            </ul>
+            <a class="btn btn-ghost btn-block" href="checkout.html?plan=pro">Wybierz Pro</a>
+          </article>
+
+          <article class="price-card glass reveal" data-plan="enterprise">
+            <p class="price-name">Enterprise</p>
+            <p class="price-amount"><span>indywidualnie</span></p>
+            <p class="price-period">sieci · multi-salon</p>
+            <ul class="price-list">
+              <li>bez limitów</li>
+              <li>SLA i onboarding</li>
+              <li>własne integracje</li>
+              <li>dedykowany opiekun</li>
+            </ul>
+            <a class="btn btn-ghost btn-block" href="checkout.html?plan=enterprise">Zapytaj / demo</a>
+          </article>
         </div>
-        <p class="fineprint stats-fineprint reveal">
-          Dane poglądowe z wdrożenia demonstracyjnego — Twoje wyniki zależą od branży i ruchu.
-        </p>
       </section>
 
-      <!-- JAK TO DZIAŁA -->
       <section class="section" id="jak-to-dziala">
         <div class="section-head reveal">
-          <p class="eyebrow">Jak to działa</p>
-          <h2>Od wiadomości do wizyty w kilka sekund</h2>
+          <p class="eyebrow">Jak działa</p>
+          <h2>Od wiadomości do wizyty</h2>
         </div>
         <ol class="steps">
           <li class="step glass reveal">
-            <div class="step-head">
-              <span class="step-num">1</span>
-              <span class="step-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              </span>
-            </div>
+            <span class="step-num">1</span>
             <h3>Klient pisze</h3>
-            <p>
-              Na dowolnym kanale — Telegram, Messenger, Instagram lub czat na stronie. O każdej
-              porze, także po godzinach.
-            </p>
+            <p>Na Messengerze, Telegramie, Instagramie albo w widgetcie na stronie.</p>
           </li>
           <li class="step glass reveal">
-            <div class="step-head">
-              <span class="step-num">2</span>
-              <span class="step-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-              </span>
-            </div>
-            <h3>Bot proponuje terminy</h3>
-            <p>
-              Sprawdza kalendarz, godziny otwarcia i urlopy, po czym podaje realnie dostępne sloty.
-              Odpowiada też na pytania o cennik i usługi.
-            </p>
+            <span class="step-num">2</span>
+            <h3>Bot proponuje sloty</h3>
+            <p>Sprawdza kalendarz i podaje realnie wolne terminy.</p>
           </li>
           <li class="step glass reveal">
-            <div class="step-head">
-              <span class="step-num">3</span>
-              <span class="step-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              </span>
-            </div>
-            <h3>Rezerwacja potwierdzona</h3>
-            <p>
-              Wizyta ląduje w panelu i w Google Calendar, a klient dostaje potwierdzenie i
-              automatyczne przypomnienia.
-            </p>
-          </li>
-          <li class="step glass reveal">
-            <div class="step-head">
-              <span class="step-num">4</span>
-              <span class="step-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 20h10M8 9h3M8 13h8"/></svg>
-              </span>
-            </div>
-            <h3>Ty masz kontrolę</h3>
-            <p>
-              W panelu admina zarządzasz wizytami, usługami, powiadomieniami, kolejką oczekujących
-              i opiniami — bez telefonu przy uchu.
-            </p>
+            <span class="step-num">3</span>
+            <h3>Potwierdzenie</h3>
+            <p>Wizyta w panelu, przypomnienia i opcjonalny depozyt.</p>
           </li>
         </ol>
       </section>
 
-      <!-- DEMO / LOGOWANIE -->
       <section class="section" id="demo">
-        <div class="demo-wrap">
-          <div class="demo-copy reveal">
-            <p class="eyebrow">Wypróbuj demo</p>
-            <h2>Zaloguj się do panelu admina</h2>
+        <div class="demo-wrap glass reveal">
+          <div class="demo-copy">
+            <p class="eyebrow">Panel demo</p>
+            <h2>Wejdź do Automovia</h2>
             <p>
-              Panel demo jest już w chmurze (Google Cloud Run). Zaloguj się danymi poniżej
-              albo użyj formularza obok — przekierujemy Cię prosto do panelu.
+              Zaloguj się danymi demo albo przejdź do checkoutu — wybór pakietu, dane firmy,
+              płatność demo i faktura.
             </p>
-            <div class="demo-creds glass">
-              <p class="demo-creds-title">Dane demo</p>
+            <div class="demo-creds">
               <p><span>Login</span> <code>owner@bizchat.local</code></p>
               <p><span>Hasło</span> <code>changeme</code></p>
             </div>
-            <p class="fineprint">
-              Formularz przekazuje e-mail i hasło we fragmencie URL (#…), żeby panel
-              zalogował Cię automatycznie — dane nie opuszczają przeglądarki.
-            </p>
           </div>
-
-          <form class="login-card glass reveal" id="login-form" novalidate>
-            <img src="assets/bizchat.svg" alt="" width="40" height="40" />
-            <h3>Panel BizChat</h3>
+          <form class="login-card" id="login-form" novalidate>
+            <h3>Logowanie</h3>
             <label>
               E-mail
               <input type="email" name="email" value="owner@bizchat.local" autocomplete="username" />
             </label>
             <label>
               Hasło
-              <input type="password" name="password" value="changeme" autocomplete="current-password" />
+              <input
+                type="password"
+                name="password"
+                value="changeme"
+                autocomplete="current-password"
+              />
             </label>
-            <button type="submit" class="btn btn-primary btn-block">Przejdź do panelu</button>
-            <p class="login-hint">Przekierujemy Cię do panelu demo w chmurze.</p>
+            <button type="submit" class="btn btn-primary btn-block">Otwórz panel</button>
+            <a class="btn btn-ghost btn-block" href="checkout.html?plan=starter">Albo kup pakiet (demo)</a>
           </form>
         </div>
       </section>
@@ -352,16 +235,15 @@
     <footer class="footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <img src="assets/bizchat.svg" alt="" width="24" height="24" />
-          <span>BizChat</span>
+          <img src="assets/automovia.svg" alt="" width="22" height="22" />
+          <span>Automovia</span>
         </div>
-        <p class="footer-tagline">Inteligentne rezerwacje dla salonów i gabinetów.</p>
         <nav class="footer-links">
-          <a href="#funkcje">Funkcje</a>
-          <a href="#jak-to-dziala">Jak to działa</a>
+          <a href="#cennik">Cennik</a>
+          <a href="checkout.html">Checkout</a>
           <a href="#demo">Demo</a>
         </nav>
-        <p class="footer-copy">© 2026 BizChat. Projekt demonstracyjny.</p>
+        <p class="footer-copy">© 2026 Automovia. Demo — płatności i faktury są symulowane.</p>
       </div>
     </footer>
 
