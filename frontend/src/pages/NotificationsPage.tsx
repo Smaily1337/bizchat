@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
 import { appointmentsApi, customersApi, notificationsApi } from "@/api";
 import type {
   Appointment,
@@ -43,6 +44,8 @@ function leadLabel(minutes: number): string {
 }
 
 export function NotificationsPage() {
+  const { section } = useParams<{ section?: string }>();
+  const active = section || "send";
   const { push } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -266,21 +269,28 @@ export function NotificationsPage() {
     );
   }
 
+  if (!["send", "reminders", "templates", "log"].includes(active)) {
+    return <Navigate to="/notifications/send" replace />;
+  }
+
+  const titles: Record<string, { h: string; s: string }> = {
+    send: { h: "Wysyłka", s: "Wyślij powiadomienie do klienta lub wizyty" },
+    reminders: { h: "Przypomnienia", s: "Automatyczne lead time i kanał domyślny" },
+    templates: { h: "Szablony", s: "Treści SMS / e-mail / Messenger" },
+    log: { h: "Historia", s: "Log wysłanych powiadomień" },
+  };
+
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Powiadomienia</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Ręczne wiadomości do klientów, automatyczne przypomnienia, szablony i
-          log wysyłek
-        </p>
+        <h1 className="font-display text-3xl font-bold">{titles[active].h}</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">{titles[active].s}</p>
       </header>
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* ------------------------------------------------ manual send */}
-        <GlassCard className="animate-fade-up">
+      {active === "send" && (
+        <GlassCard className="animate-fade-up max-w-2xl">
           <p className="font-display text-lg font-semibold">
             Wyślij powiadomienie do klienta
           </p>
@@ -425,9 +435,10 @@ export function NotificationsPage() {
             </GlassButton>
           </form>
         </GlassCard>
+      )}
 
-        {/* ------------------------------------------------ reminder rules */}
-        <GlassCard className="animate-fade-up">
+      {active === "reminders" && (
+        <GlassCard className="animate-fade-up max-w-2xl">
           <div className="flex items-start justify-between gap-3">
             <p className="font-display text-lg font-semibold">
               Automatyczne przypomnienia
@@ -566,9 +577,9 @@ export function NotificationsPage() {
             </GlassButton>
           </div>
         </GlassCard>
-      </div>
+      )}
 
-      {/* ------------------------------------------------ templates */}
+      {active === "templates" && (
       <GlassCard className="animate-fade-up">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="font-display text-lg font-semibold">Szablony wiadomości</p>
@@ -678,8 +689,9 @@ export function NotificationsPage() {
           ))}
         </div>
       </GlassCard>
+      )}
 
-      {/* ------------------------------------------------ log */}
+      {active === "log" && (
       <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">Log wysłanych powiadomień</p>
         {log.length === 0 ? (
@@ -724,6 +736,7 @@ export function NotificationsPage() {
           </div>
         )}
       </GlassCard>
+      )}
     </div>
   );
 }

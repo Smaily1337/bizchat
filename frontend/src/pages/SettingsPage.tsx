@@ -1,10 +1,12 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
 import { businessApi, knowledgeApi, servicesApi } from "@/api";
 import type { KnowledgeItem, LicenseUsage, Service } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput, GlassTextarea } from "@/components/ui/GlassInput";
 import { useTheme } from "@/theme";
+import { AccountPage } from "@/pages/AccountPage";
 
 function fmtLimit(used: number, max: number | null) {
   if (max == null) return `${used} / ∞`;
@@ -17,6 +19,8 @@ function usagePct(used: number, max: number | null) {
 }
 
 export function SettingsPage() {
+  const { section } = useParams<{ section?: string }>();
+  const active = section || "salon";
   const { business, refreshBusiness } = useAuth();
   const { theme, setTheme } = useTheme();
   const [name, setName] = useState("");
@@ -108,16 +112,35 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      {active === "account" ? null : (
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Ustawienia</h1>
+        <h1 className="font-display text-3xl font-bold">
+          {active === "services"
+              ? "Usługi"
+              : active === "faq"
+                ? "FAQ bota"
+                : active === "plan"
+                  ? "Plan i limity"
+                  : active === "appearance"
+                    ? "Wygląd"
+                    : "Ustawienia salonu"}
+        </h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Salon, licencja, usługi i baza FAQ bota
+          Jedna sekcja naraz — przełączaj w menu bocznym (Ustawienia).
         </p>
       </header>
+      )}
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}
 
+      {active === "account" && <AccountPage />}
+      {!["salon", "services", "faq", "plan", "appearance", "account"].includes(active) && (
+        <Navigate to="/settings/salon" replace />
+      )}
+
+
+      {active === "appearance" && (
       <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">Wygląd panelu</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
@@ -143,12 +166,17 @@ export function SettingsPage() {
           </GlassButton>
         </div>
       </GlassCard>
+      )}
 
-      {usage && (
+      {active === "plan" && (
         <GlassCard className="animate-fade-up">
           <p className="font-display text-lg font-semibold">
             Licencja i limity
           </p>
+          {!usage ? (
+            <p className="mt-2 text-sm text-[var(--muted)]">Brak danych użycia.</p>
+          ) : (
+            <>
           <p className="mt-1 text-sm text-[var(--muted)]">
             Plan <span className="text-canary">{usage.plan}</span>
             {" · "}
@@ -201,11 +229,14 @@ export function SettingsPage() {
           <p className="mt-3 text-xs text-[var(--muted)]">
             Kanały: {usage.enabled_channels.join(", ") || "—"}
           </p>
+            </>
+          )}
         </GlassCard>
       )}
 
+      {active === "salon" && (
       <GlassCard className="animate-fade-up">
-        <p className="font-display text-lg font-semibold">Biznes</p>
+        <p className="font-display text-lg font-semibold">Salon</p>
         <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={saveBusiness}>
           <label className="space-y-1 text-sm">
             <span className="text-[var(--muted)]">Nazwa</span>
@@ -268,6 +299,9 @@ export function SettingsPage() {
         </form>
       </GlassCard>
 
+      )}
+
+      {active === "services" && (
       <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">Usługi</p>
         <ul className="mt-3 space-y-2">
@@ -319,7 +353,9 @@ export function SettingsPage() {
           <GlassButton type="submit">Dodaj usługę</GlassButton>
         </form>
       </GlassCard>
+      )}
 
+      {active === "faq" && (
       <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">FAQ / baza wiedzy</p>
         <ul className="mt-3 space-y-2">
@@ -369,6 +405,7 @@ export function SettingsPage() {
           <GlassButton type="submit">Dodaj FAQ</GlassButton>
         </form>
       </GlassCard>
+      )}
     </div>
   );
 }

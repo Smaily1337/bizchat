@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useClerk } from "@clerk/clerk-react";
 import { useAuth } from "@/auth/AuthContext";
 import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
+import { SidebarExpandable } from "./SidebarExpandable";
 
 
 function LogoutButton({ className = "!w-full" }: { className?: string }) {
@@ -299,6 +300,20 @@ function AccountMenu({
           <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
             {owner?.email}
           </p>
+          <Link
+            to="/settings/account"
+            onClick={onToggle}
+            className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+          >
+            Ustawienia konta
+          </Link>
+          <Link
+            to="/settings/salon"
+            onClick={onToggle}
+            className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+          >
+            Ustawienia salonu
+          </Link>
           <button
             type="button"
             onClick={toggleTheme}
@@ -324,6 +339,18 @@ function MobileAccountDropdown() {
       <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
         {owner?.email}
       </p>
+      <Link
+        to="/settings/account"
+        className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+      >
+        Ustawienia konta
+      </Link>
+      <Link
+        to="/settings/salon"
+        className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+      >
+        Ustawienia salonu
+      </Link>
       <button
         type="button"
         onClick={toggleTheme}
@@ -412,9 +439,43 @@ export function GlassNav() {
           <div>
             <p className="label-caps mb-1.5 px-2">Salon</p>
             <div className="space-y-0.5">
-              {salon.map((item) => (
+              {salon.filter((i) => !["/notifications", "/settings", "/account"].includes(i.to)).map((item) => (
                 <SideLink key={item.to} item={item} />
               ))}
+              <SidebarExpandable
+                label="Powiadomienia"
+                matchPrefixes={["/notifications"]}
+                icon={
+                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                    <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+                  </svg>
+                }
+                items={[
+                  { to: "/notifications/send", label: "Wysyłka" },
+                  { to: "/notifications/reminders", label: "Przypomnienia" },
+                  { to: "/notifications/templates", label: "Szablony" },
+                  { to: "/notifications/log", label: "Historia" },
+                ]}
+              />
+              <SidebarExpandable
+                label="Ustawienia"
+                matchPrefixes={["/settings", "/account"]}
+                icon={
+                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+                  </svg>
+                }
+                items={[
+                  { to: "/settings/salon", label: "Salon" },
+                  { to: "/settings/services", label: "Usługi" },
+                  { to: "/settings/faq", label: "FAQ bota" },
+                  { to: "/settings/plan", label: "Plan i limity" },
+                  { to: "/settings/appearance", label: "Wygląd" },
+                  { to: "/settings/account", label: "Konto" },
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -509,7 +570,7 @@ export function GlassNav() {
           <div className="absolute bottom-0 left-0 right-0 max-h-[70vh] overflow-y-auto rounded-t-soft border border-glass-border bg-[var(--bg-elevated)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <p className="label-caps mb-2">Więcej</p>
             <div className="grid grid-cols-2 gap-1">
-              {[...peopleItems, ...salon].map((item) => (
+              {[...peopleItems, ...salon.filter((i) => !["/notifications", "/settings", "/account"].includes(i.to))].map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -521,6 +582,9 @@ export function GlassNav() {
                   {item.label}
                 </NavLink>
               ))}
+              <NavLink to="/notifications/send" onClick={() => setMoreOpen(false)} className="sidebar-link">Powiadomienia</NavLink>
+              <NavLink to="/settings/salon" onClick={() => setMoreOpen(false)} className="sidebar-link">Ustawienia</NavLink>
+              <NavLink to="/settings/account" onClick={() => setMoreOpen(false)} className="sidebar-link">Konto</NavLink>
             </div>
           </div>
         </div>

@@ -7,7 +7,6 @@ import { GlassNav } from "@/components/ui";
 import { ThemeProvider } from "@/theme";
 import { ProductTour, TourProvider } from "@/tour";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
-import { AccountPage } from "@/pages/AccountPage";
 import { AppointmentsPage } from "@/pages/AppointmentsPage";
 import { CalendarPage } from "@/pages/CalendarPage";
 import { ChannelsPage } from "@/pages/ChannelsPage";
@@ -61,12 +60,17 @@ export default function App() {
                 <Route path="/customers" element={<CustomersPage />} />
                 <Route path="/staff" element={<StaffPage />} />
                 <Route path="/hours" element={<HoursPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/account" element={<AccountPage />} />
+                <Route path="/settings" element={<Navigate to="/settings/salon" replace />} />
+                <Route path="/settings/:section" element={<SettingsPage />} />
+                <Route path="/account" element={<Navigate to="/settings/account" replace />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/platform" element={<PlatformPage />} />
                 <Route path="/feedback" element={<FeedbackPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route
+                  path="/notifications"
+                  element={<Navigate to="/notifications/send" replace />}
+                />
+                <Route path="/notifications/:section" element={<NotificationsPage />} />
                 <Route path="/channels" element={<ChannelsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

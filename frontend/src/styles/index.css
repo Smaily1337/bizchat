@@ -319,6 +319,63 @@
     box-shadow: inset 2px 0 0 var(--accent), var(--shadow-glass);
   }
 
+  .sidebar-group {
+    margin-top: 0.15rem;
+  }
+
+  .sidebar-group-toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.65rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-align: left;
+    transition: background 0.14s ease, color 0.14s ease;
+  }
+
+  .sidebar-group-toggle:hover {
+    background: var(--surface-container);
+    color: var(--text-bright);
+  }
+
+  .sidebar-group-toggle.is-active {
+    color: var(--text-bright);
+  }
+
+  .sidebar-group-children {
+    margin: 0.15rem 0 0.35rem 0.55rem;
+    padding-left: 0.55rem;
+    border-left: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .sidebar-sublink {
+    display: block;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--muted);
+    transition: background 0.14s ease, color 0.14s ease;
+  }
+
+  .sidebar-sublink:hover {
+    background: var(--surface-container);
+    color: var(--text-bright);
+  }
+
+  .sidebar-sublink.is-active {
+    background: var(--accent-soft, rgba(15, 118, 110, 0.14));
+    color: var(--text-bright);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+
   .mobile-tabbar {
     position: sticky;
     bottom: 0.5rem;
