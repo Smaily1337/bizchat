@@ -30,60 +30,51 @@ export function SidebarExpandable({
     (p) =>
       location.pathname === p || location.pathname.startsWith(`${p}/`),
   );
-  const [open, setOpen] = useState(defaultOpen || active);
+  
+  // Keep it open if active, otherwise use internal hover/click state
+  const [userOpen, setUserOpen] = useState(defaultOpen);
 
   useEffect(() => {
-    if (active) setOpen(true);
+    if (active) setUserOpen(true);
   }, [active]);
 
+  const open = active || userOpen;
+
   return (
-    <div className="sidebar-group">
-      <div className={`sidebar-group-toggle flex items-center ${active ? "is-active" : ""}`}>
-        <NavLink
-          to={to}
-          className="flex min-w-0 flex-1 items-center gap-2"
-          onClick={() => setOpen(true)}
-        >
-          {icon}
-          <span className="truncate">{label}</span>
-        </NavLink>
-        <button
-          type="button"
-          className="p-1 hover:bg-black/5 rounded"
-          onClick={(e) => {
-            e.preventDefault();
-            setOpen((v) => !v);
-          }}
-          aria-expanded={open}
-        >
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </button>
-      </div>
-      {open && (
-        <div className="sidebar-group-children">
-          {items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `sidebar-sublink ${isActive ? "is-active" : ""}`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+    <div 
+      className="sidebar-group"
+      onMouseEnter={() => setUserOpen(true)}
+      onMouseLeave={() => {
+        if (!active) setUserOpen(false);
+      }}
+    >
+      <NavLink
+        to={to}
+        className={`sidebar-link ${active ? "is-active" : ""}`}
+        onClick={() => setUserOpen((v) => !v)}
+      >
+        {icon}
+        <span className="truncate">{label}</span>
+      </NavLink>
+
+      <div className={`sidebar-group-children-wrapper ${open ? "is-open" : ""}`}>
+        <div className="sidebar-group-children-inner">
+          <div className="sidebar-group-children">
+            {items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `sidebar-sublink ${isActive ? "is-active" : ""}`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

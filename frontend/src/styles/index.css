@@ -455,3 +455,16 @@
     backdrop-filter: none;
   }
 }
+
+  .sidebar-group-children-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.2s ease-out;
+  }
+  .sidebar-group-children-wrapper.is-open {
+    grid-template-rows: 1fr;
+  }
+  .sidebar-group-children-inner {
+    overflow: hidden;
+  }
+
