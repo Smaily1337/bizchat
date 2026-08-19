@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy import func, select
 
-from app.api.deps import CurrentOwner, DbSession
+from app.api.deps import CurrentOwner, DbSession, RequireOwnerOrAdmin
 from app.models import Service
 from app.models.appointment import Appointment, WaitlistEntry
 from app.schemas import ServiceCreate, ServiceOut, ServiceUpdate
@@ -28,7 +28,7 @@ async def list_services(db: DbSession, owner: CurrentOwner) -> list[Service]:
 @router.post("", response_model=ServiceOut, status_code=status.HTTP_201_CREATED)
 async def create_service(
     db: DbSession,
-    owner: CurrentOwner,
+    owner: RequireOwnerOrAdmin,
     body: ServiceCreate,
 ) -> Service:
     service = Service(
@@ -46,7 +46,7 @@ async def create_service(
 @router.patch("/{service_id}", response_model=ServiceOut)
 async def update_service(
     db: DbSession,
-    owner: CurrentOwner,
+    owner: RequireOwnerOrAdmin,
     service_id: UUID,
     body: ServiceUpdate,
 ) -> Service:
@@ -62,7 +62,7 @@ async def update_service(
 @router.delete("/{service_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_service(
     db: DbSession,
-    owner: CurrentOwner,
+    owner: RequireOwnerOrAdmin,
     service_id: UUID,
 ) -> Response:
     service = await db.get(Service, service_id)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from app.api.deps import CurrentOwner, DbSession
+from app.api.deps import CurrentOwner, DbSession, RequireOwnerOrAdmin
 from app.models import Business
 from app.schemas import BusinessOut, BusinessUpdate, LicenseUsageOut
 from app.services import limits as limits_service
@@ -46,7 +46,7 @@ async def get_usage(db: DbSession, owner: CurrentOwner) -> LicenseUsageOut:
 @router.patch("", response_model=BusinessOut)
 async def update_business(
     db: DbSession,
-    owner: CurrentOwner,
+    owner: RequireOwnerOrAdmin,
     body: BusinessUpdate,
 ) -> Business:
     business = await db.get(Business, owner.business_id)

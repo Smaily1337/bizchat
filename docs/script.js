@@ -37,11 +37,8 @@ const loginForm = document.getElementById("login-form");
 if (loginForm) {
   loginForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    const form = event.currentTarget;
-    const email = form.elements.email.value.trim();
-    const password = form.elements.password.value;
-    const hash = `#email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
-    window.location.href = PANEL_URL + hash;
+    // Nie przekazujemy hasła w URL — użytkownik loguje się w panelu.
+    window.location.href = PANEL_URL;
   });
 }
 

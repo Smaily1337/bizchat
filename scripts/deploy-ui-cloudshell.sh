@@ -54,7 +54,7 @@ echo "    Expected nav: Raporty, Zespół, Kanały, Więcej, Wyloguj (top bar)"
 
 gcloud builds submit --project="$PROJECT" \
   --config=cloudbuild.panel.yaml \
-  --substitutions=_VITE_API_URL="$API_URL",_IMAGE="$IMAGE"
+  --substitutions=_VITE_API_URL="$API_URL",_IMAGE="$IMAGE",_VITE_CLERK_PUBLISHABLE_KEY="${VITE_CLERK_PUBLISHABLE_KEY:-}"
 
 echo "==> Deploying bizchat-panel…"
 gcloud run deploy bizchat-panel \

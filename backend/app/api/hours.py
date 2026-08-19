@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy import select
 
-from app.api.deps import CurrentOwner, DbSession
+from app.api.deps import CurrentOwner, DbSession, RequireOwnerOrAdmin
 from app.models import TimeOff, WorkingHours
 from app.schemas import (
     TimeOffCreate,
@@ -32,7 +32,7 @@ async def list_working_hours(db: DbSession, owner: CurrentOwner) -> list[Working
 @router.put("/api/working-hours", response_model=list[WorkingHoursOut])
 async def replace_working_hours(
     db: DbSession,
-    owner: CurrentOwner,
+    owner: RequireOwnerOrAdmin,
     body: WorkingHoursBulkUpdate,
 ) -> list[WorkingHours]:
     existing = await db.execute(
