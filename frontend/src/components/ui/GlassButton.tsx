@@ -9,11 +9,11 @@ type GlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<GlassButtonVariant, string> = {
   primary:
-    "rounded-control bg-gradient-to-r from-[#0f766e] to-[#14b8a6] dark:from-[#0f766e] dark:to-[#2dd4bf] text-white shadow-md hover:brightness-110 active:scale-[0.98]",
+    "rounded-control bg-gradient-to-r from-[#8083ff] to-[#494bd6] text-white shadow-md hover:shadow-[0_0_20px_rgba(128,131,255,0.3)] hover:scale-[1.02] active:scale-[0.98]",
   ghost:
-    "rounded-control border border-glass-border bg-[var(--glass-fill-strong)] text-[var(--text-bright)] backdrop-blur-glass hover:border-[var(--accent)]",
+    "rounded-control border border-white/10 bg-surface-container/60 text-on-surface backdrop-blur-xl hover:border-primary",
   subtle:
-    "rounded-control border border-glass-border bg-[var(--glass-fill)] text-xs font-semibold uppercase tracking-[0.05em] text-[var(--muted)] backdrop-blur-glass hover:border-[var(--accent)] hover:text-[var(--accent)]",
+    "rounded-control border border-white/10 bg-surface-container/60 text-xs font-semibold uppercase tracking-[0.05em] text-on-surface-variant backdrop-blur-xl hover:border-primary hover:text-primary",
 };
 
 export function GlassButton({

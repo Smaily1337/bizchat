@@ -9,7 +9,7 @@ import {
 } from "@/api";
 import type { Appointment, Customer, Service, StaffMember } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -177,8 +177,6 @@ export function AppointmentsPage() {
       const reminder =
         templates.find((t) => t.kind === "reminder" && t.is_default) ||
         templates.find((t) => t.kind === "reminder");
-      // Backend maps booking channel → delivery (Messenger/Telegram/…);
-      // don't force SMS when the client booked via chat.
       const log = await notificationsApi.send({
         appointment_id: a.id,
         template_id: reminder?.id,
@@ -209,28 +207,61 @@ export function AppointmentsPage() {
     }
   }
 
+  const groupedAppointments = items.reduce((acc, appt) => {
+    const dateStr = new Date(appt.start_at).toLocaleDateString("pl-PL", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    if (!acc[dateStr]) acc[dateStr] = [];
+    acc[dateStr].push(appt);
+    return acc;
+  }, {} as Record<string, Appointment[]>);
+
+  const getStatusColorClass = (status: string) => {
+    switch(status) {
+      case "confirmed": return "bg-gradient-to-b from-primary-container to-tertiary-container";
+      case "completed": return "bg-gradient-to-b from-secondary-container to-secondary";
+      case "cancelled": return "bg-error";
+      default: return "bg-white/20";
+    }
+  };
+
   return (
     <div className="space-y-6">
       <header className="animate-fade-up flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold">Wizyty</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <h1 className="font-display text-display-lg-mobile md:text-display-lg font-bold">Wizyty</h1>
+          <p className="mt-1 text-sm text-on-surface-variant">
             Lista, dodawanie, edycja i anulowanie wizyt
           </p>
         </div>
-        <GlassButton onClick={openCreate}>+ Nowa wizyta</GlassButton>
+        <button 
+          onClick={openCreate} 
+          className="flex items-center gap-2 bg-gradient-to-r from-primary-container to-tertiary-container text-white px-6 py-3 rounded-full hover:shadow-glow transition-all font-label-caps text-label-caps"
+        >
+          <span className="material-symbols-outlined text-[20px]">add</span>
+          Nowa wizyta
+        </button>
       </header>
 
-      {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
 
       {showForm && (
-        <GlassCard className="animate-fade-up">
-          <p className="font-display text-lg font-semibold">
-            {editing ? "Edytuj wizytę" : "Nowa wizyta"}
-          </p>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={onSubmit}>
+        <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-2xl font-semibold">
+              {editing ? "Edytuj wizytę" : "Nowa wizyta"}
+            </h2>
+            <button onClick={() => setShowForm(false)} className="text-on-surface-variant hover:text-white transition-colors">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          
+          <form className="grid gap-4 sm:grid-cols-2" onSubmit={onSubmit}>
             {!editing && (
-              <div className="space-y-3 sm:col-span-2">
+              <div className="space-y-3 sm:col-span-2 bg-surface-container/30 border border-white/5 rounded-xl p-4">
                 <div className="flex flex-wrap gap-2">
                   <GlassButton
                     type="button"
@@ -263,7 +294,7 @@ export function AppointmentsPage() {
                 </div>
                 {clientMode === "existing" ? (
                   <label className="block space-y-1 text-sm">
-                    <span className="text-[var(--muted)]">Wybierz z listy</span>
+                    <span className="text-on-surface-variant font-label-caps text-label-caps">Wybierz z listy</span>
                     <GlassSelect
                       value={form.customer_id}
                       onChange={(e) =>
@@ -273,16 +304,16 @@ export function AppointmentsPage() {
                     >
                       <option value="">— wybierz klienta —</option>
                       {customers.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name || c.id.slice(0, 8)}
-                        </option>
+                         <option key={c.id} value={c.id}>
+                           {c.name || c.id.slice(0, 8)}
+                         </option>
                       ))}
                     </GlassSelect>
                   </label>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2">
                     <label className="block space-y-1 text-sm sm:col-span-2">
-                      <span className="text-[var(--muted)]">Imię i nazwisko</span>
+                      <span className="text-on-surface-variant font-label-caps text-label-caps">Imię i nazwisko</span>
                       <GlassInput
                         value={form.new_customer_name}
                         onChange={(e) =>
@@ -296,9 +327,7 @@ export function AppointmentsPage() {
                       />
                     </label>
                     <label className="block space-y-1 text-sm">
-                      <span className="text-[var(--muted)]">
-                        Telefon (opcjonalnie)
-                      </span>
+                      <span className="text-on-surface-variant font-label-caps text-label-caps">Telefon (opcjonalnie)</span>
                       <GlassInput
                         type="tel"
                         value={form.new_customer_phone}
@@ -312,9 +341,7 @@ export function AppointmentsPage() {
                       />
                     </label>
                     <label className="block space-y-1 text-sm">
-                      <span className="text-[var(--muted)]">
-                        E-mail (opcjonalnie)
-                      </span>
+                      <span className="text-on-surface-variant font-label-caps text-label-caps">E-mail (opcjonalnie)</span>
                       <GlassInput
                         type="email"
                         value={form.new_customer_email}
@@ -331,8 +358,12 @@ export function AppointmentsPage() {
                 )}
               </div>
             )}
+            
             <label className="space-y-1 text-sm">
-              <span className="text-[var(--muted)]">Usługa</span>
+              <span className="text-on-surface-variant flex items-center gap-1 font-label-caps text-label-caps">
+                <span className="material-symbols-outlined text-[16px]">payments</span>
+                Usługa
+              </span>
               <GlassSelect
                 value={form.service_id}
                 onChange={(e) =>
@@ -347,9 +378,13 @@ export function AppointmentsPage() {
                 ))}
               </GlassSelect>
             </label>
+            
             {staff.length > 0 && (
               <label className="space-y-1 text-sm">
-                <span className="text-[var(--muted)]">Specjalista</span>
+                <span className="text-on-surface-variant flex items-center gap-1 font-label-caps text-label-caps">
+                  <span className="material-symbols-outlined text-[16px]">person</span>
+                  Specjalista
+                </span>
                 <GlassSelect
                   value={form.staff_id}
                   onChange={(e) =>
@@ -365,8 +400,12 @@ export function AppointmentsPage() {
                 </GlassSelect>
               </label>
             )}
+            
             <label className="space-y-1 text-sm">
-              <span className="text-[var(--muted)]">Start</span>
+              <span className="text-on-surface-variant flex items-center gap-1 font-label-caps text-label-caps">
+                <span className="material-symbols-outlined text-[16px]">event</span>
+                Start
+              </span>
               <GlassInput
                 type="datetime-local"
                 value={form.start_at}
@@ -376,8 +415,9 @@ export function AppointmentsPage() {
                 required
               />
             </label>
+            
             <label className="space-y-1 text-sm">
-              <span className="text-[var(--muted)]">Status</span>
+              <span className="text-on-surface-variant font-label-caps text-label-caps">Status</span>
               <GlassSelect
                 value={form.status}
                 onChange={(e) =>
@@ -391,81 +431,128 @@ export function AppointmentsPage() {
                 ))}
               </GlassSelect>
             </label>
+            
             <label className="space-y-1 text-sm sm:col-span-2">
-              <span className="text-[var(--muted)]">Notatki</span>
+              <span className="text-on-surface-variant font-label-caps text-label-caps">Notatki</span>
               <GlassTextarea
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                className="min-h-[100px]"
               />
             </label>
-            <div className="flex gap-2 sm:col-span-2">
-              <GlassButton type="submit">Zapisz</GlassButton>
-              <GlassButton
+            
+            <div className="flex gap-3 sm:col-span-2 pt-2">
+              <button 
+                type="submit" 
+                className="bg-primary text-on-surface px-6 py-2 rounded-lg font-label-caps text-label-caps hover:bg-primary-container hover:shadow-glow transition-all"
+              >
+                Zapisz
+              </button>
+              <button
                 type="button"
-                variant="ghost"
                 onClick={() => setShowForm(false)}
+                className="bg-surface-container/50 text-on-surface px-6 py-2 rounded-lg font-label-caps text-label-caps hover:bg-white/10 transition-all border border-white/10"
               >
                 Anuluj
-              </GlassButton>
+              </button>
             </div>
           </form>
-        </GlassCard>
+        </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-6">
         {items.length === 0 && (
-          <GlassCard>
-            <p className="text-sm text-[var(--muted)]">Brak wizyt.</p>
-          </GlassCard>
+          <div className="glass-panel rounded-[28px] p-8 text-center">
+            <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">event_busy</span>
+            <p className="text-sm text-on-surface-variant">Brak wizyt. Zaplanuj nową wizytę.</p>
+          </div>
         )}
-        {items.map((a) => (
-          <GlassCard
-            key={a.id}
-            className="animate-fade-up flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div>
-              <p className="font-display text-base font-semibold">
-                {a.service_name || "Usługa"}
-              </p>
-              <p className="text-sm text-[var(--muted)]">
-                {a.customer_name || "Klient"} ·{" "}
-                {new Date(a.start_at).toLocaleString("pl-PL")} –{" "}
-                {new Date(a.end_at).toLocaleTimeString("pl-PL", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-              <p className="mt-1 text-xs text-canary/90">
-                {STATUS_LABEL[a.status] || a.status} · {a.channel}
-              </p>
+        
+        {Object.entries(groupedAppointments).map(([date, appts]) => (
+          <div key={date} className="glass-panel rounded-[28px] overflow-hidden">
+            <div className="bg-white/5 px-6 py-4 border-b border-white/10 flex items-center justify-between">
+              <h3 className="font-headline-md text-headline-md capitalize">{date}</h3>
+              <span className="bg-surface-container px-3 py-1 rounded-full text-sm font-data-mono">{appts.length}</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <GlassButton
-                variant="subtle"
-                className="!py-1.5"
-                onClick={() => void notifyCustomer(a)}
-                disabled={a.status === "cancelled" || notifyingId === a.id}
-              >
-                {notifyingId === a.id ? "Wysyłanie…" : "Powiadom"}
-              </GlassButton>
-              <GlassButton
-                variant="subtle"
-                className="!py-1.5"
-                onClick={() => openEdit(a)}
-                disabled={a.status === "cancelled"}
-              >
-                Edytuj
-              </GlassButton>
-              <GlassButton
-                variant="ghost"
-                className="!py-1.5"
-                onClick={() => void cancelAppt(a.id)}
-                disabled={a.status === "cancelled"}
-              >
-                Anuluj
-              </GlassButton>
+            
+            <div className="p-4 flex flex-col gap-3">
+              {appts.map((a) => (
+                <div
+                  key={a.id}
+                  className="glass-card rounded-xl p-4 relative overflow-hidden flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between hover:border-white/20 hover:shadow-glow transition-all bg-surface-container/40"
+                >
+                  <div className={`absolute top-0 left-0 w-1 h-full ${getStatusColorClass(a.status)}`}></div>
+                  
+                  <div className="flex items-center gap-4 pl-2">
+                    <div className="flex flex-col items-center justify-center min-w-[70px]">
+                      <span className="font-data-mono text-data-mono text-primary">
+                        {new Date(a.start_at).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <span className="text-xs text-on-surface-variant font-data-mono">
+                        {new Date(a.end_at).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    
+                    <div className="h-10 w-px bg-white/10 mx-2 hidden sm:block"></div>
+                    
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-surface-container px-2 py-0.5 rounded text-[10px] font-label-caps text-label-caps uppercase text-on-surface-variant border border-white/5">
+                          {STATUS_LABEL[a.status] || a.status}
+                        </span>
+                        {a.channel && (
+                          <span className="bg-surface-container px-2 py-0.5 rounded text-[10px] font-label-caps text-label-caps uppercase text-primary border border-primary/20">
+                            {a.channel}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="material-symbols-outlined text-[18px] text-tertiary">person</span>
+                        <p className="font-display text-base font-medium">
+                          {a.customer_name || "Nieznany klient"}
+                        </p>
+                      </div>
+                      
+                      <p className="text-sm text-on-surface-variant flex items-center gap-1.5 font-data-mono">
+                        <span className="material-symbols-outlined text-[16px]">design_services</span>
+                        {a.service_name || "Brak usługi"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                    <button
+                      className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-primary"
+                      onClick={() => void notifyCustomer(a)}
+                      disabled={a.status === "cancelled" || notifyingId === a.id}
+                      title="Powiadom klienta"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        {notifyingId === a.id ? "sync" : "notifications"}
+                      </span>
+                    </button>
+                    <button
+                      className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => openEdit(a)}
+                      disabled={a.status === "cancelled"}
+                      title="Edytuj wizytę"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">edit</span>
+                    </button>
+                    <button
+                      className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container hover:bg-error/20 hover:text-error hover:border-error/30 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => void cancelAppt(a.id)}
+                      disabled={a.status === "cancelled"}
+                      title="Anuluj wizytę"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">cancel</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          </GlassCard>
+          </div>
         ))}
       </div>
     </div>

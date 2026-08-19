@@ -226,400 +226,295 @@ export function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <section className="animate-fade-up flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="animate-fade-up flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--text-bright)]">
-            Kalendarz
+          <h1 className="font-display text-display-lg-mobile lg:text-display-lg text-on-surface capitalize">
+            {new Intl.DateTimeFormat("pl-PL", { month: "long", year: "numeric" }).format(
+              view === "week" ? weekStart : dayDate,
+            )}
           </h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            {business?.name || "Salon"} · {business?.timezone || "Europe/Warsaw"}
+          <p className="mt-2 text-on-surface-variant">
+            {events.length} wizyt w {view === "week" ? "tym tygodniu" : "tym dniu"}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-control border border-glass-border p-1">
-            <GlassButton
-              variant={view === "day" ? "primary" : "ghost"}
-              className="!rounded-control !px-3 !py-1.5"
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex rounded-lg border border-white/10 bg-surface-container/60 backdrop-blur-xl p-1">
+            <button
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                view === "day" ? "bg-white/10 text-primary" : "text-on-surface-variant hover:text-on-surface"
+              }`}
               onClick={() => setView("day")}
             >
               Dzień
-            </GlassButton>
-            <GlassButton
-              variant={view === "week" ? "primary" : "ghost"}
-              className="!rounded-control !px-3 !py-1.5"
+            </button>
+            <button
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                view === "week" ? "bg-white/10 text-primary" : "text-on-surface-variant hover:text-on-surface"
+              }`}
               onClick={() => setView("week")}
             >
               Tydzień
-            </GlassButton>
+            </button>
           </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setWeekStart(startOfWeek(new Date()));
+                setDayOffset((new Date().getDay() + 6) % 7);
+              }}
+              className="glass-card px-4 py-2 rounded-lg text-on-surface text-sm hover:border-white/20 hover:shadow-glow transition-all"
+            >
+              Dzisiaj
+            </button>
+            <button
+              onClick={() => shift(-1)}
+              className="glass-card px-3 py-2 rounded-lg text-on-surface hover:border-white/20 hover:shadow-glow transition-all flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined text-xl leading-none">chevron_left</span>
+            </button>
+            <button
+              onClick={() => shift(1)}
+              className="glass-card px-3 py-2 rounded-lg text-on-surface hover:border-white/20 hover:shadow-glow transition-all flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined text-xl leading-none">chevron_right</span>
+            </button>
+          </div>
+
           <Link to="/appointments">
-            <GlassButton>+ Nowa wizyta</GlassButton>
+            <button className="rounded-lg bg-[linear-gradient(135deg,#8083ff,#494bd6)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity flex items-center gap-2 shadow-glow">
+              <span className="material-symbols-outlined text-sm">add</span>
+              Nowa wizyta
+            </button>
           </Link>
         </div>
-      </section>
+      </header>
 
       {error && (
-        <p className="text-sm text-[var(--danger)]">Błąd: {error}</p>
+        <p className="text-sm text-error">Błąd: {error}</p>
       )}
 
-      <div className="animate-fade-up grid gap-4 lg:grid-cols-[1fr_260px]">
-        <GlassCard padding="none" className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-glass-border px-5 py-4">
-            <div>
-              <p className="font-display text-lg font-semibold">
-                {formatRangeLabel(view === "week" ? weekStart : dayDate, view)}
-              </p>
-              <p className="text-xs text-[var(--muted)]">
-                {events.length} wizyt w widoku
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <GlassButton
-                variant="ghost"
-                className="!px-3 !py-1.5"
-                onClick={() => shift(-1)}
-              >
-                ←
-              </GlassButton>
-              <GlassButton
-                variant="ghost"
-                className="!px-3 !py-1.5"
-                onClick={() => shift(1)}
-              >
-                →
-              </GlassButton>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <div
-              className="min-w-[640px] grid"
-              style={{
-                gridTemplateColumns: `64px repeat(${visibleDays.length}, minmax(0, 1fr))`,
-              }}
-            >
-              {/* Day headers */}
-              <div className="border-b border-glass-border" />
-              {visibleDays.map((day, i) => {
-                const d =
-                  view === "week"
-                    ? addDays(weekStart, WEEKDAYS.indexOf(day))
-                    : dayDate;
-                return (
-                  <div
-                    key={`${day}-${i}`}
-                    className="border-b border-l border-glass-border px-3 py-3 text-center"
-                  >
-                    <p className="text-xs uppercase tracking-wider text-[var(--muted)]">
-                      {day}
-                    </p>
-                    <p className="mt-1 font-display text-sm font-semibold">
-                      {d.getDate()}
-                    </p>
-                  </div>
-                );
-              })}
-
-              {/* Hour labels column */}
-              <div>
-                {hours.map((hour) => (
-                  <div
-                    key={hour}
-                    className="border-b border-glass-border px-2 text-right text-xs text-[var(--muted)]"
-                    style={{ height: HOUR_HEIGHT }}
-                  >
-                    <span className="relative -top-2">{formatHour(hour)}</span>
-                  </div>
-                ))}
+      <div className="animate-fade-up grid gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Calendar Grid */}
+        <div className="glass-panel rounded-[28px] p-6 lg:p-8">
+          <div className={`grid ${view === "week" ? "grid-cols-7" : "grid-cols-1"} gap-2 lg:gap-4`}>
+            {/* Day headers */}
+            {visibleDays.map((day) => (
+              <div key={`header-${day}`} className="text-center pb-2">
+                <span className="font-label-caps text-label-caps text-on-surface-variant/70 uppercase">
+                  {day}
+                </span>
               </div>
+            ))}
 
-              {/* Day columns with absolutely positioned events */}
-              {visibleDays.map((day, dayIdx) => {
-                const colEvents = events.filter((e) => e.dayIndex === dayIdx);
-                return (
-                  <div
-                    key={`col-${day}-${dayIdx}`}
-                    className="relative border-l border-glass-border"
-                    style={{ height: totalHours * HOUR_HEIGHT }}
-                  >
-                    {/* Hour grid lines */}
-                    {hours.map((hour) => (
-                      <div
-                        key={hour}
-                        className="absolute inset-x-0 border-b border-glass-border"
-                        style={{
-                          top: (hour - firstHour) * HOUR_HEIGHT,
-                          height: HOUR_HEIGHT,
-                        }}
-                      />
-                    ))}
-                    {/* Events */}
-                    {colEvents.map((event) => {
-                      const top =
-                        ((event.startHour - firstHour) / totalHours) * 100;
-                      const height =
-                        (event.durationHours / totalHours) * 100;
-                      return (
-                        <button
-                          type="button"
-                          key={event.id}
-                          onClick={() => setSelectedEvent(event)}
-                          className={[
-                            "absolute inset-x-1.5 rounded-control border px-2 py-1.5 text-left transition-shadow hover:shadow-lg hover:z-20 cursor-pointer",
-                            event.tone === "canary"
-                              ? "border-[var(--accent)] bg-[var(--surface-solid)] text-[var(--text-bright)]"
-                              : "border-glass-border bg-[var(--surface-solid)] text-[var(--text-bright)]",
-                            selectedEvent?.id === event.id
-                              ? "ring-2 ring-[var(--accent)] z-30"
-                              : "z-10",
-                          ].join(" ")}
-                          style={{
-                            top: `${top}%`,
-                            height: `calc(${height}% - 2px)`,
-                            minHeight: "2.25rem",
-                          }}
-                        >
-                          <p className="truncate text-xs font-semibold">
-                            {event.title}
-                          </p>
-                          <p className="truncate text-[10px] text-[var(--muted)]">
-                            {event.client} · {formatHour(event.startHour)}–
-                            {formatHour(event.startHour + event.durationHours)}
-                          </p>
-                        </button>
-                      );
-                    })}
+            {/* Day cells */}
+            {visibleDays.map((day, i) => {
+              const dayIdx = view === "week" ? i : 0;
+              const d = view === "week" ? addDays(weekStart, i) : dayDate;
+              const isToday = d.toDateString() === new Date().toDateString();
+              const colEvents = events.filter((e) => e.dayIndex === dayIdx);
+              const isOtherMonth = d.getMonth() !== (view === "week" ? weekStart.getMonth() : dayDate.getMonth());
+
+              return (
+                <div
+                  key={`cell-${day}-${i}`}
+                  className={`glass-card rounded-xl lg:aspect-square p-3 flex flex-col gap-2 transition-all ${
+                    isToday
+                      ? "border-primary/50 shadow-[0_0_15px_rgba(192,193,255,0.2)] bg-primary/5 relative"
+                      : "border-white/10 hover:border-white/20"
+                  } ${isOtherMonth ? "opacity-50" : ""}`}
+                >
+                  {isToday && (
+                    <span className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  )}
+                  <div className="text-right">
+                    <span className={`font-data-mono text-data-mono ${isToday ? "text-primary font-bold" : "text-on-surface"}`}>
+                      {d.getDate()}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </GlassCard>
 
+                  <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 no-scrollbar">
+                    {colEvents.map((event) => (
+                      <button
+                        type="button"
+                        key={event.id}
+                        onClick={() => setSelectedEvent(event)}
+                        className={`w-full text-left bg-gradient-to-r from-primary-container to-tertiary-container rounded px-2 py-1.5 text-[10px] font-medium text-white truncate hover:opacity-90 transition-all shadow-sm ${
+                          selectedEvent?.id === event.id ? "ring-2 ring-white/50 scale-[1.02]" : ""
+                        }`}
+                      >
+                        <div className="font-data-mono opacity-80 mb-0.5">{formatHour(event.startHour)}</div>
+                        <div className="truncate">{event.title}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sidebar */}
         <aside className="space-y-4">
           {/* Event detail panel */}
           {selectedEvent && (
-            <GlassCard className="animate-fade-up">
+            <div className="glass-panel rounded-[28px] p-6 animate-fade-up border-primary/30">
               <div className="flex items-start justify-between">
-                <p className="font-display text-base font-semibold">
+                <p className="font-display text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-fixed to-tertiary-container">
                   {selectedEvent.title}
                 </p>
                 <button
                   type="button"
                   onClick={() => setSelectedEvent(null)}
-                  className="text-[var(--muted)] hover:text-[var(--text-bright)] text-lg leading-none"
+                  className="text-on-surface-variant hover:text-on-surface transition-colors"
                 >
-                  ×
+                  <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
-              <p className="mt-1 text-sm text-[var(--text-bright)]">
+              <p className="mt-2 text-sm font-medium text-on-surface">
                 {selectedEvent.client}
               </p>
-              <p className="text-xs text-[var(--muted)]">
-                {new Date(selectedEvent.startAt).toLocaleString("pl-PL", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}
-                {" – "}
-                {new Date(selectedEvent.endAt).toLocaleString("pl-PL", {
-                  timeStyle: "short",
-                })}
-              </p>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                Status: {STATUS_PL[selectedEvent.status] ?? selectedEvent.status}
-              </p>
+              <div className="flex items-center gap-2 mt-2 text-xs text-on-surface-variant">
+                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                <span>
+                  {new Date(selectedEvent.startAt).toLocaleString("pl-PL", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                  {" – "}
+                  {new Date(selectedEvent.endAt).toLocaleString("pl-PL", {
+                    timeStyle: "short",
+                  })}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-1 text-xs text-on-surface-variant">
+                <span className="material-symbols-outlined text-[14px]">info</span>
+                <span>Status: {STATUS_PL[selectedEvent.status] ?? selectedEvent.status}</span>
+              </div>
 
               {selectedCustomer && (
-                <div className="mt-3 space-y-1 rounded-soft border border-glass-border bg-glass-fill p-3 text-xs">
-                  <p className="font-semibold text-[var(--text-bright)]">
+                <div className="mt-4 space-y-2 rounded-xl border border-white/10 bg-surface-container/30 p-4 text-sm">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">
                     Dane kontaktowe
                   </p>
                   {selectedCustomer.phone && (
-                    <p>
-                      <span className="text-[var(--muted)]">Tel:</span>{" "}
-                      <a
-                        href={`tel:${selectedCustomer.phone}`}
-                        className="text-canary underline"
-                      >
+                    <p className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[16px] text-on-surface-variant">call</span>
+                      <a href={`tel:${selectedCustomer.phone}`} className="text-secondary hover:underline">
                         {selectedCustomer.phone}
                       </a>
                     </p>
                   )}
                   {selectedCustomer.email && (
-                    <p>
-                      <span className="text-[var(--muted)]">E-mail:</span>{" "}
-                      <a
-                        href={`mailto:${selectedCustomer.email}`}
-                        className="text-canary underline"
-                      >
+                    <p className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[16px] text-on-surface-variant">mail</span>
+                      <a href={`mailto:${selectedCustomer.email}`} className="text-secondary hover:underline">
                         {selectedCustomer.email}
                       </a>
                     </p>
                   )}
-                  {selectedCustomer.external_ids &&
-                    Object.entries(selectedCustomer.external_ids).map(
-                      ([k, v]) => (
-                        <p key={k}>
-                          <span className="text-[var(--muted)]">{k}:</span> {v}
-                        </p>
-                      ),
-                    )}
-                  {!selectedCustomer.phone &&
-                    !selectedCustomer.email && (
-                      <p className="text-[var(--muted)]">Brak danych kontaktowych</p>
-                    )}
+                  {!selectedCustomer.phone && !selectedCustomer.email && (
+                    <p className="text-on-surface-variant text-xs">Brak danych kontaktowych</p>
+                  )}
                 </div>
               )}
 
-              <div className="mt-4 grid gap-2">
-                <GlassButton
-                  className="w-full"
-                  variant="primary"
-                  onClick={() =>
-                    navigate(
-                      `/appointments?edit=${selectedEvent.id}`,
-                    )
-                  }
+              <div className="mt-6 grid gap-2">
+                <button
+                  className="w-full rounded-lg bg-[linear-gradient(135deg,#8083ff,#494bd6)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity shadow-glow"
+                  onClick={() => navigate(`/appointments?edit=${selectedEvent.id}`)}
                 >
                   Przełóż wizytę
-                </GlassButton>
-                <GlassButton
-                  className="w-full"
-                  onClick={() =>
-                    navigate(
-                      `/notifications/send?appointment=${selectedEvent.id}`,
-                    )
-                  }
+                </button>
+                <button
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-on-surface hover:bg-white/10 transition-colors"
+                  onClick={() => navigate(`/notifications/send?appointment=${selectedEvent.id}`)}
                 >
                   Powiadom klienta
-                </GlassButton>
-                <GlassButton
-                  className="w-full"
-                  onClick={() =>
-                    navigate(
-                      `/inbox?compose=1&customer=${selectedEvent.customerId}`,
-                    )
-                  }
+                </button>
+                <button
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-on-surface hover:bg-white/10 transition-colors"
+                  onClick={() => navigate(`/inbox?compose=1&customer=${selectedEvent.customerId}`)}
                 >
                   Napisz wiadomość
-                </GlassButton>
+                </button>
               </div>
-            </GlassCard>
+            </div>
           )}
 
-          <GlassCard>
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-              Dziś
+          <div className="glass-panel rounded-[28px] p-6">
+            <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">
+              Dzisiejsze wizyty
             </p>
-            <p className="mt-2 font-display text-2xl font-bold">
-              {summary.appointments_today} wizyt
+            <p className="mt-2 font-kpi-stat text-kpi-stat text-on-surface flex items-baseline gap-2">
+              {summary.appointments_today} <span className="text-body-md text-on-surface-variant">wizyt</span>
             </p>
-            <p className="mt-1 text-sm text-[var(--muted)]">
+            <p className="mt-1 text-sm text-on-surface-variant">
               {summary.pending_count} oczekuje · {summary.customers_total} klientów
             </p>
-            <p className="mt-2 text-xs text-[var(--muted)]">
-              7d: {summary.cancelled_7d} anul. · {summary.no_show_7d} no-show
-              {summary.avg_score != null ? ` · ★ ${summary.avg_score}` : ""}
-            </p>
-            {summary.alerts_open > 0 && (
-              <Link
-                to="/feedback"
-                className="mt-3 inline-block text-xs text-[var(--danger)]"
-              >
-                {summary.alerts_open} alertów opinii →
-              </Link>
-            )}
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--surface-solid)]">
-              <div
-                className="h-full rounded-full bg-[var(--accent)] transition-all duration-500"
-                style={{
-                  width: `${Math.min(100, summary.appointments_today * 12 + 8)}%`,
-                }}
-              />
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <p className="text-xs text-on-surface-variant flex justify-between">
+                <span>Anulowane (7d):</span>
+                <span className="font-data-mono text-on-surface">{summary.cancelled_7d}</span>
+              </p>
+              <p className="text-xs text-on-surface-variant flex justify-between mt-1">
+                <span>No-show (7d):</span>
+                <span className="font-data-mono text-on-surface">{summary.no_show_7d}</span>
+              </p>
             </div>
-          </GlassCard>
+          </div>
 
-          <GlassCard>
-            <p className="mb-2 font-display text-base font-semibold">
-              Luki dziś
-            </p>
-            <p className="font-display text-3xl font-bold text-canary">
-              {analytics?.gaps_today ?? "—"}
-            </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
-              szacowane wolne sloty (9–17)
-            </p>
-          </GlassCard>
+          <div className="glass-panel rounded-[28px] p-6 bg-gradient-to-br from-surface-container to-primary/5">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">
+                  Luki w grafiku (Dziś)
+                </p>
+                <p className="font-kpi-stat text-[32px] font-medium text-secondary">
+                  {analytics?.gaps_today ?? "0"}
+                </p>
+                <p className="mt-1 text-xs text-on-surface-variant">
+                  szacowane wolne sloty (9–17)
+                </p>
+              </div>
+              <span className="material-symbols-outlined text-primary text-3xl opacity-50">event_available</span>
+            </div>
+          </div>
 
-          <GlassCard>
-            <p className="mb-3 font-display text-base font-semibold">Kanały</p>
-            <ul className="space-y-2 text-sm">
-              {(
-                [
-                  ["Messenger", "messenger"],
-                  ["Telegram", "telegram"],
-                  ["Widget WWW", "widget"],
-                ] as const
-              ).map(([name, key]) => {
-                const enabledList = business?.enabled_channels;
-                const on =
-                  !enabledList ||
-                  enabledList.length === 0 ||
-                  enabledList.some(
-                    (c) =>
-                      c.toLowerCase() === key ||
-                      (key === "messenger" &&
-                        ["instagram", "meta"].includes(c.toLowerCase())),
-                  );
-                return (
-                  <li
-                    key={name}
-                    className="flex items-center justify-between rounded-soft border border-glass-border bg-glass-fill px-3 py-2"
-                  >
-                    <span>{name}</span>
-                    <span
-                      className={
-                        on ? "text-[var(--text-bright)]" : "text-[var(--muted)]"
-                      }
-                    >
-                      {on ? "w planie" : "poza planem"}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-            <Link to="/channels" className="mt-3 inline-block text-xs text-canary">
-              Szczegóły kanałów →
-            </Link>
-          </GlassCard>
-
-          <GlassCard>
-            <p className="mb-2 font-display text-base font-semibold">
+          <div className="glass-panel rounded-[28px] p-6">
+            <p className="mb-4 font-label-caps text-label-caps text-on-surface-variant uppercase">
               Następna wizyta
             </p>
             {nextAppt ? (
-              <>
-                <p className="text-sm text-[var(--text-bright)]">
-                  {nextAppt.service_name || "Wizyta"}
-                </p>
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  {nextAppt.customer_name || "Klient"} ·{" "}
-                  {new Date(nextAppt.start_at).toLocaleString("pl-PL", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
-                </p>
-                <Link to="/appointments">
-                  <GlassButton className="mt-4 w-full" variant="primary">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-on-surface">
+                    {nextAppt.service_name || "Wizyta"}
+                  </p>
+                  <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+                    <span className="material-symbols-outlined text-[14px]">person</span>
+                    {nextAppt.customer_name || "Klient"}
+                  </p>
+                  <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                    <span className="material-symbols-outlined text-[14px]">schedule</span>
+                    {new Date(nextAppt.start_at).toLocaleString("pl-PL", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                  </p>
+                </div>
+                <Link to="/appointments" className="block">
+                  <button className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-on-surface hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-[18px]">list</span>
                     Lista wizyt
-                  </GlassButton>
+                  </button>
                 </Link>
-              </>
+              </div>
             ) : (
-              <p className="text-sm text-[var(--muted)]">Brak nadchodzących wizyt</p>
+              <p className="text-sm text-on-surface-variant italic">Brak nadchodzących wizyt</p>
             )}
-          </GlassCard>
+          </div>
         </aside>
       </div>
     </div>

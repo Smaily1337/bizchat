@@ -209,15 +209,23 @@ export function InboxPage() {
     <div className="space-y-6">
       <header className="animate-fade-up flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--text-bright)] sm:text-3xl">
+          <h1 className="font-headline-md text-headline-md font-black text-primary">
             Wiadomości
           </h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <p className="mt-1 text-sm text-on-surface-variant">
             Rozmowy z Messengera i innych kanałów. Jeśli ktoś pisał wcześniej —
             użyj „Importuj z Messengera”.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 mr-2">
+            <button className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-surface-container/60 text-on-surface transition-all hover:border-white/20 hover:shadow-glow">
+              <span className="material-symbols-outlined text-[20px]">search</span>
+            </button>
+            <button className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-surface-container/60 text-on-surface transition-all hover:border-white/20 hover:shadow-glow">
+              <span className="material-symbols-outlined text-[20px]">tune</span>
+            </button>
+          </div>
           <GlassButton
             type="button"
             variant="ghost"
@@ -241,19 +249,19 @@ export function InboxPage() {
       </header>
 
       {error && (
-        <pre className="whitespace-pre-wrap rounded-control border border-[var(--danger)]/30 bg-[var(--danger)]/5 px-3 py-2 font-sans text-sm text-[var(--danger)]">
+        <pre className="whitespace-pre-wrap rounded-control border border-[var(--danger)]/30 bg-[var(--danger)]/5 px-3 py-2 font-sans text-sm text-error">
           {error}
         </pre>
       )}
-      {info && <p className="text-sm text-[var(--success)]">{info}</p>}
+      {info && <p className="text-sm text-secondary">{info}</p>}
 
       {importPanel && (
         <GlassCard className="animate-fade-up space-y-4">
           <div>
-            <p className="text-sm font-semibold text-[var(--text-bright)]">
+            <p className="text-sm font-semibold text-on-surface">
               1. Automatycznie z Meta (wymaga pages_read_engagement)
             </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
+            <p className="mt-1 text-xs text-on-surface-variant">
               Token strony musi mieć pages_read_engagement. W trybie Live Meta
               wymaga App Review — w Development wystarczy dodać uprawnienie i
               wygenerować nowy Page token.
@@ -268,14 +276,14 @@ export function InboxPage() {
               </GlassButton>
             </div>
           </div>
-          <div className="border-t border-glass-border pt-4">
-            <p className="text-sm font-semibold text-[var(--text-bright)]">
+          <div className="border-t border-white/10 pt-4">
+            <p className="text-sm font-semibold text-on-surface">
               2. Import PSID (bez tej zgody)
             </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
+            <p className="mt-1 text-xs text-on-surface-variant">
               Wklej Page-Scoped ID osób, które pisały do fanpage — po jednym w
-              linii. Format: <code className="font-mono">123456789</code> albo{" "}
-              <code className="font-mono">Anna | 123456789</code>. PSID znajdziesz
+              linii. Format: <code className="font-data-mono">123456789</code> albo{" "}
+              <code className="font-data-mono">Anna | 123456789</code>. PSID znajdziesz
               w Meta Business Suite → Inbox (szczegóły rozmowy) lub w logach
               webhooka.
             </p>
@@ -296,23 +304,23 @@ export function InboxPage() {
       )}
 
       {loading && (
-        <p className="text-sm text-[var(--muted)]">Ładowanie rozmów…</p>
+        <p className="text-sm text-on-surface-variant">Ładowanie rozmów…</p>
       )}
 
       {composeOpen && (
         <GlassCard className="animate-fade-up">
-          <p className="font-display text-lg font-semibold">
+          <p className="font-headline-md text-lg font-semibold text-on-surface">
             Napisz do klienta (Messenger)
           </p>
-          <p className="mt-1 text-xs text-[var(--muted)]">
+          <p className="mt-1 text-xs text-on-surface-variant">
             Nie trzeba mieć wcześniejszej rozmowy w Inbox — wystarczy PSID w
             karcie klienta. Meta wymaga, by klient kiedyś napisał do fanpage.
           </p>
           <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={onStart}>
             <label className="space-y-1 text-sm sm:col-span-2">
-              <span className="text-[var(--muted)]">Klient</span>
+              <span className="text-on-surface-variant">Klient</span>
               <select
-                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-[var(--text-bright)]"
+                className="w-full rounded-control border border-white/10 bg-surface-container/60 px-3 py-2 text-sm text-on-surface"
                 value={compose.customer_id}
                 onChange={(e) =>
                   setCompose({ ...compose, customer_id: e.target.value })
@@ -333,7 +341,7 @@ export function InboxPage() {
               </select>
             </label>
             {messengerReady.length === 0 && (
-              <p className="sm:col-span-2 text-xs text-[var(--muted)]">
+              <p className="sm:col-span-2 text-xs text-on-surface-variant">
                 Brak klientów z ID kanału.{" "}
                 <Link className="underline" to="/customers">
                   Dodaj klienta z Messenger PSID
@@ -342,9 +350,9 @@ export function InboxPage() {
               </p>
             )}
             <label className="space-y-1 text-sm">
-              <span className="text-[var(--muted)]">Kanał</span>
+              <span className="text-on-surface-variant">Kanał</span>
               <select
-                className="w-full rounded-control border border-glass-border bg-glass-fill px-3 py-2 text-sm text-[var(--text-bright)]"
+                className="w-full rounded-control border border-white/10 bg-surface-container/60 px-3 py-2 text-sm text-on-surface"
                 value={compose.channel}
                 onChange={(e) =>
                   setCompose({
@@ -359,7 +367,7 @@ export function InboxPage() {
               </select>
             </label>
             <label className="space-y-1 text-sm sm:col-span-2">
-              <span className="text-[var(--muted)]">Treść</span>
+              <span className="text-on-surface-variant">Treść</span>
               <GlassTextarea
                 value={compose.text}
                 onChange={(e) =>
@@ -376,70 +384,81 @@ export function InboxPage() {
         </GlassCard>
       )}
 
-      <div className={`grid gap-4 lg:grid-cols-[320px_1fr] ${THREAD_HEIGHT}`}>
-        <GlassCard
-          padding="none"
-          className={`!overflow-hidden flex flex-col ${THREAD_HEIGHT}`}
-        >
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            {conversations.length === 0 && !loading && (
-              <p className="p-4 text-sm text-[var(--muted)]">
-                Brak rozmów. Użyj „Nowa wiadomość” albo poczekaj na klienta.
-              </p>
-            )}
-            <ul>
-              {conversations.map((c) => (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(c.id)}
-                    className={[
-                      "w-full border-b border-glass-border px-4 py-3 text-left transition",
-                      selectedId === c.id
-                        ? "bg-[var(--accent-soft)]"
-                        : "hover:bg-[var(--row-hover)]",
-                    ].join(" ")}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate font-display text-sm font-semibold">
-                        {c.customer_name || "Klient"}
-                      </p>
-                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-canary">
-                        {CHANNEL_LABEL[c.channel] || c.channel}
-                      </span>
-                    </div>
-                    <p className="mt-1 truncate text-xs text-[var(--muted)]">
+      <div className={`grid gap-4 lg:grid-cols-[340px_1fr] ${THREAD_HEIGHT}`}>
+        <div className={`flex flex-col gap-3 overflow-y-auto pr-2`}>
+          {conversations.length === 0 && !loading && (
+            <p className="p-4 text-sm text-on-surface-variant">
+              Brak rozmów. Użyj „Nowa wiadomość” albo poczekaj na klienta.
+            </p>
+          )}
+          {conversations.map((c) => {
+            const isUnread = false; // Add real unread logic if available
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setSelectedId(c.id)}
+                className={`glass-panel flex w-full items-center gap-3 rounded-[28px] p-3 text-left transition-all ${
+                  selectedId === c.id
+                    ? "border-white/30 shadow-glow"
+                    : "hover:border-white/20 hover:shadow-glow"
+                }`}
+              >
+                <div className="relative shrink-0">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-surface-container font-display text-lg font-bold text-primary">
+                    {c.customer_name ? c.customer_name.charAt(0).toUpperCase() : "K"}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-surface-container text-on-surface">
+                    <span className="material-symbols-outlined text-[12px]">
+                      {c.channel === "messenger"
+                        ? "chat"
+                        : c.channel === "instagram"
+                          ? "photo_camera"
+                          : "forum"}
+                    </span>
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center justify-between">
+                    <p className="truncate font-body-md font-semibold text-on-surface">
+                      {c.customer_name || "Klient"}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="truncate text-sm text-on-surface-variant">
                       {c.last_message || "—"}
                     </p>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </GlassCard>
+                    {isUnread && (
+                      <div className="ml-2 h-2 w-2 shrink-0 rounded-full bg-primary-container shadow-[0_0_8px_rgba(128,131,255,0.6)]" />
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
 
-        <GlassCard
-          padding="none"
-          className={`!overflow-hidden flex flex-col ${THREAD_HEIGHT}`}
-        >
+        <div className={`glass-panel flex flex-col rounded-[28px] !overflow-hidden ${THREAD_HEIGHT}`}>
           {selected ? (
             <div className="flex h-full min-h-0 flex-col p-5">
-              <div className="mb-3 shrink-0 border-b border-glass-border pb-3">
-                <p className="font-display text-lg font-semibold">
-                  {selected.customer_name || "Klient"}
-                </p>
-                <p className="text-xs text-[var(--muted)]">
-                  {CHANNEL_LABEL[selected.channel]} · stan: {selected.state}
-                </p>
+              <div className="mb-4 flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <p className="font-headline-md text-xl font-bold text-on-surface">
+                    {selected.customer_name || "Klient"}
+                  </p>
+                  <p className="mt-1 flex items-center gap-2 text-sm text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[16px]">
+                      {selected.channel === "messenger" ? "chat" : "forum"}
+                    </span>
+                    {CHANNEL_LABEL[selected.channel]} · stan: {selected.state}
+                  </p>
+                </div>
                 {selectedCustomer?.tags && selectedCustomer.tags.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
                     {selectedCustomer.tags.map((t) => (
                       <span
                         key={t.id}
-                        className="rounded-control px-2 py-0.5 text-[11px] font-medium text-[var(--text-bright)]"
-                        style={{
-                          backgroundColor: t.color || "rgba(255,255,255,0.15)",
-                        }}
+                        className="rounded-full px-3 py-1 font-label-caps text-[11px] font-semibold text-on-surface border border-white/10 bg-surface-container/60"
                       >
                         {t.name}
                       </span>
@@ -449,55 +468,82 @@ export function InboxPage() {
               </div>
               <div
                 ref={messagesRef}
-                className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1"
+                className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pr-2"
               >
                 {messages.map((m) => (
                   <div
                     key={m.id}
-                    className={[
-                      "max-w-[85%] rounded-soft border px-3 py-2 text-sm",
-                      m.role === "customer"
-                        ? "mr-auto border-glass-border bg-glass-fill"
-                        : m.role === "owner"
-                          ? "ml-auto border-[var(--accent)]/40 bg-[var(--accent-soft)]"
-                          : "ml-auto border-glass-border bg-glass-fillStrong",
-                    ].join(" ")}
+                    className={`flex flex-col max-w-[85%] ${
+                      m.role === "customer" ? "mr-auto" : "ml-auto"
+                    }`}
                   >
-                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[var(--muted)]">
-                      {m.role === "customer"
-                        ? "Klient"
-                        : m.role === "owner"
-                          ? "Ty"
-                          : "Bot"}
-                    </p>
-                    <p className="whitespace-pre-wrap text-[var(--text-bright)]">
-                      {m.content}
-                    </p>
-                    <p className="mt-1 text-[10px] text-[var(--muted)]">
+                    <div
+                      className={[
+                        "p-4 text-sm",
+                        m.role === "customer"
+                          ? "glass-panel rounded-2xl rounded-bl-none text-on-surface"
+                          : "bg-gradient-to-r from-primary-container to-tertiary-container rounded-2xl rounded-br-none shadow-[0_4px_24px_rgba(128,131,255,0.25)] font-medium text-white",
+                      ].join(" ")}
+                    >
+                      <p className="whitespace-pre-wrap">{m.content}</p>
+                    </div>
+                    <p
+                      className={`mt-1 font-data-mono text-[10px] text-on-surface-variant ${
+                        m.role === "customer" ? "text-left" : "text-right"
+                      }`}
+                    >
                       {new Date(m.created_at).toLocaleString("pl-PL", {
-                        dateStyle: "short",
-                        timeStyle: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </p>
                   </div>
                 ))}
               </div>
-              <form className="mt-3 flex shrink-0 gap-2" onSubmit={onReply}>
-                <GlassTextarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Odpowiedz jako właściciel…"
-                  className="min-h-[3rem] max-h-28 flex-1"
-                />
-                <GlassButton type="submit" className="self-end">
-                  Wyślij
-                </GlassButton>
+              <form className="mt-4 flex shrink-0 items-center gap-3" onSubmit={onReply}>
+                <button
+                  type="button"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-surface-container-high text-on-surface transition-all hover:border-white/20"
+                >
+                  <span className="material-symbols-outlined text-[20px]">add</span>
+                </button>
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    placeholder="Napisz wiadomość..."
+                    className="w-full rounded-3xl border border-white/10 bg-surface-container-high px-4 py-3 pr-12 text-sm text-on-surface placeholder:text-on-surface-variant focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/20"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      sentiment_satisfied
+                    </span>
+                  </button>
+                </div>
+                <button
+                  type="submit"
+                  disabled={!reply.trim()}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-white shadow-[0_4px_16px_rgba(128,131,255,0.4)] transition-all hover:brightness-110 disabled:opacity-50"
+                >
+                  <span
+                    className="material-symbols-outlined text-[18px]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    send
+                  </span>
+                </button>
               </form>
             </div>
           ) : (
-            <p className="p-5 text-sm text-[var(--muted)]">Wybierz rozmowę</p>
+            <div className="flex h-full items-center justify-center text-sm text-on-surface-variant">
+              Wybierz rozmowę
+            </div>
           )}
-        </GlassCard>
+        </div>
       </div>
     </div>
   );

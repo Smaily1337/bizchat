@@ -115,13 +115,13 @@ export function SettingsPage() {
       {active === "account" ? null : (
       <header className="animate-fade-up flex flex-col items-start gap-3">
         {active && (
-          <Link to="/settings" className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors">
-            <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <Link to="/settings" className="inline-flex items-center gap-1.5 text-sm text-[var(--on-surface-variant)] hover:text-[var(--text)] transition-colors">
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
             Wróć do ustawień
           </Link>
         )}
         <div>
-          <h1 className="font-display text-3xl font-bold">
+          <h1 className="font-display text-display-lg-mobile md:text-display-lg font-bold">
           {!active 
               ? "Ustawienia"
               : active === "services"
@@ -134,7 +134,7 @@ export function SettingsPage() {
                       ? "Wygląd"
                       : "Ustawienia salonu"}
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-body-md text-[var(--on-surface-variant)]">
           {!active ? "Skonfiguruj system" : "Zarządzaj ustawieniami"}
         </p>
         </div>
@@ -143,58 +143,58 @@ export function SettingsPage() {
 
       {!active && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
-          <Link to="/settings/salon" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <Link to="/settings/salon" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined">storefront</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Salon</p>
-              <p className="text-sm text-[var(--muted)]">Podstawowe dane</p>
+              <p className="font-semibold text-[var(--text)]">Salon</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Podstawowe dane</p>
             </div>
           </Link>
-          <Link to="/settings/services" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <Link to="/settings/services" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary shrink-0">
+              <span className="material-symbols-outlined">design_services</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Usługi</p>
-              <p className="text-sm text-[var(--muted)]">Twój cennik</p>
+              <p className="font-semibold text-[var(--text)]">Usługi</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Twój cennik</p>
             </div>
           </Link>
-          <Link to="/settings/faq" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <Link to="/settings/faq" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined">help_center</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">FAQ Bota</p>
-              <p className="text-sm text-[var(--muted)]">Baza wiedzy AI</p>
+              <p className="font-semibold text-[var(--text)]">FAQ Bota</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Baza wiedzy AI</p>
             </div>
           </Link>
-          <Link to="/settings/plan" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <Link to="/settings/plan" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary shrink-0">
+              <span className="material-symbols-outlined">verified</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Plan i limity</p>
-              <p className="text-sm text-[var(--muted)]">Subskrypcja</p>
+              <p className="font-semibold text-[var(--text)]">Plan i limity</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Subskrypcja</p>
             </div>
           </Link>
-          <Link to="/settings/appearance" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+          <Link to="/settings/appearance" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary shrink-0">
+              <span className="material-symbols-outlined">palette</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Wygląd</p>
-              <p className="text-sm text-[var(--muted)]">Motyw i widget</p>
+              <p className="font-semibold text-[var(--text)]">Wygląd</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Motyw i widget</p>
             </div>
           </Link>
-          <Link to="/settings/account" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-500/10 flex items-center justify-center text-gray-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <Link to="/settings/account" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined">person</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Konto</p>
-              <p className="text-sm text-[var(--muted)]">Twoje dane logowania</p>
+              <p className="font-semibold text-[var(--text)]">Konto</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Twoje dane logowania</p>
             </div>
           </Link>
         </div>
@@ -210,9 +210,9 @@ export function SettingsPage() {
 
 
       {active === "appearance" && (
-      <GlassCard className="animate-fade-up">
-        <p className="font-display text-lg font-semibold">Wygląd panelu</p>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+      <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+        <p className="font-headline-md text-headline-md">Wygląd panelu</p>
+        <p className="mt-1 text-body-md text-[var(--on-surface-variant)]">
           Wybierz jasny lub ciemny motyw. Preferencja zapamiętuje się w tej
           przeglądarce.
         </p>
@@ -238,8 +238,8 @@ export function SettingsPage() {
       )}
 
       {active === "plan" && (
-        <GlassCard className="animate-fade-up">
-          <p className="font-display text-lg font-semibold">
+        <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+          <p className="font-headline-md text-headline-md">
             Licencja i limity
           </p>
           {!usage ? (
@@ -278,16 +278,16 @@ export function SettingsPage() {
             ).map((row) => (
               <div
                 key={row.label}
-                className="rounded-soft border border-glass-border bg-glass-fill px-3 py-3"
+                className="glass-panel rounded-2xl p-4"
               >
-                <p className="text-xs text-[var(--muted)]">{row.label}</p>
-                <p className="mt-1 font-display text-xl font-semibold">
+                <p className="text-label-caps font-label-caps text-[var(--on-surface-variant)]">{row.label}</p>
+                <p className="mt-1 font-kpi-stat text-kpi-stat">
                   {fmtLimit(row.used, row.max)}
                 </p>
                 {row.max != null && (
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--ink)]/10">
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container">
                     <div
-                      className="h-full rounded-full bg-[var(--accent)]"
+                      className="h-full rounded-full bg-gradient-to-r from-primary-container to-tertiary-container"
                       style={{ width: `${usagePct(row.used, row.max)}%` }}
                     />
                   </div>
@@ -295,65 +295,69 @@ export function SettingsPage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-[var(--muted)]">
+          <p className="mt-3 text-body-md text-[var(--on-surface-variant)]">
             Kanały: {usage.enabled_channels.join(", ") || "—"}
           </p>
             </>
           )}
-        </GlassCard>
+        </div>
       )}
 
       {active === "salon" && (
-      <GlassCard className="animate-fade-up">
-        <p className="font-display text-lg font-semibold">Salon</p>
+      <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+        <p className="font-headline-md text-headline-md">Salon</p>
         <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={saveBusiness}>
           <label className="space-y-1 text-sm">
-            <span className="text-[var(--muted)]">Nazwa</span>
-            <GlassInput value={name} onChange={(e) => setName(e.target.value)} required />
+            <span className="text-[var(--on-surface-variant)]">Nazwa</span>
+            <GlassInput value={name} onChange={(e) => setName(e.target.value)} required className="glass-input" />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="text-[var(--muted)]">Strefa czasowa</span>
+            <span className="text-[var(--on-surface-variant)]">Strefa czasowa</span>
             <GlassInput
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
               placeholder="Europe/Warsaw"
               required
+              className="glass-input"
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="text-[var(--muted)]">Slug publicznej rezerwacji</span>
+            <span className="text-[var(--on-surface-variant)]">Slug publicznej rezerwacji</span>
             <GlassInput
               value={publicSlug}
               onChange={(e) => setPublicSlug(e.target.value)}
               placeholder="moj-salon"
+              className="glass-input"
             />
           </label>
           <label className="space-y-1 text-sm">
-            <span className="text-[var(--muted)]">Zaliczka %</span>
+            <span className="text-[var(--on-surface-variant)]">Zaliczka %</span>
             <GlassInput
               type="number"
               min={0}
               max={100}
               value={depositPercent}
               onChange={(e) => setDepositPercent(e.target.value)}
+              className="glass-input"
             />
           </label>
           <label className="space-y-1 text-sm sm:col-span-2">
-            <span className="text-[var(--muted)]">Google Calendar ID</span>
+            <span className="text-[var(--on-surface-variant)]">Google Calendar ID</span>
             <GlassInput
               value={gcalId}
               onChange={(e) => setGcalId(e.target.value)}
               placeholder="primary lub ID kalendarza"
+              className="glass-input"
             />
-            <span className="mt-1 block text-xs text-[var(--muted)]">
+            <span className="mt-1 block text-body-md text-[var(--on-surface-variant)]">
               Wymaga GOOGLE_CALENDAR_ENABLED + refresh token na API.
             </span>
           </label>
           {business?.id && (
-            <p className="sm:col-span-2 text-xs text-[var(--muted)]">
+            <p className="sm:col-span-2 text-body-md text-[var(--on-surface-variant)]">
               Link:{" "}
               <a
-                className="underline"
+                className="underline text-primary"
                 href={`/book/${publicSlug || business.id}`}
                 target="_blank"
                 rel="noreferrer"
@@ -362,22 +366,21 @@ export function SettingsPage() {
               </a>
             </p>
           )}
-          <GlassButton type="submit" className="sm:w-fit">
+          <GlassButton type="submit" className="sm:w-fit mt-2">
             Zapisz
           </GlassButton>
         </form>
-      </GlassCard>
-
+      </div>
       )}
 
       {active === "services" && (
-      <GlassCard className="animate-fade-up">
-        <p className="font-display text-lg font-semibold">Usługi</p>
+      <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+        <p className="font-headline-md text-headline-md">Usługi</p>
         <ul className="mt-3 space-y-2">
           {services.map((s) => (
             <li
               key={s.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 glass-panel rounded-2xl px-4 py-3 text-body-md"
             >
               <span>
                 {s.name} · {s.duration_min} min · {s.price} zł
@@ -392,6 +395,7 @@ export function SettingsPage() {
                     .catch((err: Error) => setError(err.message))
                 }
               >
+                <span className="material-symbols-outlined text-[18px]">delete</span>
                 Usuń
               </GlassButton>
             </li>
@@ -403,6 +407,7 @@ export function SettingsPage() {
             value={svcForm.name}
             onChange={(e) => setSvcForm((f) => ({ ...f, name: e.target.value }))}
             required
+            className="glass-input"
           />
           <GlassInput
             type="number"
@@ -412,38 +417,41 @@ export function SettingsPage() {
               setSvcForm((f) => ({ ...f, duration_min: Number(e.target.value) }))
             }
             required
+            className="glass-input"
           />
           <GlassInput
             placeholder="Cena"
             value={svcForm.price}
             onChange={(e) => setSvcForm((f) => ({ ...f, price: e.target.value }))}
             required
+            className="glass-input"
           />
           <GlassButton type="submit">Dodaj usługę</GlassButton>
         </form>
-      </GlassCard>
+      </div>
       )}
 
       {active === "faq" && (
-      <GlassCard className="animate-fade-up">
-        <p className="font-display text-lg font-semibold">FAQ / baza wiedzy</p>
+      <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+        <p className="font-headline-md text-headline-md">FAQ / baza wiedzy</p>
         <ul className="mt-3 space-y-2">
           {knowledge.map((k) => (
             <li
               key={k.id}
-              className="rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="glass-panel rounded-2xl px-4 py-3 text-body-md"
             >
               <div className="flex justify-between gap-2">
-                <p className="font-medium">{k.question}</p>
+                <p className="font-medium text-[var(--text)]">{k.question}</p>
                 <GlassButton
                   variant="ghost"
                   className="!py-1 !px-3"
                   onClick={() => void knowledgeApi.remove(k.id).then(reload)}
                 >
+                  <span className="material-symbols-outlined text-[18px]">delete</span>
                   Usuń
                 </GlassButton>
               </div>
-              <p className="mt-1 text-[var(--muted)]">{k.answer}</p>
+              <p className="mt-1 text-[var(--on-surface-variant)]">{k.answer}</p>
             </li>
           ))}
         </ul>
@@ -454,6 +462,7 @@ export function SettingsPage() {
             onChange={(e) =>
               setFaqForm((f) => ({ ...f, category: e.target.value }))
             }
+            className="glass-input"
           />
           <GlassInput
             placeholder="Pytanie"
@@ -462,6 +471,7 @@ export function SettingsPage() {
               setFaqForm((f) => ({ ...f, question: e.target.value }))
             }
             required
+            className="glass-input"
           />
           <GlassTextarea
             placeholder="Odpowiedź"
@@ -470,10 +480,11 @@ export function SettingsPage() {
               setFaqForm((f) => ({ ...f, answer: e.target.value }))
             }
             required
+            className="glass-input"
           />
           <GlassButton type="submit">Dodaj FAQ</GlassButton>
         </form>
-      </GlassCard>
+      </div>
       )}
     </div>
   );

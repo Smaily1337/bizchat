@@ -21,7 +21,7 @@ export function GlassCard({
   // No inner wrapper — flex/grid/h-* on className must apply to children directly.
   return (
     <div
-      className={`glass-panel ${paddingClasses[padding]} ${className}`}
+      className={`glass-panel rounded-[28px] ${paddingClasses[padding]} ${className}`}
       {...props}
     >
       {children}

@@ -27,6 +27,9 @@ import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
+import { LandingPage } from "@/pages/LandingPage";
+import { PricingPage } from "@/pages/PricingPage";
+
 function RealtimeBridge() {
   const { token } = useAuth();
   useRealtimeEvents(Boolean(token));
@@ -52,6 +55,8 @@ export default function App() {
         <ClerkSessionBridge />
         <ToastProvider>
           <Routes>
+            <Route path="/landing" element={<LandingPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/book/:key" element={<PublicBookingPage />} />
@@ -84,3 +89,4 @@ export default function App() {
     </ThemeProvider>
   );
 }
+

@@ -124,27 +124,35 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
+    <div className="mesh-bg relative flex min-h-screen items-center justify-center px-4 py-10">
       <button
         type="button"
         onClick={toggleTheme}
-        className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-control border border-glass-border bg-glass-fill px-3 py-1.5 text-sm font-semibold text-[var(--text-bright)] backdrop-blur-glass transition hover:bg-glass-fillStrong sm:right-8 sm:top-8"
+        className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-surface-container/60 px-3 py-1.5 text-sm font-semibold text-on-surface backdrop-blur-xl transition hover:border-white/20 sm:right-8 sm:top-8"
         aria-label={theme === "dark" ? "Włącz jasny motyw" : "Włącz ciemny motyw"}
       >
         {theme === "dark" ? "Jasny" : "Ciemny"}
       </button>
-      <GlassCard className="animate-fade-up w-full max-w-md">
-        <p className="font-display text-4xl font-extrabold tracking-tight">
-          Automovia
-        </p>
-        <h1 className="mt-2 font-display text-xl font-semibold text-[var(--text-bright)]">
-          {mode === "login" ? "Panel salonu" : "Rejestracja"}
-        </h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">
-          {mode === "login"
-            ? "Zaloguj się przez Clerk (OTP / Google / Apple) albo kontem demo."
-            : "Załóż konto właściciela i nowy salon w kilka sekund."}
-        </p>
+      <div className="glass-panel animate-fade-up w-full max-w-md p-8 rounded-[28px]">
+        <div className="mb-6 flex justify-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-primary/30 bg-primary-container/20">
+            <span className="material-symbols-outlined text-primary text-3xl">spa</span>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <p className="font-display text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-[#494bd6] to-tertiary-container bg-clip-text text-transparent">
+            Automovia
+          </p>
+          <h1 className="mt-2 font-display text-xl font-semibold text-on-surface">
+            {mode === "login" ? "Panel salonu" : "Rejestracja"}
+          </h1>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            {mode === "login"
+              ? "Zaloguj się przez Clerk (OTP / Google / Apple) albo kontem demo."
+              : "Załóż konto właściciela i nowy salon w kilka sekund."}
+          </p>
+        </div>
 
         {clerkEnabled() && mode === "login" && (
           <div className="mt-6">
@@ -153,8 +161,8 @@ export function LoginPage() {
         )}
 
         {clerkEnabled() && mode === "login" && (
-          <div className="mt-5 flex items-center gap-3 text-xs text-[var(--muted)]">
-            <span className="h-px flex-1 bg-[var(--glass-border-outer)]" />
+          <div className="mt-5 flex items-center gap-3 text-xs text-on-surface-variant">
+            <span className="h-px flex-1 bg-white/10" />
             <button
               type="button"
               className="shrink-0 underline-offset-2 hover:underline"
@@ -162,77 +170,84 @@ export function LoginPage() {
             >
               {showDemo ? "Ukryj logowanie hasłem" : "Konto demo / hasło"}
             </button>
-            <span className="h-px flex-1 bg-[var(--glass-border-outer)]" />
+            <span className="h-px flex-1 bg-white/10" />
           </div>
         )}
 
         {(showDemo || mode === "register") && (
         <>
 
+        <div className="mt-5 flex justify-center text-sm">
+          {mode === "login" ? (
+            <span className="text-on-surface-variant">
+              Nie masz konta?{" "}
+              <button
+                type="button"
+                className="text-primary hover:underline font-medium"
+                onClick={() => {
+                  setMode("register");
+                  setEmail("");
+                  setPassword("");
+                }}
+              >
+                Rejestracja
+              </button>
+            </span>
+          ) : (
+            <span className="text-on-surface-variant">
+              Masz już konto?{" "}
+              <button
+                type="button"
+                className="text-primary hover:underline font-medium"
+                onClick={() => setMode("login")}
+              >
+                Logowanie
+              </button>
+            </span>
+          )}
+        </div>
+
         {mode === "login" && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <GlassButton
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <button
               type="button"
-              variant="ghost"
-              className="!px-3 !py-1.5 text-xs"
+              className="rounded-lg border border-white/10 bg-surface-container/60 px-3 py-1.5 text-xs text-on-surface hover:border-white/20 transition-all"
               onClick={() => {
                 setEmail("admin@bizchat.local");
                 setPassword("changeme");
               }}
             >
               Superadmin platformy
-            </GlassButton>
-            <GlassButton
+            </button>
+            <button
               type="button"
-              variant="ghost"
-              className="!px-3 !py-1.5 text-xs"
+              className="rounded-lg border border-white/10 bg-surface-container/60 px-3 py-1.5 text-xs text-on-surface hover:border-white/20 transition-all"
               onClick={() => {
                 setEmail("owner@bizchat.local");
                 setPassword("changeme");
               }}
             >
               Demo salon
-            </GlassButton>
+            </button>
           </div>
         )}
-
-        <div className="mt-5 flex gap-2">
-          <GlassButton
-            type="button"
-            variant={mode === "login" ? "primary" : "ghost"}
-            className="flex-1 !py-2"
-            onClick={() => setMode("login")}
-          >
-            Logowanie
-          </GlassButton>
-          <GlassButton
-            type="button"
-            variant={mode === "register" ? "primary" : "ghost"}
-            className="flex-1 !py-2"
-            onClick={() => {
-              setMode("register");
-              setEmail("");
-              setPassword("");
-            }}
-          >
-            Rejestracja
-          </GlassButton>
-        </div>
 
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           {mode === "register" && (
             <>
               <label className="block space-y-1.5 text-sm">
-                <span className="text-[var(--muted)]">Imię / nazwa</span>
-                <GlassInput
+                <span className="text-on-surface-variant mb-1.5 block">Imię / nazwa</span>
+                <input
+                  className="glass-input w-full px-4 py-2"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   autoComplete="name"
                 />
               </label>
               <label className="block space-y-1.5 text-sm">
-                <span className="text-[var(--muted)]">Nazwa salonu</span>
-                <GlassInput
+                <span className="text-on-surface-variant mb-1.5 block">Nazwa salonu</span>
+                <input
+                  className="glass-input w-full px-4 py-2"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   required
@@ -240,56 +255,61 @@ export function LoginPage() {
               </label>
             </>
           )}
-          <label className="block space-y-1.5 text-sm">
-            <span className="text-[var(--muted)]">E-mail</span>
-            <GlassInput
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="username"
-            />
+          <label className="block space-y-1.5 text-sm relative">
+            <span className="text-on-surface-variant mb-1.5 block">E-mail</span>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+              <input
+                type="email"
+                className="glass-input w-full pl-10 pr-4 py-2"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="username"
+              />
+            </div>
           </label>
-          <label className="block space-y-1.5 text-sm">
-            <span className="text-[var(--muted)]">Hasło</span>
-            <GlassInput
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-            />
+          <label className="block space-y-1.5 text-sm relative">
+            <span className="text-on-surface-variant mb-1.5 block">Hasło</span>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
+              <input
+                type="password"
+                className="glass-input w-full pl-10 pr-4 py-2"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+              />
+            </div>
           </label>
           {error && (
-            <p className="text-sm text-[var(--danger)]" role="alert">
+            <p className="text-sm text-error" role="alert">
               {error}
             </p>
           )}
           {info && (
-            <p className="text-sm text-[var(--success)]" role="status">
+            <p className="text-sm text-secondary" role="status">
               {info}
             </p>
           )}
-          <GlassButton type="submit" className="w-full" disabled={submitting}>
-            {submitting
-              ? "Chwila…"
-              : mode === "login"
-                ? "Zaloguj"
-                : "Utwórz konto"}
-          </GlassButton>
+          <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2 mt-2 py-2" disabled={submitting}>
+            {submitting ? "Chwila…" : mode === "login" ? "Zaloguj" : "Utwórz konto"}
+            {!submitting && <span className="material-symbols-outlined text-lg">arrow_forward</span>}
+          </button>
         </form>
 
         {googleEnabled ? (
           <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-3 text-xs text-[var(--muted)]">
-              <span className="h-px flex-1 bg-glass-border" />
+            <div className="flex items-center gap-3 text-xs text-on-surface-variant">
+              <span className="h-px flex-1 bg-white/10" />
               lub
-              <span className="h-px flex-1 bg-glass-border" />
+              <span className="h-px flex-1 bg-white/10" />
             </div>
             <a
               href={`${API_BASE}/api/auth/google/start`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-control bg-[#ffffff] px-4 py-2.5 text-sm font-semibold tracking-wide text-[#0b0b0b] shadow-canary transition duration-200 ease-out hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:brightness-95"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold tracking-wide text-black shadow-canary transition duration-200 ease-out hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:brightness-95"
             >
               <GoogleMark />
               Zaloguj przez Google
@@ -297,14 +317,14 @@ export function LoginPage() {
           </div>
         ) : (
           import.meta.env.DEV && (
-            <p className="mt-4 text-[11px] text-[var(--muted)]/80">
+            <p className="mt-4 text-[11px] text-on-surface-variant/80">
               Google OAuth wyłączony lokalnie — ustaw GOOGLE_OAUTH_CLIENT_ID /
               SECRET.
             </p>
           )
         )}
 
-        <p className="mt-5 text-xs text-[var(--muted)]">
+        <p className="mt-5 text-xs text-on-surface-variant text-center">
           Demo salon: owner@bizchat.local / changeme
           <br />
           Platforma: admin@bizchat.local / changeme (albo Google z uprawnieniami
@@ -312,7 +332,7 @@ export function LoginPage() {
         </p>
         </>
         )}
-      </GlassCard>
+      </div>
     </div>
   );
 }

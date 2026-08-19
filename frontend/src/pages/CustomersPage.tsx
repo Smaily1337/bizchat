@@ -1,8 +1,6 @@
-import { type FormEvent, useCallback, useEffect, useMemo, useState, Fragment } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { customersApi, inboxApi, tagsApi } from "@/api";
 import type { Channel, Customer, CustomerTag } from "@/api/types";
-import { GlassButton, GlassCard } from "@/components/ui";
-import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 const TAG_COLORS = [
   "#0c6b5c",
@@ -211,97 +209,116 @@ export function CustomersPage() {
   }, [customers, filterTagId, query]);
 
   return (
-    <div className="space-y-5">
-      <header className="page-hero animate-fade-up">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="label-caps">Baza</p>
-            <h1 className="font-display text-3xl font-semibold text-[var(--text-bright)] sm:text-4xl">
-              Klienci
-            </h1>
-            <p className="mt-1 max-w-lg text-sm text-[var(--muted)]">
-              Szukaj, filtruj tagami i pisz na Messenger — bez stosu kart.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <GlassButton type="button" onClick={() => setToolsOpen((v) => !v)}>
-              {toolsOpen ? "Ukryj narzędzia" : "Dodaj / import"}
-            </GlassButton>
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative min-w-0 flex-1">
-            <GlassInput
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Szukaj po imieniu, telefonie, e-mailu, tagu…"
-              aria-label="Szukaj klientów"
-            />
-          </div>
-          <GlassSelect
-            className="sm:w-48"
-            value={filterTagId}
-            onChange={(e) => setFilterTagId(e.target.value)}
-            aria-label="Filtr tagu"
-          >
-            <option value="">Wszystkie tagi</option>
-            {tags.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </GlassSelect>
-          <p className="shrink-0 text-sm text-[var(--muted)]">
-            {visible.length} / {customers.length}
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between animate-in fade-in slide-in-from-top-4">
+        <div>
+          <p className="font-label-caps text-label-caps text-secondary uppercase tracking-wider mb-1">Baza</p>
+          <h1 className="font-display text-display-lg-mobile md:text-display-lg bg-gradient-to-r from-primary via-primary-fixed to-tertiary-container bg-clip-text text-transparent font-semibold">
+            Klienci
+          </h1>
+          <p className="mt-2 max-w-lg text-sm text-on-surface-variant">
+            Szukaj, filtruj tagami i pisz na Messenger — bez stosu kart.
           </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button 
+            type="button" 
+            onClick={() => setToolsOpen((v) => !v)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-container to-tertiary-container text-on-surface rounded-full hover:shadow-glow transition-all font-medium text-sm"
+          >
+            <span className="material-symbols-outlined text-[20px]">{toolsOpen ? 'close' : 'add'}</span>
+            {toolsOpen ? "Ukryj narzędzia" : "Dodaj / import"}
+          </button>
         </div>
       </header>
 
+      <div className="flex flex-col gap-4">
+        <div className="glass-panel rounded-full flex items-center px-5 py-3 hover:border-white/20 transition-colors">
+          <span className="material-symbols-outlined text-on-surface-variant mr-3">search</span>
+          <input 
+            type="text"
+            className="bg-transparent border-none outline-none text-on-surface flex-1 placeholder-on-surface-variant text-sm font-sans"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Szukaj po imieniu, telefonie, e-mailu, tagu…"
+            aria-label="Szukaj klientów"
+          />
+        </div>
+        
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button
+            className={`glass-panel rounded-full px-4 py-1.5 whitespace-nowrap text-sm font-medium transition-all flex items-center gap-2 ${!filterTagId ? 'bg-primary-container text-on-surface border-primary' : 'text-on-surface-variant hover:text-on-surface hover:border-white/20'}`}
+            onClick={() => setFilterTagId("")}
+          >
+            Wszystkie
+          </button>
+          {tags.map((t) => (
+            <button
+              key={t.id}
+              className={`glass-panel rounded-full px-4 py-1.5 whitespace-nowrap text-sm font-medium transition-all flex items-center gap-2 ${filterTagId === t.id ? 'bg-primary-container text-on-surface border-primary' : 'text-on-surface-variant hover:text-on-surface hover:border-white/20'}`}
+              onClick={() => setFilterTagId(t.id)}
+            >
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color || '#fff' }}></span>
+              {t.name}
+            </button>
+          ))}
+          <p className="shrink-0 text-sm text-on-surface-variant ml-auto pl-4 border-l border-white/10">
+            {visible.length} / {customers.length}
+          </p>
+        </div>
+      </div>
+
       {error && (
-        <p className="rounded-control border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
+        <p className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-error flex items-center gap-2">
+          <span className="material-symbols-outlined text-[20px]">error</span>
           {error}
         </p>
       )}
       {msg && (
-        <p className="rounded-control border border-[var(--success)]/30 bg-[var(--accent-soft)] px-3 py-2 text-sm text-[var(--success)]">
+        <p className="rounded-lg border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm text-secondary flex items-center gap-2">
+           <span className="material-symbols-outlined text-[20px]">check_circle</span>
           {msg}
         </p>
       )}
 
       {toolsOpen && (
-        <div className="grid animate-fade-up gap-4 lg:grid-cols-2">
-          <GlassCard className="glass-panel-interactive">
-            <p className="font-display text-lg font-semibold text-[var(--text-bright)]">
+        <div className="grid gap-4 lg:grid-cols-2 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="glass-panel rounded-[28px] p-6 flex flex-col gap-4">
+            <h2 className="font-display text-lg font-semibold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">person_add</span>
               Nowy klient
-            </p>
-            <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={onCreate}>
-              <label className="space-y-1 text-sm sm:col-span-2">
-                <span className="text-[var(--muted)]">Imię / nazwa</span>
-                <GlassInput
+            </h2>
+            <form className="grid gap-4 sm:grid-cols-2" onSubmit={onCreate}>
+              <label className="space-y-1.5 text-sm sm:col-span-2">
+                <span className="text-on-surface-variant">Imię / nazwa</span>
+                <input
+                  className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-3 py-2 text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Anna Kowalska"
                 />
               </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-[var(--muted)]">Telefon</span>
-                <GlassInput
+              <label className="space-y-1.5 text-sm">
+                <span className="text-on-surface-variant">Telefon</span>
+                <input
+                  className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-3 py-2 text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 />
               </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-[var(--muted)]">E-mail</span>
-                <GlassInput
+              <label className="space-y-1.5 text-sm">
+                <span className="text-on-surface-variant">E-mail</span>
+                <input
                   type="email"
+                  className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-3 py-2 text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </label>
-              <label className="space-y-1 text-sm sm:col-span-2">
-                <span className="text-[var(--muted)]">Messenger PSID</span>
-                <GlassInput
+              <label className="space-y-1.5 text-sm sm:col-span-2">
+                <span className="text-on-surface-variant">Messenger PSID</span>
+                <input
+                  className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-3 py-2 text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors"
                   value={form.messenger_psid}
                   onChange={(e) =>
                     setForm({ ...form, messenger_psid: e.target.value })
@@ -309,24 +326,31 @@ export function CustomersPage() {
                   placeholder="Opcjonalnie — z Meta / webhooka"
                 />
               </label>
-              <div className="sm:col-span-2">
-                <GlassButton type="submit">Zapisz klienta</GlassButton>
+              <div className="sm:col-span-2 mt-2">
+                <button 
+                  type="submit"
+                  className="px-4 py-2 bg-primary/20 text-primary border border-primary/20 rounded-lg hover:bg-primary/30 transition-colors font-medium text-sm"
+                >
+                  Zapisz klienta
+                </button>
               </div>
             </form>
-          </GlassCard>
+          </div>
 
           <div className="space-y-4">
-            <GlassCard className="glass-panel-interactive">
-              <p className="font-display text-lg font-semibold text-[var(--text-bright)]">
+            <div className="glass-panel rounded-[28px] p-6 flex flex-col gap-4">
+              <h2 className="font-display text-lg font-semibold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-tertiary">sell</span>
                 Tagi
-              </p>
+              </h2>
               <form
-                className="mt-3 flex flex-wrap items-end gap-3"
+                className="flex flex-wrap items-end gap-3"
                 onSubmit={onCreateTag}
               >
-                <label className="min-w-[140px] flex-1 space-y-1 text-sm">
-                  <span className="text-[var(--muted)]">Nazwa</span>
-                  <GlassInput
+                <label className="min-w-[140px] flex-1 space-y-1.5 text-sm">
+                  <span className="text-on-surface-variant">Nazwa</span>
+                  <input
+                    className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-3 py-2 text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors"
                     value={tagForm.name}
                     onChange={(e) =>
                       setTagForm({ ...tagForm, name: e.target.value })
@@ -335,8 +359,8 @@ export function CustomersPage() {
                     required
                   />
                 </label>
-                <div className="space-y-1 text-sm">
-                  <span className="text-[var(--muted)]">Kolor</span>
+                <div className="space-y-1.5 text-sm pb-1">
+                  <span className="text-on-surface-variant block mb-1">Kolor</span>
                   <div className="flex gap-1.5">
                     {TAG_COLORS.map((c) => (
                       <button
@@ -344,28 +368,35 @@ export function CustomersPage() {
                         type="button"
                         aria-label={`Kolor ${c}`}
                         onClick={() => setTagForm({ ...tagForm, color: c })}
-                        className={[
-                          "h-8 w-8 rounded-full border-2 transition",
+                        className={`h-7 w-7 rounded-full border-2 transition-all ${
                           tagForm.color === c
-                            ? "scale-110 border-[var(--text-bright)]"
-                            : "border-transparent opacity-80 hover:opacity-100",
-                        ].join(" ")}
+                            ? "scale-110 border-white"
+                            : "border-transparent opacity-80 hover:opacity-100 hover:scale-105"
+                        }`}
                         style={{ backgroundColor: c }}
                       />
                     ))}
                   </div>
                 </div>
-                <GlassButton type="submit">Dodaj</GlassButton>
+                <div className="pb-0.5">
+                  <button 
+                    type="submit"
+                    className="px-4 py-2 bg-tertiary/20 text-tertiary border border-tertiary/20 rounded-lg hover:bg-tertiary/30 transition-colors font-medium text-sm"
+                  >
+                    Dodaj
+                  </button>
+                </div>
               </form>
               {tags.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2 border-t border-glass-border pt-3">
+                <div className="mt-2 flex flex-wrap gap-2 border-t border-white/10 pt-4">
                   {tags.map((t) => (
                     <div
                       key={t.id}
-                      className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm"
+                      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium"
                       style={{
                         backgroundColor: `${t.color || "#555"}22`,
-                        borderColor: `${t.color || "#888"}66`,
+                        borderColor: `${t.color || "#888"}44`,
+                        color: t.color || '#e5e1e4'
                       }}
                     >
                       <span
@@ -375,29 +406,30 @@ export function CustomersPage() {
                       {t.name}
                       <button
                         type="button"
-                        className="ml-0.5 text-[var(--muted)] hover:text-[var(--danger)]"
+                        className="ml-1 opacity-70 hover:opacity-100 hover:text-danger transition-colors flex items-center justify-center"
                         onClick={() => void removeTag(t)}
                         aria-label={`Usuń tag ${t.name}`}
                       >
-                        ×
+                        <span className="material-symbols-outlined text-[14px]">close</span>
                       </button>
                     </div>
                   ))}
                 </div>
               )}
-            </GlassCard>
+            </div>
 
-            <GlassCard className="glass-panel-interactive">
-              <p className="font-display text-lg font-semibold text-[var(--text-bright)]">
+            <div className="glass-panel rounded-[28px] p-6 flex flex-col gap-4">
+              <h2 className="font-display text-lg font-semibold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">upload_file</span>
                 Import CSV
-              </p>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                Kolumny: name, phone, email, messenger_psid, whatsapp
+              </h2>
+              <p className="text-sm text-on-surface-variant">
+                Kolumny: <span className="font-data-mono text-xs text-on-surface">name, phone, email, messenger_psid, whatsapp</span>
               </p>
               <input
                 type="file"
                 accept=".csv,text/csv"
-                className="mt-3 block w-full text-sm text-[var(--muted)] file:mr-3 file:rounded-control file:border-0 file:bg-[var(--accent)] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[var(--on-accent)]"
+                className="block w-full text-sm text-on-surface-variant file:mr-4 file:rounded-lg file:border-0 file:bg-surface-container file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-on-surface hover:file:bg-white/10 file:transition-colors file:cursor-pointer cursor-pointer"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -412,279 +444,177 @@ export function CustomersPage() {
                     .catch((err: Error) => setError(err.message));
                 }}
               />
-            </GlassCard>
+            </div>
           </div>
         </div>
       )}
 
       {messageFor && (
-        <GlassCard className="animate-fade-up">
-          <p className="font-display text-lg font-semibold text-[var(--text-bright)]">
+        <div className="glass-panel rounded-[28px] p-6 animate-in fade-in slide-in-from-top-4">
+          <h2 className="font-display text-lg font-semibold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary">send</span>
             Wiadomość do {messageFor.name || "klienta"}
-          </p>
-          <form className="mt-4 space-y-3" onSubmit={sendMessage}>
-            <label className="block space-y-1 text-sm">
-              <span className="text-[var(--muted)]">Kanał</span>
-              <GlassSelect
+          </h2>
+          <form className="mt-4 space-y-4" onSubmit={sendMessage}>
+            <label className="block space-y-1.5 text-sm">
+              <span className="text-on-surface-variant">Kanał</span>
+              <select
+                className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary transition-colors appearance-none"
                 value={channel}
                 onChange={(e) => setChannel(e.target.value as Channel)}
               >
                 <option value="messenger">Messenger</option>
                 <option value="instagram">Instagram</option>
                 <option value="telegram">Telegram</option>
-              </GlassSelect>
+              </select>
             </label>
-            <GlassTextarea
+            <textarea
+              className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-3 py-2 text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors min-h-[100px] resize-y"
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Cześć! Przypominamy o wizycie…"
               required
             />
-            <div className="flex flex-wrap gap-2">
-              <GlassButton type="submit">Wyślij</GlassButton>
-              <GlassButton
+            <div className="flex flex-wrap gap-3 pt-2">
+              <button 
+                type="submit"
+                className="px-5 py-2.5 bg-primary/20 text-primary border border-primary/20 rounded-full hover:bg-primary/30 transition-colors font-medium text-sm flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">send</span>
+                Wyślij
+              </button>
+              <button
                 type="button"
-                variant="ghost"
+                className="px-5 py-2.5 glass-panel rounded-full hover:bg-surface-container transition-colors font-medium text-sm text-on-surface-variant"
                 onClick={() => setMessageFor(null)}
               >
                 Anuluj
-              </GlassButton>
+              </button>
             </div>
           </form>
-        </GlassCard>
+        </div>
       )}
 
-      <GlassCard padding="none" className="animate-fade-up overflow-hidden">
-        <div className="hidden overflow-x-auto md:block">
-          <table className="customer-table">
-            <thead>
-              <tr>
-                <th>Klient</th>
-                <th>Kontakt</th>
-                <th>Tagi</th>
-                <th>Kanały</th>
-                <th className="!text-right">Akcje</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((c) => {
-                const psid = c.external_ids?.messenger || "";
-                const assigned = new Set((c.tags || []).map((t) => t.id));
-                const channels = channelBadges(c);
-                const open = expandedId === c.id;
-                return (
-                  <Fragment key={c.id}>
-                    <tr>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <span className="avatar-chip">{initials(c.name)}</span>
-                          <div>
-                            <p className="font-semibold text-[var(--text-bright)]">
-                              {c.name || "Bez nazwy"}
-                            </p>
-                            <p className="font-mono text-[11px] text-[var(--muted)]">
-                              PSID: {psid ? `${psid.slice(0, 10)}…` : "brak"}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="text-sm text-[var(--muted)]">
-                        {contactLine(c)}
-                      </td>
-                      <td>
-                        <div className="flex flex-wrap gap-1">
-                          {(c.tags || []).length === 0 && (
-                            <span className="text-xs text-[var(--muted)]">—</span>
-                          )}
-                          {(c.tags || []).map((t) => (
-                            <span
-                              key={t.id}
-                              className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                              style={{
-                                backgroundColor: t.color || "var(--accent)",
-                                color: "#fff",
-                              }}
-                            >
-                              {t.name}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex flex-wrap gap-1">
-                          {channels.length === 0 && (
-                            <span className="text-xs text-[var(--muted)]">—</span>
-                          )}
-                          {channels.map((ch) => (
-                            <span
-                              key={ch}
-                              className="rounded-control bg-[var(--accent-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--accent)]"
-                            >
-                              {ch}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex flex-wrap justify-end gap-1.5">
-                          <GlassButton
-                            type="button"
-                            variant="ghost"
-                            className="!px-2.5 !py-1.5 text-xs"
-                            onClick={() =>
-                              setExpandedId(open ? null : c.id)
-                            }
-                          >
-                            {open ? "Zamknij" : "Więcej"}
-                          </GlassButton>
-                          <GlassButton
-                            type="button"
-                            variant="ghost"
-                            className="!px-2.5 !py-1.5 text-xs"
-                            onClick={() => {
-                              setMessageFor(c);
-                              setChannel("messenger");
-                              setMessageText("");
-                            }}
-                            disabled={
-                              !psid &&
-                              !c.external_ids?.instagram &&
-                              !c.external_ids?.telegram
-                            }
-                          >
-                            Napisz
-                          </GlassButton>
-                        </div>
-                      </td>
-                    </tr>
-                    {open && (
-                      <tr className="!bg-[var(--surface-solid)]">
-                        <td colSpan={5} className="!py-4">
-                          <CustomerExtras
-                            customer={c}
-                            tags={tags}
-                            assigned={assigned}
-                            tagEditId={tagEditId}
-                            setTagEditId={setTagEditId}
-                            editId={editId}
-                            setEditId={setEditId}
-                            editPsid={editPsid}
-                            setEditPsid={setEditPsid}
-                            onToggleTag={toggleCustomerTag}
-                            onSavePsid={savePsid}
-                            onRemove={removeCustomer}
-                            onMessage={() => {
-                              setMessageFor(c);
-                              setChannel("messenger");
-                              setMessageText("");
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-          {visible.length === 0 && (
-            <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-              Brak klientów pasujących do filtra.
-            </p>
-          )}
-        </div>
-
-        {/* Mobile cards — compact */}
-        <div className="divide-y divide-[var(--glass-border)] md:hidden">
-          {visible.map((c) => {
-            const psid = c.external_ids?.messenger || "";
-            const assigned = new Set((c.tags || []).map((t) => t.id));
-            const open = expandedId === c.id;
-            return (
-              <div key={c.id} className="p-4">
-                <div className="flex items-start gap-3">
-                  <span className="avatar-chip">{initials(c.name)}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-[var(--text-bright)]">
-                      {c.name || "Bez nazwy"}
-                    </p>
-                    <p className="text-sm text-[var(--muted)]">{contactLine(c)}</p>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {(c.tags || []).map((t) => (
-                        <span
-                          key={t.id}
-                          className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                          style={{
-                            backgroundColor: t.color || "var(--accent)",
-                            color: "#fff",
-                          }}
-                        >
-                          {t.name}
-                        </span>
-                      ))}
-                    </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {visible.map((c) => {
+          const psid = c.external_ids?.messenger || "";
+          const assigned = new Set((c.tags || []).map((t) => t.id));
+          const channels = channelBadges(c);
+          const open = expandedId === c.id;
+          
+          return (
+            <div key={c.id} className="glass-panel rounded-[28px] p-5 hover:border-white/20 hover:shadow-glow transition-all flex flex-col gap-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 shrink-0 rounded-full border border-white/10 flex items-center justify-center bg-surface-container font-medium text-on-surface text-lg">
+                    {initials(c.name)}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-sans font-medium text-on-surface text-body-md truncate">{c.name || 'Bez nazwy'}</h3>
+                    <p className="text-sm text-on-surface-variant truncate">{contactLine(c)}</p>
                   </div>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <GlassButton
-                    type="button"
-                    variant="ghost"
-                    className="!px-2.5 !py-1.5 text-xs"
-                    onClick={() => setExpandedId(open ? null : c.id)}
+                {psid && (
+                  <div className="font-data-mono text-[10px] text-on-surface-variant/70 flex flex-col items-end shrink-0" title={`PSID: ${psid}`}>
+                    <span className="material-symbols-outlined text-[16px] text-tertiary mb-0.5">chat</span>
+                    {psid.slice(0, 6)}…
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 mt-auto">
+                {(c.tags || []).length === 0 && channels.length === 0 && (
+                   <span className="text-xs text-on-surface-variant/50 italic">Brak tagów</span>
+                )}
+                {(c.tags || []).map((t) => (
+                  <span
+                    key={t.id}
+                    className="rounded-full px-2 py-0.5 text-[11px] font-medium flex items-center gap-1 border border-white/5"
+                    style={{
+                      backgroundColor: `${t.color || "#888"}22`,
+                      color: t.color || '#e5e1e4'
+                    }}
                   >
-                    {open ? "Zamknij" : "Więcej"}
-                  </GlassButton>
-                  <GlassButton
-                    type="button"
-                    variant="ghost"
-                    className="!px-2.5 !py-1.5 text-xs"
-                    disabled={
-                      !psid &&
-                      !c.external_ids?.instagram &&
-                      !c.external_ids?.telegram
-                    }
-                    onClick={() => {
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: t.color || "#888" }} />
+                    {t.name}
+                  </span>
+                ))}
+                {channels.map((ch) => (
+                  <span
+                    key={ch}
+                    className="rounded-full px-2 py-0.5 text-[11px] font-medium bg-primary-container/20 text-primary-container border border-primary-container/20"
+                  >
+                    {ch}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  title="Napisz wiadomość"
+                  disabled={!psid && !c.external_ids?.instagram && !c.external_ids?.telegram}
+                  onClick={() => {
+                    setMessageFor(c);
+                    setChannel("messenger");
+                    setMessageText("");
+                  }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center glass-panel hover:bg-primary/20 hover:text-primary transition-colors text-on-surface-variant disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-on-surface-variant disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chat</span>
+                </button>
+                <a
+                  href={`tel:${c.phone || ''}`}
+                  title="Zadzwoń"
+                  className={`w-9 h-9 rounded-full flex items-center justify-center glass-panel transition-colors ${!c.phone ? 'opacity-50 cursor-not-allowed text-on-surface-variant' : 'hover:bg-secondary/20 hover:text-secondary text-on-surface-variant'}`}
+                  onClick={(e) => !c.phone && e.preventDefault()}
+                >
+                  <span className="material-symbols-outlined text-[18px]">call</span>
+                </a>
+                <button
+                  type="button"
+                  title="Więcej akcji"
+                  onClick={() => setExpandedId(open ? null : c.id)}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center glass-panel transition-colors ml-auto ${open ? 'bg-surface-container text-on-surface' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'}`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">{open ? 'expand_less' : 'more_horiz'}</span>
+                </button>
+              </div>
+
+              {open && (
+                <div className="pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2">
+                  <CustomerExtras
+                    customer={c}
+                    tags={tags}
+                    assigned={assigned}
+                    tagEditId={tagEditId}
+                    setTagEditId={setTagEditId}
+                    editId={editId}
+                    setEditId={setEditId}
+                    editPsid={editPsid}
+                    setEditPsid={setEditPsid}
+                    onToggleTag={toggleCustomerTag}
+                    onSavePsid={savePsid}
+                    onRemove={removeCustomer}
+                    onMessage={() => {
                       setMessageFor(c);
                       setChannel("messenger");
                       setMessageText("");
                     }}
-                  >
-                    Napisz
-                  </GlassButton>
+                  />
                 </div>
-                {open && (
-                  <div className="mt-3 border-t border-glass-border pt-3">
-                    <CustomerExtras
-                      customer={c}
-                      tags={tags}
-                      assigned={assigned}
-                      tagEditId={tagEditId}
-                      setTagEditId={setTagEditId}
-                      editId={editId}
-                      setEditId={setEditId}
-                      editPsid={editPsid}
-                      setEditPsid={setEditPsid}
-                      onToggleTag={toggleCustomerTag}
-                      onSavePsid={savePsid}
-                      onRemove={removeCustomer}
-                      onMessage={() => {
-                        setMessageFor(c);
-                        setChannel("messenger");
-                        setMessageText("");
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          {visible.length === 0 && (
-            <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-              Brak klientów pasujących do filtra.
-            </p>
-          )}
+              )}
+            </div>
+          );
+        })}
+      </div>
+      
+      {visible.length === 0 && (
+        <div className="py-20 text-center flex flex-col items-center justify-center gap-3 glass-panel rounded-[28px] mt-4 border-dashed border-white/20">
+          <span className="material-symbols-outlined text-4xl text-on-surface-variant/50">search_off</span>
+          <p className="text-on-surface-variant">Brak klientów pasujących do filtra.</p>
         </div>
-      </GlassCard>
+      )}
     </div>
   );
 }
@@ -702,7 +632,6 @@ function CustomerExtras({
   onToggleTag,
   onSavePsid,
   onRemove,
-  onMessage,
 }: {
   customer: Customer;
   tags: CustomerTag[];
@@ -719,56 +648,44 @@ function CustomerExtras({
   onMessage: () => void;
 }) {
   const psid = customer.external_ids?.messenger || "";
+  
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <GlassButton
+        <button
           type="button"
-          variant="ghost"
-          className="!px-3 !py-1.5 text-xs"
-          onClick={() =>
-            setTagEditId(tagEditId === customer.id ? null : customer.id)
-          }
+          onClick={() => setTagEditId(tagEditId === customer.id ? null : customer.id)}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${tagEditId === customer.id ? 'bg-surface-container border-white/20 text-on-surface' : 'border-white/10 text-on-surface-variant hover:border-white/20 hover:text-on-surface'}`}
         >
           Edytuj tagi
-        </GlassButton>
-        <GlassButton
+        </button>
+        <button
           type="button"
-          variant="ghost"
-          className="!px-3 !py-1.5 text-xs"
           onClick={() => {
             setEditId(customer.id);
             setEditPsid(psid);
           }}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${editId === customer.id ? 'bg-surface-container border-white/20 text-on-surface' : 'border-white/10 text-on-surface-variant hover:border-white/20 hover:text-on-surface'}`}
         >
           Edytuj PSID
-        </GlassButton>
-        <GlassButton
+        </button>
+        <button
           type="button"
-          variant="ghost"
-          className="!px-3 !py-1.5 text-xs"
-          onClick={onMessage}
-        >
-          Napisz
-        </GlassButton>
-        <GlassButton
-          type="button"
-          variant="ghost"
-          className="!px-3 !py-1.5 text-xs"
           onClick={() => void onRemove(customer)}
+          className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors border border-danger/20 text-error hover:bg-danger/10"
         >
-          Usuń
-        </GlassButton>
+          Usuń klienta
+        </button>
       </div>
 
       {tagEditId === customer.id && (
-        <div>
-          <p className="mb-2 text-xs text-[var(--muted)]">
-            Kliknij tag, żeby dodać / usunąć
+        <div className="bg-surface-container/30 rounded-xl p-3 border border-white/5">
+          <p className="mb-2.5 text-[11px] text-on-surface-variant uppercase tracking-wider font-medium">
+            Zarządzaj tagami
           </p>
           {tags.length === 0 ? (
-            <p className="text-sm text-[var(--muted)]">
-              Najpierw utwórz tag w „Dodaj / import”.
+            <p className="text-xs text-on-surface-variant italic">
+              Brak dostępnych tagów. Utwórz je w panelu u góry.
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -779,21 +696,22 @@ function CustomerExtras({
                     key={t.id}
                     type="button"
                     onClick={() => void onToggleTag(customer, t)}
-                    className={[
-                      "rounded-full border px-3 py-1 text-sm transition",
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all flex items-center gap-1.5 border ${
                       on
                         ? "border-transparent"
-                        : "border-glass-border text-[var(--muted)] hover:text-[var(--text-bright)]",
-                    ].join(" ")}
+                        : "border-white/10 text-on-surface-variant hover:border-white/20 hover:text-on-surface"
+                    }`}
                     style={
                       on
                         ? {
-                            backgroundColor: t.color || "var(--accent)",
-                            color: "#fff",
+                            backgroundColor: `${t.color || "#888"}22`,
+                            color: t.color || '#fff',
+                            borderColor: `${t.color || "#888"}44`
                           }
                         : undefined
                     }
                   >
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: t.color || "#888" }} />
                     {t.name}
                   </button>
                 );
@@ -804,26 +722,35 @@ function CustomerExtras({
       )}
 
       {editId === customer.id && (
-        <div className="flex flex-wrap items-end gap-2">
-          <label className="min-w-[220px] flex-1 space-y-1 text-sm">
-            <span className="text-[var(--muted)]">Messenger PSID</span>
-            <GlassInput
+        <div className="bg-surface-container/30 rounded-xl p-3 border border-white/5 flex flex-wrap items-end gap-3">
+          <label className="min-w-[180px] flex-1 space-y-1 text-xs">
+            <span className="text-on-surface-variant uppercase tracking-wider font-medium">Messenger PSID</span>
+            <input
+              className="w-full bg-surface-container/50 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors"
               value={editPsid}
               onChange={(e) => setEditPsid(e.target.value)}
+              placeholder="Wprowadź ID"
             />
           </label>
-          <GlassButton type="button" onClick={() => void onSavePsid(customer)}>
-            Zapisz
-          </GlassButton>
-          <GlassButton
-            type="button"
-            variant="ghost"
-            onClick={() => setEditId(null)}
-          >
-            Anuluj
-          </GlassButton>
+          <div className="flex gap-2">
+            <button 
+              type="button" 
+              onClick={() => void onSavePsid(customer)}
+              className="px-3 py-1.5 bg-primary/20 text-primary border border-primary/20 rounded-lg hover:bg-primary/30 transition-colors font-medium text-xs"
+            >
+              Zapisz
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditId(null)}
+              className="px-3 py-1.5 glass-panel rounded-lg hover:bg-surface-container transition-colors font-medium text-xs text-on-surface-variant"
+            >
+              Anuluj
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 }
+

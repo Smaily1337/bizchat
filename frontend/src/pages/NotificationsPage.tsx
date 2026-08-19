@@ -314,58 +314,58 @@ export function NotificationsPage() {
     <div className="space-y-6">
       {active ? (
         <header className="animate-fade-up flex flex-col items-start gap-3">
-          <Link to="/notifications" className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors">
-            <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <Link to="/notifications" className="inline-flex items-center gap-1.5 text-sm text-[var(--on-surface-variant)] hover:text-[var(--text)] transition-colors">
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
             Wróć do powiadomień
           </Link>
           <div>
-            <h1 className="font-display text-3xl font-bold">{currentTitle.h}</h1>
-            <p className="mt-1 text-sm text-[var(--muted)]">{currentTitle.s}</p>
+            <h1 className="font-display text-display-lg-mobile md:text-display-lg font-bold">{currentTitle.h}</h1>
+            <p className="mt-1 text-body-md text-[var(--on-surface-variant)]">{currentTitle.s}</p>
           </div>
         </header>
       ) : (
         <header className="animate-fade-up">
-          <h1 className="font-display text-3xl font-bold">Powiadomienia</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">Wybierz moduł powiadomień</p>
+          <h1 className="font-display text-display-lg-mobile md:text-display-lg font-bold">Powiadomienia</h1>
+          <p className="mt-1 text-body-md text-[var(--on-surface-variant)]">Wybierz moduł powiadomień</p>
         </header>
       )}
 
       {!active && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-up">
-          <Link to="/notifications/send" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          <Link to="/notifications/send" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined">send</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Wysyłka</p>
-              <p className="text-sm text-[var(--muted)]">Ręczna wysyłka wiadomości</p>
+              <p className="font-semibold text-[var(--text)]">Wysyłka</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Ręczna wysyłka wiadomości</p>
             </div>
           </Link>
-          <Link to="/notifications/reminders" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <Link to="/notifications/reminders" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary shrink-0">
+              <span className="material-symbols-outlined">schedule</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Przypomnienia</p>
-              <p className="text-sm text-[var(--muted)]">Automatyczne SMSy</p>
+              <p className="font-semibold text-[var(--text)]">Przypomnienia</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Automatyczne SMSy</p>
             </div>
           </Link>
-          <Link to="/notifications/templates" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <Link to="/notifications/templates" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary shrink-0">
+              <span className="material-symbols-outlined">article</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Szablony</p>
-              <p className="text-sm text-[var(--muted)]">Zarządzaj treściami</p>
+              <p className="font-semibold text-[var(--text)]">Szablony</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Zarządzaj treściami</p>
             </div>
           </Link>
-          <Link to="/notifications/log" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-500/10 flex items-center justify-center text-gray-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <Link to="/notifications/log" className="glass-panel rounded-[28px] p-6 hover:border-white/20 hover:shadow-glow transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined">history</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Historia</p>
-              <p className="text-sm text-[var(--muted)]">Log wysłanych wiadomości</p>
+              <p className="font-semibold text-[var(--text)]">Historia</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Log wysłanych wiadomości</p>
             </div>
           </Link>
         </div>
@@ -375,8 +375,8 @@ export function NotificationsPage() {
 
       {active === "send" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <GlassCard className="animate-fade-up lg:col-span-7 flex flex-col h-full">
-            <p className="font-display text-lg font-semibold shrink-0">
+          <div className="glass-panel rounded-[28px] p-6 animate-fade-up lg:col-span-7 flex flex-col h-full">
+            <p className="font-headline-md text-headline-md shrink-0">
               Wyślij powiadomienie do klienta
             </p>
             <form className="mt-4 space-y-3 flex flex-col flex-1" onSubmit={onSend}>
@@ -403,13 +403,14 @@ export function NotificationsPage() {
               <div className="shrink-0">
                 {targetMode === "appointment" ? (
                   <label className="block space-y-1 text-sm">
-                    <span className="text-[var(--muted)]">Wizyta</span>
+                    <span className="text-[var(--on-surface-variant)]">Wizyta</span>
                     <GlassSelect
                       value={sendForm.appointment_id}
                       onChange={(e) =>
                         setSendForm((f) => ({ ...f, appointment_id: e.target.value }))
                       }
                       required
+                      className="glass-input"
                     >
                       {appointments.length === 0 && (
                         <option value="">— brak nadchodzących wizyt —</option>
@@ -430,13 +431,14 @@ export function NotificationsPage() {
                   </label>
                 ) : (
                   <label className="block space-y-1 text-sm">
-                    <span className="text-[var(--muted)]">Klient</span>
+                    <span className="text-[var(--on-surface-variant)]">Klient</span>
                     <GlassSelect
                       value={sendForm.customer_id}
                       onChange={(e) =>
                         setSendForm((f) => ({ ...f, customer_id: e.target.value }))
                       }
                       required
+                      className="glass-input"
                     >
                       {customers.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -450,12 +452,13 @@ export function NotificationsPage() {
 
               <div className="grid gap-3 sm:grid-cols-2 shrink-0">
                 <label className="space-y-1 text-sm">
-                  <span className="text-[var(--muted)]">Szablon</span>
+                  <span className="text-[var(--on-surface-variant)]">Szablon</span>
                   <GlassSelect
                     value={sendForm.template_id}
                     onChange={(e) =>
                       setSendForm((f) => ({ ...f, template_id: e.target.value }))
                     }
+                    className="glass-input"
                   >
                     <option value="">Własna treść</option>
                     {templates.map((t) => (
@@ -466,7 +469,7 @@ export function NotificationsPage() {
                   </GlassSelect>
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-[var(--muted)]">Kanał</span>
+                  <span className="text-[var(--on-surface-variant)]">Kanał</span>
                   <GlassSelect
                     value={sendForm.channel}
                     onChange={(e) =>
@@ -475,6 +478,7 @@ export function NotificationsPage() {
                         channel: e.target.value as NotificationChannel | "",
                       }))
                     }
+                    className="glass-input"
                   >
                     <option value="">
                       Domyślny ({settings ? CHANNEL_LABEL[settings.default_channel] : "…"})
@@ -492,10 +496,10 @@ export function NotificationsPage() {
 
               <div className="space-y-1.5 flex flex-col flex-1 min-h-[150px]">
                 <div className="flex items-center justify-between shrink-0">
-                  <span className="text-xs text-[var(--muted)]">
+                  <span className="text-xs text-[var(--on-surface-variant)]">
                     Treść powiadomienia
                   </span>
-                  <span className="text-[11px] text-[var(--muted)]">
+                  <span className="text-[11px] text-[var(--on-surface-variant)]">
                     Kliknij tag, aby wstawić:
                   </span>
                 </div>
@@ -510,7 +514,7 @@ export function NotificationsPage() {
                           body: f.body + (f.body.endsWith(" ") || !f.body ? "" : " ") + chip.tag,
                         }))
                       }
-                      className="rounded-control border border-glass-border bg-glass-fill px-2 py-0.5 text-[11px] text-[var(--text-bright)] transition hover:border-[var(--accent)]/50 hover:bg-glass-fill-strong"
+                      className="rounded-full border border-white/10 bg-surface-container/60 px-2 py-0.5 text-[11px] text-[var(--text)] transition hover:border-[var(--primary)]/50 hover:bg-primary-container/20"
                     >
                       + {chip.tag}
                     </button>
@@ -528,25 +532,26 @@ export function NotificationsPage() {
                   placeholder="np. Cześć {{klient}}! Przypominamy o wizycie {{data}} o {{godzina}}."
                   required
                   rows={4}
-                  className="flex-1"
+                  className="flex-1 glass-input"
                 />
               </div>
 
               <div className="pt-2 shrink-0">
                 <GlassButton type="submit" disabled={sending || !sendForm.body.trim()} className="w-full">
+                  <span className="material-symbols-outlined text-[20px] mr-1">send</span>
                   {sending ? "Wysyłanie…" : "Wyślij powiadomienie"}
                 </GlassButton>
               </div>
             </form>
-          </GlassCard>
+          </div>
 
-          <div className="lg:col-span-5 animate-fade-up flex flex-col h-full">
+          <div className="lg:col-span-5 animate-fade-up flex flex-col h-full glass-panel p-6 rounded-[40px] border border-white/20">
             <div className="mb-2 flex items-center justify-between px-1 shrink-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+              <p className="text-label-caps font-label-caps text-[var(--on-surface-variant)]">
                 Podgląd na żywo (Messenger)
               </p>
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500 font-medium">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1 text-[11px] text-secondary font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-secondary animate-pulse" />
                 Live update
               </span>
             </div>
@@ -568,9 +573,9 @@ export function NotificationsPage() {
       )}
 
       {active === "reminders" && (
-        <GlassCard className="animate-fade-up max-w-2xl">
+        <div className="glass-panel rounded-[28px] p-6 animate-fade-up max-w-2xl">
           <div className="flex items-start justify-between gap-3">
-            <p className="font-display text-lg font-semibold">
+            <p className="font-headline-md text-headline-md">
               Automatyczne przypomnienia
             </p>
             <button
@@ -586,8 +591,8 @@ export function NotificationsPage() {
               className={[
                 "relative h-6 w-11 shrink-0 rounded-full border transition",
                 settingsForm.reminders_enabled
-                  ? "border-[var(--accent)]/50 bg-[var(--accent)]"
-                  : "border-glass-border bg-glass-fill",
+                  ? "border-[var(--primary)]/50 bg-[var(--primary)]"
+                  : "border-white/10 bg-surface-container",
               ].join(" ")}
             >
               <span
@@ -598,13 +603,13 @@ export function NotificationsPage() {
               />
             </button>
           </div>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <p className="mt-1 text-body-md text-[var(--on-surface-variant)]">
             Bot sam przypomni klientowi o wizycie w wybranych momentach
           </p>
 
           <div className="mt-4 space-y-4">
             <div>
-              <p className="text-sm text-[var(--muted)]">Kiedy przypominać</p>
+              <p className="text-sm text-[var(--on-surface-variant)]">Kiedy przypominać</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {LEAD_PRESETS.map((p) => (
                   <GlassButton
@@ -646,17 +651,17 @@ export function NotificationsPage() {
                   onChange={(e) =>
                     setSettingsForm((f) => ({ ...f, custom_lead: e.target.value }))
                   }
-                  className="max-w-[200px]"
+                  className="max-w-[200px] glass-input"
                 />
                 <GlassButton type="button" variant="subtle" onClick={addCustomLead}>
-                  Dodaj
+                  <span className="material-symbols-outlined text-[18px]">add</span> Dodaj
                 </GlassButton>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="space-y-1 text-sm">
-                <span className="text-[var(--muted)]">
+                <span className="text-[var(--on-surface-variant)]">
                   Maks. przypomnień na wizytę
                 </span>
                 <GlassSelect
@@ -667,6 +672,7 @@ export function NotificationsPage() {
                       max_per_appointment: Number(e.target.value),
                     }))
                   }
+                  className="glass-input"
                 >
                   {[0, 1, 2, 3, 4, 5].map((n) => (
                     <option key={n} value={n}>
@@ -676,7 +682,7 @@ export function NotificationsPage() {
                 </GlassSelect>
               </label>
               <label className="space-y-1 text-sm">
-                <span className="text-[var(--muted)]">Domyślny kanał</span>
+                <span className="text-[var(--on-surface-variant)]">Domyślny kanał</span>
                 <GlassSelect
                   value={settingsForm.default_channel}
                   onChange={(e) =>
@@ -685,6 +691,7 @@ export function NotificationsPage() {
                       default_channel: e.target.value as NotificationChannel,
                     }))
                   }
+                  className="glass-input"
                 >
                   {(Object.keys(CHANNEL_LABEL) as NotificationChannel[]).map(
                     (ch) => (
@@ -697,7 +704,7 @@ export function NotificationsPage() {
               </label>
             </div>
 
-            <p className="text-xs text-[var(--muted)]">
+            <p className="text-xs text-[var(--on-surface-variant)]">
               SMS i e-mail działają w trybie demo (mock) — podłącz providera w
               ustawieniach backendu, aby wysyłać naprawdę.
             </p>
@@ -706,40 +713,40 @@ export function NotificationsPage() {
               {savingSettings ? "Zapisywanie…" : "Zapisz ustawienia"}
             </GlassButton>
           </div>
-        </GlassCard>
+        </div>
       )}
 
       {active === "templates" && (
-        <GlassCard className="animate-fade-up">
+        <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="font-display text-lg font-semibold">Szablony wiadomości</p>
-              <p className="mt-0.5 text-sm text-[var(--muted)]">
+              <p className="font-headline-md text-headline-md">Szablony wiadomości</p>
+              <p className="mt-0.5 text-body-md text-[var(--on-surface-variant)]">
                 Twórz wzorce wiadomości z automatycznym podglądem na żywo w stylu Messenger.
               </p>
             </div>
             {!showTemplateForm && (
               <GlassButton variant="primary" onClick={openTemplateCreate}>
-                + Nowy szablon
+                <span className="material-symbols-outlined text-[20px]">add</span> Nowy szablon
               </GlassButton>
             )}
           </div>
 
           {showTemplateForm && (
-            <div className="mt-6 rounded-2xl border border-glass-border bg-glass-fill p-5 shadow-lg">
-              <div className="mb-4 flex items-center justify-between border-b border-glass-border/50 pb-3">
+            <div className="mt-6 glass-panel rounded-[28px] border border-white/10 p-5 shadow-lg">
+              <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 font-semibold text-xs">
-                    {editingTemplate ? "✎" : "+"}
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-container/20 text-primary font-semibold text-xs">
+                    <span className="material-symbols-outlined text-[16px]">{editingTemplate ? "edit" : "add"}</span>
                   </span>
-                  <p className="font-semibold text-[var(--text-bright)]">
+                  <p className="font-semibold text-[var(--text)]">
                     {editingTemplate ? `Edycja: ${editingTemplate.name}` : "Utwórz nowy szablon"}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowTemplateForm(false)}
-                  className="text-xs text-[var(--muted)] hover:text-[var(--text-bright)]"
+                  className="text-xs text-[var(--on-surface-variant)] hover:text-[var(--text)]"
                 >
                   Zamknij ✕
                 </button>
@@ -750,7 +757,7 @@ export function NotificationsPage() {
                 <form className="lg:col-span-7 space-y-4" onSubmit={onSaveTemplate}>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <label className="space-y-1 text-sm">
-                      <span className="text-[var(--muted)]">Nazwa szablonu</span>
+                      <span className="text-[var(--on-surface-variant)]">Nazwa szablonu</span>
                       <GlassInput
                         placeholder="np. Przypomnienie 24h przed"
                         value={templateForm.name}
@@ -758,10 +765,11 @@ export function NotificationsPage() {
                           setTemplateForm((f) => ({ ...f, name: e.target.value }))
                         }
                         required
+                        className="glass-input"
                       />
                     </label>
                     <label className="space-y-1 text-sm">
-                      <span className="text-[var(--muted)]">Kategoria / Typ</span>
+                      <span className="text-[var(--on-surface-variant)]">Kategoria / Typ</span>
                       <GlassSelect
                         value={templateForm.kind}
                         onChange={(e) =>
@@ -770,6 +778,7 @@ export function NotificationsPage() {
                             kind: e.target.value as NotificationKind,
                           }))
                         }
+                        className="glass-input"
                       >
                         {(Object.keys(KIND_LABEL) as NotificationKind[]).map((k) => (
                           <option key={k} value={k}>
@@ -782,10 +791,10 @@ export function NotificationsPage() {
 
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-1">
-                      <span className="text-xs font-medium text-[var(--muted)]">
+                      <span className="text-xs font-medium text-[var(--on-surface-variant)]">
                         Treść szablonu (zmienia się na żywo w oknie po prawej)
                       </span>
-                      <span className="text-[11px] text-[var(--muted)]">
+                      <span className="text-[11px] text-[var(--on-surface-variant)]">
                         Wstaw zmienną:
                       </span>
                     </div>
@@ -801,9 +810,9 @@ export function NotificationsPage() {
                               body: f.body + (f.body.endsWith(" ") || !f.body ? "" : " ") + chip.tag,
                             }))
                           }
-                          className="inline-flex items-center gap-1 rounded-control border border-glass-border bg-[var(--surface-solid)] px-2.5 py-1 text-xs text-[var(--text-bright)] transition hover:border-[#0084FF]/60 hover:bg-blue-500/10 hover:text-[#0084FF]"
+                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-surface-container/60 px-2.5 py-1 text-xs text-[var(--text)] transition hover:border-[var(--primary)]/60 hover:bg-primary-container/20 hover:text-[var(--primary)]"
                         >
-                          <span className="font-semibold text-[#0084FF]">+</span> {chip.tag}
+                          <span className="font-semibold text-primary">+</span> {chip.tag}
                         </button>
                       ))}
                     </div>
@@ -816,8 +825,9 @@ export function NotificationsPage() {
                       }
                       placeholder="np. Cześć {{klient}}! Przypominamy o Twojej wizycie na usługę {{usluga}} w dniu {{data}} o godzinie {{godzina}} w {{firma}}. Do zobaczenia!"
                       required
+                      className="glass-input"
                     />
-                    <p className="text-[11px] text-[var(--muted)]">
+                    <p className="text-[11px] text-[var(--on-surface-variant)]">
                       Podpowiedź: Wpisz zmienne w klamrach lub użyj przycisków powyżej.
                     </p>
                   </div>
@@ -837,9 +847,9 @@ export function NotificationsPage() {
                 </form>
 
                 {/* Live Preview column */}
-                <div className="lg:col-span-5 flex flex-col items-center">
+                <div className="lg:col-span-5 flex flex-col items-center glass-panel rounded-[40px] border border-white/20 p-6">
                   <div className="mb-2 w-full flex items-center justify-between px-1">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+                    <p className="text-label-caps font-label-caps text-[var(--on-surface-variant)]">
                       Podgląd na żywo (Messenger)
                     </p>
                     <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500 font-medium">
@@ -863,8 +873,8 @@ export function NotificationsPage() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {templates.length === 0 && (
-              <div className="md:col-span-2 rounded-xl border border-glass-border bg-glass-fill p-8 text-center">
-                <p className="text-sm text-[var(--muted)]">
+              <div className="md:col-span-2 glass-panel rounded-[28px] p-8 text-center">
+                <p className="text-body-md text-[var(--on-surface-variant)]">
                   Brak szablonów — kliknij „+ Nowy szablon”, aby stworzyć pierwszy wzorzec z podglądem na żywo.
                 </p>
               </div>
@@ -872,18 +882,18 @@ export function NotificationsPage() {
             {templates.map((t) => (
               <div
                 key={t.id}
-                className="group flex flex-col justify-between rounded-2xl border border-glass-border bg-glass-fill p-4 transition hover:border-glass-border-strong hover:bg-glass-fill-strong"
+                className="group flex flex-col justify-between glass-card rounded-xl p-4 transition hover:border-white/20 hover:shadow-glow"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-2 border-b border-glass-border/40 pb-2.5">
+                  <div className="flex items-start justify-between gap-2 border-b border-white/10 pb-2.5">
                     <div>
-                      <p className="font-semibold text-[var(--text-bright)]">{t.name}</p>
+                      <p className="font-body-md font-medium text-[var(--text)]">{t.name}</p>
                       <div className="mt-0.5 flex items-center gap-2 text-xs">
-                        <span className="rounded-control bg-blue-500/10 px-2 py-0.5 font-medium text-blue-500">
+                        <span className="rounded-full bg-primary-container/20 px-2 py-0.5 font-medium text-primary">
                           {KIND_LABEL[t.kind]}
                         </span>
                         {t.is_default && (
-                          <span className="text-emerald-500 font-medium">● Domyślny</span>
+                          <span className="text-secondary font-medium">● Domyślny</span>
                         )}
                       </div>
                     </div>
@@ -893,48 +903,48 @@ export function NotificationsPage() {
                         className="!px-3 !py-1 !text-xs"
                         onClick={() => openTemplateEdit(t)}
                       >
-                        Edytuj
+                        <span className="material-symbols-outlined text-[16px]">edit</span> Edytuj
                       </GlassButton>
                       <GlassButton
                         variant="ghost"
-                        className="!px-3 !py-1 !text-xs text-red-400 hover:text-red-300"
+                        className="!px-3 !py-1 !text-xs text-[var(--danger)] hover:text-red-300"
                         onClick={() => void onDeleteTemplate(t.id)}
                       >
-                        Usuń
+                        <span className="material-symbols-outlined text-[16px]">delete</span> Usuń
                       </GlassButton>
                     </div>
                   </div>
 
                   {/* Messenger styled preview box inside card */}
-                  <div className="mt-3 rounded-xl border border-glass-border/40 bg-black/20 p-3">
+                  <div className="mt-3 rounded-xl border border-white/10 bg-surface-container/60 p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-[#0084FF] to-[#00C6FF] text-[9px] font-bold text-white">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-primary-container to-tertiary-container text-[9px] font-bold text-white">
                         {salonName.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-[11px] font-medium text-[var(--muted)]">
+                      <span className="text-[11px] font-medium text-[var(--on-surface-variant)]">
                         {salonName} · Podgląd
                       </span>
                     </div>
-                    <div className="inline-block max-w-full rounded-[16px] rounded-bl-[4px] bg-gradient-to-br from-[#0084FF] to-[#0078FF] px-3.5 py-2 text-xs text-white shadow-sm leading-relaxed whitespace-pre-wrap break-words">
+                    <div className="inline-block max-w-full rounded-[16px] rounded-bl-[4px] bg-gradient-to-br from-primary-container to-tertiary-container px-3.5 py-2 text-xs text-white shadow-sm leading-relaxed whitespace-pre-wrap break-words">
                       {formatTemplateText(t.body, { firma: salonName })}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-2 text-[10px] text-[var(--muted)] font-mono truncate">
+                <div className="mt-3 pt-2 text-data-mono font-data-mono text-[var(--on-surface-variant)] truncate">
                   Wzorzec: {t.body}
                 </div>
               </div>
             ))}
           </div>
-        </GlassCard>
+        </div>
       )}
 
       {active === "log" && (
-      <GlassCard className="animate-fade-up">
-        <p className="font-display text-lg font-semibold">Log wysłanych powiadomień</p>
+      <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+        <p className="font-headline-md text-headline-md">Log wysłanych powiadomień</p>
         {log.length === 0 ? (
-          <p className="mt-3 text-sm text-[var(--muted)]">
+          <p className="mt-3 text-body-md text-[var(--on-surface-variant)]">
             Jeszcze nic nie wysłano. Użyj formularza powyżej albo poczekaj na
             automatyczne przypomnienie.
           </p>
@@ -943,11 +953,11 @@ export function NotificationsPage() {
             {log.map((entry) => (
               <div
                 key={entry.id}
-                className="flex flex-col gap-1 rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-1 glass-card rounded-xl px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[var(--text-bright)]">{entry.body}</p>
-                  <p className="mt-0.5 text-xs text-[var(--muted)]">
+                  <p className="truncate text-[var(--text)]">{entry.body}</p>
+                  <p className="mt-0.5 text-body-md text-[var(--on-surface-variant)]">
                     {entry.customer_name || "Klient"}
                     {entry.service_name ? ` · ${entry.service_name}` : ""}
                     {" · "}
@@ -957,14 +967,14 @@ export function NotificationsPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 text-xs">
-                  <span className="rounded-lg border border-glass-border px-2 py-0.5 text-[var(--muted)]">
+                  <span className="rounded-full bg-surface-container px-2 py-0.5 text-[var(--on-surface-variant)] border border-white/10">
                     {CHANNEL_LABEL[entry.channel]}
                   </span>
                   <span
                     className={
                       entry.status === "sent"
-                        ? "rounded-lg border border-white/40 px-2 py-0.5 text-canary"
-                        : "rounded-lg border border-red-400/40 px-2 py-0.5 text-[var(--danger)]"
+                        ? "rounded-full bg-secondary/20 border border-secondary/40 px-2 py-0.5 text-secondary"
+                        : "rounded-full bg-[var(--danger)]/20 border border-[var(--danger)]/40 px-2 py-0.5 text-[var(--danger)]"
                     }
                   >
                     {entry.status === "sent" ? "Wysłano" : "Błąd"}
@@ -974,7 +984,7 @@ export function NotificationsPage() {
             ))}
           </div>
         )}
-      </GlassCard>
+      </div>
       )}
     </div>
   );

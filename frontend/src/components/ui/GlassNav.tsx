@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-// import removed
 import { useAuth } from "@/auth/AuthContext";
 import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
 import { SidebarExpandable } from "./SidebarExpandable";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
 
 function LogoutButton({ className = "!w-full" }: { className?: string }) {
   const { logout } = useAuth();
@@ -30,6 +28,7 @@ function LogoutButton({ className = "!w-full" }: { className?: string }) {
         }
       }}
     >
+      <span className="material-symbols-outlined mr-2 text-[18px]">logout</span>
       Wyloguj
     </GlassButton>
   );
@@ -45,52 +44,30 @@ type NavItem = {
   icon: ReactNode;
 };
 
-const ic = "h-4 w-4 shrink-0";
-
 const todayItems: NavItem[] = [
   {
     to: "/",
     label: "Dziś",
     end: true,
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">dashboard</span>,
   },
   {
     to: "/calendar",
     label: "Kalendarz",
     tourId: "nav-calendar",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <rect x="3" y="5" width="18" height="16" rx="2" />
-        <path d="M16 3v4M8 3v4M3 11h18" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">calendar_month</span>,
   },
   {
     to: "/appointments",
     label: "Wizyty",
     tourId: "nav-appointments",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M9 11h6M9 15h3" />
-        <path d="M8 3h8v3H8z" />
-        <path d="M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">event_note</span>,
   },
   {
     to: "/inbox",
     label: "Wiadomości",
     tourId: "nav-inbox",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="m3 7 9 7 9-7" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">chat</span>,
   },
 ];
 
@@ -99,23 +76,13 @@ const peopleItems: NavItem[] = [
     to: "/customers",
     label: "Klienci",
     tourId: "nav-customers",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3 19a6 6 0 0 1 12 0" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">group</span>,
   },
   {
     to: "/staff",
     label: "Zespół",
     tourId: "nav-staff",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">badge</span>,
   },
 ];
 
@@ -124,95 +91,53 @@ const salonItems: NavItem[] = [
     to: "/channels",
     label: "Kanały",
     tourId: "nav-channels",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
-        <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">hub</span>,
   },
   {
     to: "/hours",
     label: "Godziny",
     tourId: "nav-hours",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">schedule</span>,
   },
   {
     to: "/notifications",
     label: "Powiadomienia",
     tourId: "nav-notifications",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-        <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">notifications</span>,
   },
   {
     to: "/reports",
     label: "Raporty",
     tourId: "nav-reports",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M4 19V5M10 19V9M16 19v-6M22 19H2" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">query_stats</span>,
   },
   {
     to: "/account",
     label: "Konto",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <circle cx="12" cy="8" r="3.5" />
-        <path d="M5 19a7 7 0 0 1 14 0" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">account_circle</span>,
   },
   {
     to: "/settings",
     label: "Ustawienia",
     tourId: "nav-settings",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">settings</span>,
   },
   {
     to: "/feedback",
     label: "Feedback",
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7z" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">reviews</span>,
   },
   {
     to: "/users",
     label: "Użytkownicy",
     roles: ["owner", "admin"],
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3 19a6 6 0 0 1 12 0" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">manage_accounts</span>,
   },
   {
     to: "/platform",
     label: "Platforma",
     platformAdmin: true,
-    icon: (
-      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4z" />
-      </svg>
-    ),
+    icon: <span className="material-symbols-outlined">admin_panel_settings</span>,
   },
 ];
 
@@ -242,7 +167,11 @@ function SideLink({ item }: { item: NavItem }) {
       end={item.end}
       data-tour={item.tourId}
       className={({ isActive }) =>
-        `sidebar-link ${isActive ? "is-active" : ""}`
+        `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+          isActive
+            ? "bg-primary/10 text-primary font-bold border-r-4 border-primary"
+            : "text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
+        }`
       }
     >
       {item.icon}
@@ -266,11 +195,11 @@ function AccountMenu({
   return (
     <div ref={menuRef}>
       {owner && !owner.email_verified && (
-        <p className="mb-2 px-1 text-[11px] leading-snug text-[var(--muted)]">
+        <p className="mb-2 px-1 text-[11px] leading-snug text-on-surface-variant">
           Potwierdź e-mail.{" "}
           <button
             type="button"
-            className="font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+            className="font-semibold text-primary underline-offset-2 hover:underline"
             onClick={() => void resendVerification()}
           >
             Wyślij ponownie
@@ -281,50 +210,53 @@ function AccountMenu({
         type="button"
         aria-expanded={open}
         onClick={onToggle}
-        className="flex w-full items-center gap-2 rounded-control px-2 py-2 text-left hover:bg-[var(--surface-container)]"
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-white/5 transition-colors"
       >
-        <span className="avatar-chip">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-medium">
           {(owner?.email || "U").slice(0, 1).toUpperCase()}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-[var(--text-bright)]">
+          <span className="block truncate text-sm font-medium text-on-surface">
             {owner?.email?.split("@")[0] || "Konto"}
           </span>
-          <span className="block truncate text-[11px] text-[var(--muted)]">
+          <span className="block truncate text-[11px] text-on-surface-variant">
             {owner?.is_platform_admin ? "Platforma" : owner?.role || "Konto"}
           </span>
         </span>
       </button>
       {open && (
-        <div className="menu-panel mt-2 space-y-1 p-2">
-          <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
+        <div className="glass-panel mt-2 space-y-1 p-2">
+          <p className="break-all px-2 py-1 text-xs text-on-surface-variant">
             {owner?.email}
           </p>
           <Link
             to="/settings/account"
             onClick={onToggle}
-            className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+            className="flex w-full items-center rounded-lg px-2 py-2 text-sm text-on-surface hover:bg-white/10"
           >
             Ustawienia konta
           </Link>
           <Link
             to="/settings/salon"
             onClick={onToggle}
-            className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+            className="flex w-full items-center rounded-lg px-2 py-2 text-sm text-on-surface hover:bg-white/10"
           >
             Ustawienia salonu
           </Link>
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex w-full items-center justify-between rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+            className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm text-on-surface hover:bg-white/10"
           >
             Motyw
-            <span className="text-[var(--muted)]">
+            <span className="text-on-surface-variant flex items-center gap-1">
+              <span className="material-symbols-outlined text-[16px]">
+                {theme === "dark" ? "dark_mode" : "light_mode"}
+              </span>
               {theme === "dark" ? "Ciemny" : "Jasny"}
             </span>
           </button>
-          <LogoutButton />
+          <LogoutButton className="!w-full mt-2" />
         </div>
       )}
     </div>
@@ -335,33 +267,36 @@ function MobileAccountDropdown() {
   const { owner } = useAuth();
   const { theme, toggleTheme } = useTheme();
   return (
-    <div className="menu-panel absolute right-0 top-full z-50 mt-2 w-56 space-y-1 p-2">
-      <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
+    <div className="glass-panel absolute right-0 top-full z-50 mt-2 w-56 space-y-1 p-2">
+      <p className="break-all px-2 py-1 text-xs text-on-surface-variant">
         {owner?.email}
       </p>
       <Link
         to="/settings/account"
-        className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+        className="flex w-full items-center rounded-lg px-2 py-2 text-sm text-on-surface hover:bg-white/10"
       >
         Ustawienia konta
       </Link>
       <Link
         to="/settings/salon"
-        className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+        className="flex w-full items-center rounded-lg px-2 py-2 text-sm text-on-surface hover:bg-white/10"
       >
         Ustawienia salonu
       </Link>
       <button
         type="button"
         onClick={toggleTheme}
-        className="flex w-full items-center justify-between rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+        className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm text-on-surface hover:bg-white/10"
       >
         Motyw
-        <span className="text-[var(--muted)]">
+        <span className="text-on-surface-variant flex items-center gap-1">
+          <span className="material-symbols-outlined text-[16px]">
+            {theme === "dark" ? "dark_mode" : "light_mode"}
+          </span>
           {theme === "dark" ? "Ciemny" : "Jasny"}
         </span>
       </button>
-      <LogoutButton />
+      <LogoutButton className="!w-full mt-2" />
     </div>
   );
 }
@@ -408,12 +343,12 @@ export function GlassNav() {
   return (
     <div className="app-shell">
       <aside className="app-sidebar" aria-label="Nawigacja">
-        <div className="border-b border-glass-border px-4 py-4">
+        <div className="border-b border-white/10 px-4 py-4">
           <NavLink to="/" className="block min-w-0">
-            <p className="font-display text-lg font-semibold text-[var(--text-bright)]">
+            <p className="font-display text-lg font-semibold text-primary">
               Automovia
             </p>
-            <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
+            <p className="mt-0.5 truncate text-xs text-on-surface-variant">
               {business?.name || "Panel salonu"}
             </p>
           </NavLink>
@@ -421,7 +356,7 @@ export function GlassNav() {
 
         <div className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
           <div>
-            <p className="label-caps mb-1.5 px-2">Praca</p>
+            <p className="font-label-caps text-label-caps uppercase tracking-wider mb-1.5 px-2 text-on-surface-variant">Praca</p>
             <div className="space-y-0.5">
               {todayItems.map((item) => (
                 <SideLink key={item.to} item={item} />
@@ -429,7 +364,7 @@ export function GlassNav() {
             </div>
           </div>
           <div>
-            <p className="label-caps mb-1.5 px-2">Ludzie</p>
+            <p className="font-label-caps text-label-caps uppercase tracking-wider mb-1.5 px-2 text-on-surface-variant">Ludzie</p>
             <div className="space-y-0.5">
               {peopleItems.map((item) => (
                 <SideLink key={item.to} item={item} />
@@ -437,7 +372,7 @@ export function GlassNav() {
             </div>
           </div>
           <div>
-            <p className="label-caps mb-1.5 px-2">Salon</p>
+            <p className="font-label-caps text-label-caps uppercase tracking-wider mb-1.5 px-2 text-on-surface-variant">Salon</p>
             <div className="space-y-0.5">
               {salon.filter((i) => !["/channels", "/notifications", "/settings", "/account"].includes(i.to)).map((item) => (
                 <SideLink key={item.to} item={item} />
@@ -446,12 +381,7 @@ export function GlassNav() {
                 to="/channels"
                 label="Kanały"
                 matchPrefixes={["/channels"]}
-                icon={
-                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-                    <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
-                    <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
-                  </svg>
-                }
+                icon={<span className="material-symbols-outlined">hub</span>}
                 items={[
                   { to: "/channels", label: "Przegląd", end: true },
                   { to: "/channels/integrations", label: "Integracje" },
@@ -461,12 +391,7 @@ export function GlassNav() {
                 to="/notifications"
                 label="Powiadomienia"
                 matchPrefixes={["/notifications"]}
-                icon={
-                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                    <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
-                  </svg>
-                }
+                icon={<span className="material-symbols-outlined">notifications</span>}
                 items={[
                   { to: "/notifications/send", label: "Wysyłka" },
                   { to: "/notifications/reminders", label: "Przypomnienia" },
@@ -478,12 +403,7 @@ export function GlassNav() {
                 to="/settings"
                 label="Ustawienia"
                 matchPrefixes={["/settings", "/account"]}
-                icon={
-                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
-                    <circle cx="12" cy="12" r="3" />
-                    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-                  </svg>
-                }
+                icon={<span className="material-symbols-outlined">settings</span>}
                 items={[
                   { to: "/settings/salon", label: "Salon" },
                   { to: "/settings/services", label: "Usługi" },
@@ -497,7 +417,7 @@ export function GlassNav() {
           </div>
         </div>
 
-        <div className="border-t border-glass-border p-3">
+        <div className="border-t border-white/10 p-3">
           <AccountMenu
             open={accountOpen}
             onToggle={() => setAccountOpen((v) => !v)}
@@ -507,12 +427,12 @@ export function GlassNav() {
       </aside>
 
       <div className="app-main">
-        <div className="sticky top-0 z-40 flex items-center justify-between border-b border-glass-border bg-[var(--glass-fill-strong)] px-4 py-3 backdrop-blur-glass lg:hidden">
+        <div className="sticky top-0 z-40 flex items-center justify-between border-b border-white/10 glass-panel px-4 py-3 lg:hidden">
           <div className="min-w-0">
-            <p className="font-display text-base font-semibold text-[var(--text-bright)]">
+            <p className="font-display text-base font-semibold text-primary">
               Automovia
             </p>
-            <p className="truncate text-xs text-[var(--muted)]">
+            <p className="truncate text-xs text-on-surface-variant">
               {business?.name || "Panel"}
             </p>
           </div>
@@ -521,7 +441,7 @@ export function GlassNav() {
               type="button"
               aria-label="Konto"
               onClick={() => setAccountOpen((v) => !v)}
-              className="avatar-chip"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-medium"
             >
               {(owner?.email || "U").slice(0, 1).toUpperCase()}
             </button>
@@ -537,7 +457,7 @@ export function GlassNav() {
           </ErrorBoundary>
         </main>
 
-        <nav className="mobile-tabbar" aria-label="Szybka nawigacja">
+        <nav className="fixed bottom-4 left-4 right-4 rounded-full glass-panel flex items-center justify-around px-2 py-2 z-40 lg:hidden shadow-lg" aria-label="Szybka nawigacja">
           {mobilePrimary.map((item) => (
             <NavLink
               key={item.to}
@@ -545,35 +465,27 @@ export function GlassNav() {
               end={item.end}
               className={({ isActive }) =>
                 [
-                  "flex flex-col items-center gap-0.5 rounded-control px-1 py-1.5 text-[10px] font-medium",
-                  isActive ? "text-[var(--accent)]" : "text-[var(--muted)]",
+                  "flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] font-medium transition-all",
+                  isActive ? "bg-primary-container text-on-primary-container rounded-full" : "text-on-surface-variant hover:text-on-surface",
                 ].join(" ")
               }
             >
               {item.icon}
-              {item.label}
+              <span className="mt-0.5">{item.label}</span>
             </NavLink>
           ))}
           <button
             type="button"
             onClick={() => setMoreOpen((v) => !v)}
             className={[
-              "flex flex-col items-center gap-0.5 rounded-control px-1 py-1.5 text-[10px] font-medium",
+              "flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] font-medium transition-all",
               moreOpen || moreActive
-                ? "text-[var(--accent)]"
-                : "text-[var(--muted)]",
+                ? "bg-primary-container text-on-primary-container rounded-full"
+                : "text-on-surface-variant hover:text-on-surface",
             ].join(" ")}
           >
-            <svg
-              viewBox="0 0 24 24"
-              className={ic}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-            >
-              <path d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-            Więcej
+            <span className="material-symbols-outlined">more_horiz</span>
+            <span className="mt-0.5">Więcej</span>
           </button>
         </nav>
       </div>
@@ -582,23 +494,29 @@ export function GlassNav() {
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             aria-label="Zamknij"
             onClick={() => setMoreOpen(false)}
           />
-          <div className="absolute bottom-0 left-0 right-0 max-h-[70vh] overflow-y-auto rounded-t-soft border border-glass-border bg-[var(--bg-elevated)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-            <p className="label-caps mb-2">Więcej</p>
-            <div className="grid grid-cols-2 gap-1">
+          <div className="absolute bottom-24 left-4 right-4 max-h-[60vh] overflow-y-auto glass-panel p-4 shadow-xl">
+            <p className="font-label-caps text-label-caps uppercase tracking-wider mb-3 text-on-surface-variant">Więcej opcji</p>
+            <div className="grid grid-cols-2 gap-2">
               {[...peopleItems, ...salon].map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   data-tour={item.tourId}
                   onClick={() => setMoreOpen(false)}
-                  className="sidebar-link"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-bold border-l-4 border-primary"
+                        : "text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
+                    }`
+                  }
                 >
                   {item.icon}
-                  {item.label}
+                  <span className="text-sm">{item.label}</span>
                 </NavLink>
               ))}
             </div>
