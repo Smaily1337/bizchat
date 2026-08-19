@@ -11,7 +11,8 @@ import type {
   NotificationTemplate,
 } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { useAuth } from "@/auth/AuthContext";
+import { GlassButton, GlassCard, MessengerPreview, formatTemplateText } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 const CHANNEL_LABEL: Record<NotificationChannel, string> = {
@@ -48,6 +49,8 @@ export function NotificationsPage() {
   const [searchParams] = useSearchParams();
   const active = section;
   const { push } = useToast();
+  const { business } = useAuth();
+  const salonName = business?.name || "Twój Salon";
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
@@ -67,7 +70,6 @@ export function NotificationsPage() {
     channel: "" as NotificationChannel | "",
     body: "",
   });
-  const [preview, setPreview] = useState("");
   const [sending, setSending] = useState(false);
 
   // --- settings form ---
@@ -133,24 +135,6 @@ export function NotificationsPage() {
       setSendForm((f) => ({ ...f, body: selectedTemplate.body }));
     }
   }, [selectedTemplate]);
-
-  // Live preview — "jak zobaczy klient"
-  useEffect(() => {
-    const body = sendForm.body.trim();
-    if (!body) {
-      setPreview("");
-      return;
-    }
-    const apptId =
-      targetMode === "appointment" ? sendForm.appointment_id : undefined;
-    const timer = window.setTimeout(() => {
-      notificationsApi
-        .preview(body, apptId || undefined)
-        .then((r) => setPreview(r.rendered))
-        .catch(() => setPreview(body));
-    }, 300);
-    return () => window.clearTimeout(timer);
-  }, [sendForm.body, sendForm.appointment_id, targetMode]);
 
   async function onSend(e: FormEvent) {
     e.preventDefault();
@@ -281,6 +265,24 @@ export function NotificationsPage() {
     log: { h: "Historia", s: "Log wysłanych powiadomień" },
   };
 
+  const VARIABLE_CHIPS = [
+    { tag: "{{klient}}", label: "Klient" },
+    { tag: "{{usluga}}", label: "Usługa" },
+    { tag: "{{data}}", label: "Data" },
+    { tag: "{{godzina}}", label: "Godzina" },
+    { tag: "{{cena}}", label: "Cena" },
+    { tag: "{{firma}}", label: "Firma" },
+  ];
+
+  const selectedAppt = useMemo(
+    () => appointments.find((a) => a.id === sendForm.appointment_id) || appointments[0],
+    [appointments, sendForm.appointment_id]
+  );
+  const selectedCust = useMemo(
+    () => customers.find((c) => c.id === sendForm.customer_id) || customers[0],
+    [customers, sendForm.customer_id]
+  );
+
   return (
     <div className="space-y-6">
       {active ? (
@@ -345,151 +347,206 @@ export function NotificationsPage() {
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
       {active === "send" && (
-        <GlassCard className="animate-fade-up max-w-2xl">
-          <p className="font-display text-lg font-semibold">
-            Wyślij powiadomienie do klienta
-          </p>
-          <form className="mt-4 space-y-3" onSubmit={onSend}>
-            <div className="flex flex-wrap gap-2">
-              <GlassButton
-                type="button"
-                variant={targetMode === "appointment" ? "primary" : "ghost"}
-                className="!py-1.5"
-                onClick={() => setTargetMode("appointment")}
-              >
-                Do wizyty
-              </GlassButton>
-              <GlassButton
-                type="button"
-                variant={targetMode === "customer" ? "primary" : "ghost"}
-                className="!py-1.5"
-                onClick={() => setTargetMode("customer")}
-                disabled={customers.length === 0}
-              >
-                Do klienta
-              </GlassButton>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <GlassCard className="animate-fade-up lg:col-span-7">
+            <p className="font-display text-lg font-semibold">
+              Wyślij powiadomienie do klienta
+            </p>
+            <form className="mt-4 space-y-3" onSubmit={onSend}>
+              <div className="flex flex-wrap gap-2">
+                <GlassButton
+                  type="button"
+                  variant={targetMode === "appointment" ? "primary" : "ghost"}
+                  className="!py-1.5"
+                  onClick={() => setTargetMode("appointment")}
+                >
+                  Do wizyty
+                </GlassButton>
+                <GlassButton
+                  type="button"
+                  variant={targetMode === "customer" ? "primary" : "ghost"}
+                  className="!py-1.5"
+                  onClick={() => setTargetMode("customer")}
+                  disabled={customers.length === 0}
+                >
+                  Do klienta
+                </GlassButton>
+              </div>
 
-            {targetMode === "appointment" ? (
-              <label className="block space-y-1 text-sm">
-                <span className="text-[var(--muted)]">Wizyta</span>
-                <GlassSelect
-                  value={sendForm.appointment_id}
-                  onChange={(e) =>
-                    setSendForm((f) => ({ ...f, appointment_id: e.target.value }))
-                  }
-                  required
-                >
-                  {appointments.length === 0 && (
-                    <option value="">— brak nadchodzących wizyt —</option>
-                  )}
-                  {appointments.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {(a.customer_name || "Klient") +
-                        " · " +
-                        (a.service_name || "Usługa") +
-                        " · " +
-                        new Date(a.start_at).toLocaleString("pl-PL", {
-                          dateStyle: "short",
-                          timeStyle: "short",
-                        })}
-                    </option>
-                  ))}
-                </GlassSelect>
-              </label>
-            ) : (
-              <label className="block space-y-1 text-sm">
-                <span className="text-[var(--muted)]">Klient</span>
-                <GlassSelect
-                  value={sendForm.customer_id}
-                  onChange={(e) =>
-                    setSendForm((f) => ({ ...f, customer_id: e.target.value }))
-                  }
-                  required
-                >
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name || c.id.slice(0, 8)}
-                    </option>
-                  ))}
-                </GlassSelect>
-              </label>
-            )}
+              {targetMode === "appointment" ? (
+                <label className="block space-y-1 text-sm">
+                  <span className="text-[var(--muted)]">Wizyta</span>
+                  <GlassSelect
+                    value={sendForm.appointment_id}
+                    onChange={(e) =>
+                      setSendForm((f) => ({ ...f, appointment_id: e.target.value }))
+                    }
+                    required
+                  >
+                    {appointments.length === 0 && (
+                      <option value="">— brak nadchodzących wizyt —</option>
+                    )}
+                    {appointments.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {(a.customer_name || "Klient") +
+                          " · " +
+                          (a.service_name || "Usługa") +
+                          " · " +
+                          new Date(a.start_at).toLocaleString("pl-PL", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })}
+                      </option>
+                    ))}
+                  </GlassSelect>
+                </label>
+              ) : (
+                <label className="block space-y-1 text-sm">
+                  <span className="text-[var(--muted)]">Klient</span>
+                  <GlassSelect
+                    value={sendForm.customer_id}
+                    onChange={(e) =>
+                      setSendForm((f) => ({ ...f, customer_id: e.target.value }))
+                    }
+                    required
+                  >
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name || c.id.slice(0, 8)}
+                      </option>
+                    ))}
+                  </GlassSelect>
+                </label>
+              )}
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="space-y-1 text-sm">
-                <span className="text-[var(--muted)]">Szablon</span>
-                <GlassSelect
-                  value={sendForm.template_id}
-                  onChange={(e) =>
-                    setSendForm((f) => ({ ...f, template_id: e.target.value }))
-                  }
-                >
-                  <option value="">Własna treść</option>
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({KIND_LABEL[t.kind]})
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="space-y-1 text-sm">
+                  <span className="text-[var(--muted)]">Szablon</span>
+                  <GlassSelect
+                    value={sendForm.template_id}
+                    onChange={(e) =>
+                      setSendForm((f) => ({ ...f, template_id: e.target.value }))
+                    }
+                  >
+                    <option value="">Własna treść</option>
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({KIND_LABEL[t.kind]})
+                      </option>
+                    ))}
+                  </GlassSelect>
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-[var(--muted)]">Kanał</span>
+                  <GlassSelect
+                    value={sendForm.channel}
+                    onChange={(e) =>
+                      setSendForm((f) => ({
+                        ...f,
+                        channel: e.target.value as NotificationChannel | "",
+                      }))
+                    }
+                  >
+                    <option value="">
+                      Domyślny ({settings ? CHANNEL_LABEL[settings.default_channel] : "…"})
                     </option>
+                    {(Object.keys(CHANNEL_LABEL) as NotificationChannel[]).map(
+                      (ch) => (
+                        <option key={ch} value={ch}>
+                          {CHANNEL_LABEL[ch]}
+                        </option>
+                      ),
+                    )}
+                  </GlassSelect>
+                </label>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[var(--muted)]">
+                    Treść powiadomienia
+                  </span>
+                  <span className="text-[11px] text-[var(--muted)]">
+                    Kliknij tag, aby wstawić:
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {VARIABLE_CHIPS.map((chip) => (
+                    <button
+                      key={chip.tag}
+                      type="button"
+                      onClick={() =>
+                        setSendForm((f) => ({
+                          ...f,
+                          body: f.body + (f.body.endsWith(" ") || !f.body ? "" : " ") + chip.tag,
+                        }))
+                      }
+                      className="rounded-control border border-glass-border bg-glass-fill px-2 py-0.5 text-[11px] text-[var(--text-bright)] transition hover:border-[var(--accent)]/50 hover:bg-glass-fill-strong"
+                    >
+                      + {chip.tag}
+                    </button>
                   ))}
-                </GlassSelect>
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-[var(--muted)]">Kanał</span>
-                <GlassSelect
-                  value={sendForm.channel}
+                </div>
+                <GlassTextarea
+                  value={sendForm.body}
                   onChange={(e) =>
                     setSendForm((f) => ({
                       ...f,
-                      channel: e.target.value as NotificationChannel | "",
+                      body: e.target.value,
+                      template_id: "",
                     }))
                   }
-                >
-                  <option value="">
-                    Domyślny ({settings ? CHANNEL_LABEL[settings.default_channel] : "…"})
-                  </option>
-                  {(Object.keys(CHANNEL_LABEL) as NotificationChannel[]).map(
-                    (ch) => (
-                      <option key={ch} value={ch}>
-                        {CHANNEL_LABEL[ch]}
-                      </option>
-                    ),
-                  )}
-                </GlassSelect>
-              </label>
-            </div>
-
-            <label className="block space-y-1 text-sm">
-              <span className="text-[var(--muted)]">
-                Treść — możesz użyć {"{{klient}}, {{usluga}}, {{data}}, {{godzina}}, {{firma}}"}
-              </span>
-              <GlassTextarea
-                value={sendForm.body}
-                onChange={(e) =>
-                  setSendForm((f) => ({
-                    ...f,
-                    body: e.target.value,
-                    template_id: "",
-                  }))
-                }
-                placeholder="np. Cześć {{klient}}! Przypominamy o wizycie {{data}} o {{godzina}}."
-                required
-              />
-            </label>
-
-            {preview && (
-              <div className="rounded-soft border border-white/25 bg-glass-fill p-3">
-                <p className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)]">
-                  Podgląd — jak zobaczy klient
-                </p>
-                <p className="mt-1.5 text-sm text-[var(--text-bright)]">{preview}</p>
+                  placeholder="np. Cześć {{klient}}! Przypominamy o wizycie {{data}} o {{godzina}}."
+                  required
+                  rows={4}
+                />
               </div>
-            )}
 
-            <GlassButton type="submit" disabled={sending || !sendForm.body.trim()}>
-              {sending ? "Wysyłanie…" : "Wyślij powiadomienie"}
-            </GlassButton>
-          </form>
-        </GlassCard>
+              <GlassButton type="submit" disabled={sending || !sendForm.body.trim()}>
+                {sending ? "Wysyłanie…" : "Wyślij powiadomienie"}
+              </GlassButton>
+            </form>
+          </GlassCard>
+
+          <div className="lg:col-span-5 animate-fade-up">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+                Podgląd na żywo (Messenger)
+              </p>
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500 font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live update
+              </span>
+            </div>
+            <MessengerPreview
+              body={sendForm.body}
+              salonName={salonName}
+              customerName={
+                targetMode === "appointment"
+                  ? selectedAppt?.customer_name || "Anna Kowalska"
+                  : selectedCust?.name || "Anna Kowalska"
+              }
+              serviceName={selectedAppt?.service_name || "Strzyżenie & Modelowanie"}
+              dateStr={
+                selectedAppt
+                  ? new Date(selectedAppt.start_at).toLocaleDateString("pl-PL", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })
+                  : "25.08.2026"
+              }
+              timeStr={
+                selectedAppt
+                  ? new Date(selectedAppt.start_at).toLocaleTimeString("pl-PL", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "14:30"
+              }
+            />
+          </div>
+        </div>
       )}
 
       {active === "reminders" && (
@@ -635,115 +692,224 @@ export function NotificationsPage() {
       )}
 
       {active === "templates" && (
-      <GlassCard className="animate-fade-up">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="font-display text-lg font-semibold">Szablony wiadomości</p>
-          <GlassButton variant="subtle" onClick={openTemplateCreate}>
-            + Nowy szablon
-          </GlassButton>
-        </div>
-
-        {showTemplateForm && (
-          <form
-            className="mt-4 grid gap-3 rounded-soft border border-glass-border bg-glass-fill p-4 sm:grid-cols-2"
-            onSubmit={onSaveTemplate}
-          >
-            <label className="space-y-1 text-sm">
-              <span className="text-[var(--muted)]">Nazwa</span>
-              <GlassInput
-                value={templateForm.name}
-                onChange={(e) =>
-                  setTemplateForm((f) => ({ ...f, name: e.target.value }))
-                }
-                required
-              />
-            </label>
-            <label className="space-y-1 text-sm">
-              <span className="text-[var(--muted)]">Typ</span>
-              <GlassSelect
-                value={templateForm.kind}
-                onChange={(e) =>
-                  setTemplateForm((f) => ({
-                    ...f,
-                    kind: e.target.value as NotificationKind,
-                  }))
-                }
-              >
-                {(Object.keys(KIND_LABEL) as NotificationKind[]).map((k) => (
-                  <option key={k} value={k}>
-                    {KIND_LABEL[k]}
-                  </option>
-                ))}
-              </GlassSelect>
-            </label>
-            <label className="space-y-1 text-sm sm:col-span-2">
-              <span className="text-[var(--muted)]">
-                Treść ({"{{klient}}, {{usluga}}, {{data}}, {{godzina}}, {{firma}}"})
-              </span>
-              <GlassTextarea
-                value={templateForm.body}
-                onChange={(e) =>
-                  setTemplateForm((f) => ({ ...f, body: e.target.value }))
-                }
-                required
-              />
-            </label>
-            <div className="flex gap-2 sm:col-span-2">
-              <GlassButton type="submit">
-                {editingTemplate ? "Zapisz zmiany" : "Dodaj szablon"}
-              </GlassButton>
-              <GlassButton
-                type="button"
-                variant="ghost"
-                onClick={() => setShowTemplateForm(false)}
-              >
-                Anuluj
-              </GlassButton>
+        <GlassCard className="animate-fade-up">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-display text-lg font-semibold">Szablony wiadomości</p>
+              <p className="mt-0.5 text-sm text-[var(--muted)]">
+                Twórz wzorce wiadomości z automatycznym podglądem na żywo w stylu Messenger.
+              </p>
             </div>
-          </form>
-        )}
+            {!showTemplateForm && (
+              <GlassButton variant="primary" onClick={openTemplateCreate}>
+                + Nowy szablon
+              </GlassButton>
+            )}
+          </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {templates.length === 0 && (
-            <p className="text-sm text-[var(--muted)]">
-              Brak szablonów — dodaj pierwszy, aby przyspieszyć wysyłkę.
-            </p>
-          )}
-          {templates.map((t) => (
-            <div
-              key={t.id}
-              className="rounded-soft border border-glass-border bg-glass-fill p-4"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-medium text-[var(--text-bright)]">{t.name}</p>
-                  <p className="text-xs text-canary/90">
-                    {KIND_LABEL[t.kind]}
-                    {t.is_default ? " · domyślny" : ""}
+          {showTemplateForm && (
+            <div className="mt-6 rounded-2xl border border-glass-border bg-glass-fill p-5 shadow-lg">
+              <div className="mb-4 flex items-center justify-between border-b border-glass-border/50 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 font-semibold text-xs">
+                    {editingTemplate ? "✎" : "+"}
+                  </span>
+                  <p className="font-semibold text-[var(--text-bright)]">
+                    {editingTemplate ? `Edycja: ${editingTemplate.name}` : "Utwórz nowy szablon"}
                   </p>
                 </div>
-                <div className="flex gap-1.5">
-                  <GlassButton
-                    variant="subtle"
-                    className="!px-3 !py-1"
-                    onClick={() => openTemplateEdit(t)}
-                  >
-                    Edytuj
-                  </GlassButton>
-                  <GlassButton
-                    variant="ghost"
-                    className="!px-3 !py-1"
-                    onClick={() => void onDeleteTemplate(t.id)}
-                  >
-                    Usuń
-                  </GlassButton>
+                <button
+                  type="button"
+                  onClick={() => setShowTemplateForm(false)}
+                  className="text-xs text-[var(--muted)] hover:text-[var(--text-bright)]"
+                >
+                  Zamknij ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Form column */}
+                <form className="lg:col-span-7 space-y-4" onSubmit={onSaveTemplate}>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="space-y-1 text-sm">
+                      <span className="text-[var(--muted)]">Nazwa szablonu</span>
+                      <GlassInput
+                        placeholder="np. Przypomnienie 24h przed"
+                        value={templateForm.name}
+                        onChange={(e) =>
+                          setTemplateForm((f) => ({ ...f, name: e.target.value }))
+                        }
+                        required
+                      />
+                    </label>
+                    <label className="space-y-1 text-sm">
+                      <span className="text-[var(--muted)]">Kategoria / Typ</span>
+                      <GlassSelect
+                        value={templateForm.kind}
+                        onChange={(e) =>
+                          setTemplateForm((f) => ({
+                            ...f,
+                            kind: e.target.value as NotificationKind,
+                          }))
+                        }
+                      >
+                        {(Object.keys(KIND_LABEL) as NotificationKind[]).map((k) => (
+                          <option key={k} value={k}>
+                            {KIND_LABEL[k]}
+                          </option>
+                        ))}
+                      </GlassSelect>
+                    </label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-1">
+                      <span className="text-xs font-medium text-[var(--muted)]">
+                        Treść szablonu (zmienia się na żywo w oknie po prawej)
+                      </span>
+                      <span className="text-[11px] text-[var(--muted)]">
+                        Wstaw zmienną:
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 pb-1">
+                      {VARIABLE_CHIPS.map((chip) => (
+                        <button
+                          key={chip.tag}
+                          type="button"
+                          onClick={() =>
+                            setTemplateForm((f) => ({
+                              ...f,
+                              body: f.body + (f.body.endsWith(" ") || !f.body ? "" : " ") + chip.tag,
+                            }))
+                          }
+                          className="inline-flex items-center gap-1 rounded-control border border-glass-border bg-[var(--surface-solid)] px-2.5 py-1 text-xs text-[var(--text-bright)] transition hover:border-[#0084FF]/60 hover:bg-blue-500/10 hover:text-[#0084FF]"
+                        >
+                          <span className="font-semibold text-[#0084FF]">+</span> {chip.tag}
+                        </button>
+                      ))}
+                    </div>
+
+                    <GlassTextarea
+                      rows={5}
+                      value={templateForm.body}
+                      onChange={(e) =>
+                        setTemplateForm((f) => ({ ...f, body: e.target.value }))
+                      }
+                      placeholder="np. Cześć {{klient}}! Przypominamy o Twojej wizycie na usługę {{usluga}} w dniu {{data}} o godzinie {{godzina}} w {{firma}}. Do zobaczenia!"
+                      required
+                    />
+                    <p className="text-[11px] text-[var(--muted)]">
+                      Podpowiedź: Wpisz zmienne w klamrach lub użyj przycisków powyżej.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <GlassButton type="submit">
+                      {editingTemplate ? "Zapisz zmiany" : "Zapisz szablon"}
+                    </GlassButton>
+                    <GlassButton
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowTemplateForm(false)}
+                    >
+                      Anuluj
+                    </GlassButton>
+                  </div>
+                </form>
+
+                {/* Live Preview column */}
+                <div className="lg:col-span-5 flex flex-col items-center">
+                  <div className="mb-2 w-full flex items-center justify-between px-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+                      Podgląd na żywo (Messenger)
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500 font-medium">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Live update
+                    </span>
+                  </div>
+                  <MessengerPreview
+                    body={templateForm.body}
+                    salonName={salonName}
+                    customerName="Anna Kowalska"
+                    serviceName="Strzyżenie i stylizacja"
+                    dateStr="Jutro (25.08)"
+                    timeStr="14:30"
+                    priceStr="160 PLN"
+                  />
                 </div>
               </div>
-              <p className="mt-2 text-sm text-[var(--muted)]">{t.body}</p>
             </div>
-          ))}
-        </div>
-      </GlassCard>
+          )}
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {templates.length === 0 && (
+              <div className="md:col-span-2 rounded-xl border border-glass-border bg-glass-fill p-8 text-center">
+                <p className="text-sm text-[var(--muted)]">
+                  Brak szablonów — kliknij „+ Nowy szablon”, aby stworzyć pierwszy wzorzec z podglądem na żywo.
+                </p>
+              </div>
+            )}
+            {templates.map((t) => (
+              <div
+                key={t.id}
+                className="group flex flex-col justify-between rounded-2xl border border-glass-border bg-glass-fill p-4 transition hover:border-glass-border-strong hover:bg-glass-fill-strong"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2 border-b border-glass-border/40 pb-2.5">
+                    <div>
+                      <p className="font-semibold text-[var(--text-bright)]">{t.name}</p>
+                      <div className="mt-0.5 flex items-center gap-2 text-xs">
+                        <span className="rounded-control bg-blue-500/10 px-2 py-0.5 font-medium text-blue-500">
+                          {KIND_LABEL[t.kind]}
+                        </span>
+                        {t.is_default && (
+                          <span className="text-emerald-500 font-medium">● Domyślny</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <GlassButton
+                        variant="subtle"
+                        className="!px-3 !py-1 !text-xs"
+                        onClick={() => openTemplateEdit(t)}
+                      >
+                        Edytuj
+                      </GlassButton>
+                      <GlassButton
+                        variant="ghost"
+                        className="!px-3 !py-1 !text-xs text-red-400 hover:text-red-300"
+                        onClick={() => void onDeleteTemplate(t.id)}
+                      >
+                        Usuń
+                      </GlassButton>
+                    </div>
+                  </div>
+
+                  {/* Messenger styled preview box inside card */}
+                  <div className="mt-3 rounded-xl border border-glass-border/40 bg-black/20 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-[#0084FF] to-[#00C6FF] text-[9px] font-bold text-white">
+                        {salonName.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-[11px] font-medium text-[var(--muted)]">
+                        {salonName} · Podgląd
+                      </span>
+                    </div>
+                    <div className="inline-block max-w-full rounded-[16px] rounded-bl-[4px] bg-gradient-to-br from-[#0084FF] to-[#0078FF] px-3.5 py-2 text-xs text-white shadow-sm leading-relaxed whitespace-pre-wrap break-words">
+                      {formatTemplateText(t.body, { firma: salonName })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 text-[10px] text-[var(--muted)] font-mono truncate">
+                  Wzorzec: {t.body}
+                </div>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
       )}
 
       {active === "log" && (
