@@ -10,6 +10,7 @@ import {
 import { authApi, businessApi } from "@/api";
 import { ApiError, getToken, setToken } from "@/api/client";
 import type { Business, Owner } from "@/api/types";
+import { markTourPendingAfterLogin } from "@/tour/TourContext";
 
 type AuthState = {
   token: string | null;
@@ -40,9 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const me = await authApi.me();
-      const biz = await businessApi.get();
       setOwner(me);
-      setBusiness(biz);
+      try {
+        const biz = await businessApi.get();
+        setBusiness(biz);
+      } catch {
+        setBusiness(null);
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setToken(null);
@@ -61,12 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await authApi.login(email, password);
+    markTourPendingAfterLogin();
     setToken(res.access_token);
     setTokenState(res.access_token);
     setLoading(true);
   }, []);
 
   const acceptToken = useCallback(async (tok: string) => {
+    markTourPendingAfterLogin();
     setToken(tok);
     setTokenState(tok);
     setLoading(true);

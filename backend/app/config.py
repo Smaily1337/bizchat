@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "BizChat"
+    app_name: str = "Automovia"
     environment: str = "development"
     debug: bool = True
     secret_key: str = "change-me-to-a-long-random-string"
@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    smtp_from: str = "BizChat <noreply@bizchat.local>"
+    smtp_from: str = "Automovia <noreply@automovia.local>"
     smtp_tls: bool = True
 
     telegram_bot_token: str = ""
@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     # When Meta webhook has no ?business_id=, bind traffic to this salon (UUID).
     meta_default_business_id: str = ""
 
+    # WhatsApp Cloud API (Meta) — phone number id + token (can reuse page token)
+    whatsapp_phone_number_id: str = ""
+    whatsapp_access_token: str = ""
+    whatsapp_verify_token: str = ""
+
     widget_jwt_secret: str = "change-me-widget-secret"
 
     openai_api_key: str = ""
@@ -62,12 +67,28 @@ class Settings(BaseSettings):
     google_refresh_token: str = ""
     google_service_account_json: str = ""
 
+    # Stripe deposits (optional — mock checkout when secret empty)
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_currency: str = "pln"
+
     auto_migrate: bool = True
     auto_seed: bool = True
+
+    # Comma-separated emails that always get is_platform_admin on login/seed.
+    platform_admin_emails: str = "admin@bizchat.local"
 
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def platform_admin_email_set(self) -> set[str]:
+        return {
+            e.strip().lower()
+            for e in self.platform_admin_emails.split(",")
+            if e.strip()
+        }
 
     @property
     def is_sqlite(self) -> bool:

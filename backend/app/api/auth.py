@@ -24,8 +24,10 @@ from app.api.deps import (
 from app.config import settings
 from app.models import Business, Owner, UserRole
 from app.schemas import LoginRequest, OwnerOut, TokenResponse
+from app.services.limits import PLAN_FREE, apply_plan_defaults
 from app.services.mailer import send_verification_email
 from app.services import clerk_jwt as clerk_service
+from app.services.onboarding import seed_starter_salon
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -39,6 +41,18 @@ def normalize_email(value: str) -> str:
     if "@" not in email or "." not in email.split("@")[-1]:
         raise ValueError("Nieprawidłowy adres e-mail")
     return email
+
+
+def sync_platform_admin_flag(owner: Owner) -> bool:
+    """Promote owners listed in PLATFORM_ADMIN_EMAILS. Returns True if changed."""
+    emails = settings.platform_admin_email_set
+    if not emails:
+        return False
+    should = owner.email.lower() in emails
+    if should and not owner.is_platform_admin:
+        owner.is_platform_admin = True
+        return True
+    return False
 
 
 class RegisterRequest(BaseModel):
@@ -121,6 +135,7 @@ async def login_with_clerk(
             timezone="Europe/Warsaw",
             settings={"locale": "pl", "currency": "PLN", "auth": "clerk"},
         )
+        apply_plan_defaults(business, PLAN_FREE, start_trial=True)
         db.add(business)
         await db.flush()
         owner = Owner(
@@ -135,6 +150,7 @@ async def login_with_clerk(
         )
         db.add(owner)
         await db.flush()
+        await seed_starter_salon(db, business.id)
     elif not owner.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -184,6 +200,7 @@ async def register(db: DbSession, body: RegisterRequest) -> TokenResponse:
         timezone="Europe/Warsaw",
         settings={"locale": "pl", "currency": "PLN"},
     )
+    apply_plan_defaults(business, PLAN_FREE, start_trial=True)
     db.add(business)
     await db.flush()
 
@@ -200,6 +217,7 @@ async def register(db: DbSession, body: RegisterRequest) -> TokenResponse:
     )
     db.add(owner)
     await db.flush()
+    await seed_starter_salon(db, business.id)
 
     send_verification_email(to=owner.email, token=token)
 
@@ -240,8 +258,48 @@ async def resend_verification(db: DbSession, owner: CurrentOwner) -> MessageOut:
 
 
 @router.get("/me", response_model=OwnerOut)
-async def me(owner: CurrentOwner) -> Owner:
+async def me(db: DbSession, owner: CurrentOwner) -> Owner:
+    if sync_platform_admin_flag(owner):
+        await db.flush()
     return owner
+
+
+class ProfileUpdate(BaseModel):
+    name: str | None = Field(default=None, max_length=255)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=6, max_length=128)
+
+
+@router.patch("/me", response_model=OwnerOut)
+async def update_me(
+    db: DbSession, owner: CurrentOwner, body: ProfileUpdate
+) -> Owner:
+    if body.name is not None:
+        owner.name = body.name.strip() or None
+    await db.flush()
+    return owner
+
+
+@router.post("/change-password", response_model=MessageOut)
+async def change_password(
+    db: DbSession, owner: CurrentOwner, body: ChangePasswordRequest
+) -> MessageOut:
+    if not owner.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="To konto loguje się przez Clerk/Google — ustaw hasło w dostawcy logowania.",
+        )
+    if not verify_password(body.current_password, owner.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Obecne hasło jest nieprawidłowe",
+        )
+    owner.password_hash = hash_password(body.new_password)
+    await db.flush()
+    return MessageOut(message="Hasło zostało zmienione")
 
 
 @router.get("/google/start")
@@ -321,6 +379,7 @@ async def google_oauth_callback(
             timezone="Europe/Warsaw",
             settings={"locale": "pl", "currency": "PLN"},
         )
+        apply_plan_defaults(business, PLAN_FREE, start_trial=True)
         db.add(business)
         await db.flush()
         owner = Owner(
@@ -345,6 +404,9 @@ async def google_oauth_callback(
             owner.name = name
         await db.flush()
 
+    if sync_platform_admin_flag(owner):
+        await db.flush()
+
     jwt_token = create_access_token(
         subject=owner.email, business_id=owner.business_id, role=owner.role
     )
@@ -364,6 +426,8 @@ async def _authenticate(db: DbSession, email: str, password: str) -> TokenRespon
             detail="Nieprawidłowy e-mail lub hasło",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if sync_platform_admin_flag(owner):
+        await db.flush()
     token = create_access_token(
         subject=owner.email, business_id=owner.business_id, role=owner.role
     )

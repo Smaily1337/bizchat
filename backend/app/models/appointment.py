@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, Text
+from sqlalchemy import DateTime, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.models.business import Service
     from app.models.customer import Customer
     from app.models.feedback import CancellationEvent, Feedback
+    from app.models.staff import Staff
 
 
 class Appointment(Base, TimestampMixin):
@@ -35,6 +36,9 @@ class Appointment(Base, TimestampMixin):
     service_id: Mapped[uuid.UUID] = mapped_column(
         GUID, ForeignKey("services.id", ondelete="RESTRICT")
     )
+    staff_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        GUID, ForeignKey("staff.id", ondelete="SET NULL")
+    )
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status: Mapped[AppointmentStatus] = mapped_column(
@@ -47,9 +51,13 @@ class Appointment(Base, TimestampMixin):
     )
     gcal_event_id: Mapped[Optional[str]] = mapped_column(String(255))
     notes: Mapped[Optional[str]] = mapped_column(Text)
+    deposit_amount: Mapped[Optional[Any]] = mapped_column(Numeric(10, 2))
+    deposit_status: Mapped[Optional[str]] = mapped_column(String(32), default="none")
+    stripe_checkout_session_id: Mapped[Optional[str]] = mapped_column(String(255))
 
     customer: Mapped[Customer] = relationship(back_populates="appointments")
     service: Mapped[Service] = relationship(back_populates="appointments")
+    staff: Mapped[Optional[Staff]] = relationship(back_populates="appointments")
     feedback: Mapped[Optional[Feedback]] = relationship(
         back_populates="appointment", uselist=False
     )

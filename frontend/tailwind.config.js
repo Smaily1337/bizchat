@@ -5,7 +5,11 @@ export default {
     extend: {
       colors: {
         graphite: "var(--bg)",
+        void: "var(--bg)",
+        surface: "var(--surface-solid)",
         canary: "var(--accent)",
+        accent: "var(--accent)",
+        frost: "var(--text)",
         glass: {
           border: "var(--glass-border)",
           fill: "var(--glass-fill)",
@@ -13,18 +17,26 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Syne", "sans-serif"],
-        sans: ["Outfit", "sans-serif"],
+        display: ["IBM Plex Sans", "system-ui", "sans-serif"],
+        sans: ["IBM Plex Sans", "system-ui", "sans-serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
+        label: ["IBM Plex Sans", "sans-serif"],
       },
       boxShadow: {
-        glass: "0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
-        canary: "0 0 24px rgba(244, 224, 77, 0.25)",
+        glass: "var(--shadow-glass)",
+        canary: "var(--shadow-accent)",
+        active: "var(--shadow-active)",
       },
       backdropBlur: {
-        glass: "18px",
+        glass: "22px",
       },
       borderRadius: {
-        glass: "1.25rem",
+        soft: "1rem",
+        glass: "1rem",
+        control: "0.65rem",
+      },
+      maxWidth: {
+        shell: "1120px",
       },
     },
   },

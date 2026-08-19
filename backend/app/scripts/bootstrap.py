@@ -62,6 +62,102 @@ async def _sqlite_prepare() -> None:
         for stmt in alters:
             await conn.execute(text(stmt))
 
+        biz_cols = (
+            await conn.execute(text("PRAGMA table_info(businesses)"))
+        ).mappings().all()
+        biz_existing = {c["name"] for c in biz_cols}
+        biz_alters: list[str] = []
+        if "plan" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN plan VARCHAR(32) DEFAULT 'free'"
+            )
+        if "license_status" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN license_status VARCHAR(32) "
+                "DEFAULT 'trial'"
+            )
+        if "license_expires_at" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN license_expires_at DATETIME"
+            )
+        if "max_appointments_month" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN max_appointments_month INTEGER"
+            )
+        if "max_messages_month" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN max_messages_month INTEGER"
+            )
+        if "max_seats" not in biz_existing:
+            biz_alters.append("ALTER TABLE businesses ADD COLUMN max_seats INTEGER")
+        if "enabled_channels" not in biz_existing:
+            biz_alters.append("ALTER TABLE businesses ADD COLUMN enabled_channels JSON")
+        if "public_slug" not in biz_existing:
+            biz_alters.append("ALTER TABLE businesses ADD COLUMN public_slug VARCHAR(64)")
+        if "deposit_percent" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN deposit_percent INTEGER DEFAULT 0"
+            )
+        if "stripe_account_id" not in biz_existing:
+            biz_alters.append(
+                "ALTER TABLE businesses ADD COLUMN stripe_account_id VARCHAR(255)"
+            )
+        for stmt in biz_alters:
+            await conn.execute(text(stmt))
+        if biz_alters:
+            await conn.execute(
+                text(
+                    """
+                    UPDATE businesses SET
+                      plan = COALESCE(plan, 'free'),
+                      license_status = COALESCE(license_status, 'active'),
+                      max_appointments_month = COALESCE(max_appointments_month, 30),
+                      max_messages_month = COALESCE(max_messages_month, 200),
+                      max_seats = COALESCE(max_seats, 2),
+                      enabled_channels = COALESCE(
+                        enabled_channels,
+                        '["widget","admin","telegram","messenger","instagram","whatsapp"]'
+                      ),
+                      deposit_percent = COALESCE(deposit_percent, 0)
+                    """
+                )
+            )
+
+        appt_cols = (
+            await conn.execute(text("PRAGMA table_info(appointments)"))
+        ).mappings().all()
+        appt_existing = {c["name"] for c in appt_cols}
+        appt_alters: list[str] = []
+        if "staff_id" not in appt_existing:
+            appt_alters.append("ALTER TABLE appointments ADD COLUMN staff_id CHAR(36)")
+        if "deposit_amount" not in appt_existing:
+            appt_alters.append(
+                "ALTER TABLE appointments ADD COLUMN deposit_amount NUMERIC(10,2)"
+            )
+        if "deposit_status" not in appt_existing:
+            appt_alters.append(
+                "ALTER TABLE appointments ADD COLUMN deposit_status VARCHAR(32) DEFAULT 'none'"
+            )
+        if "stripe_checkout_session_id" not in appt_existing:
+            appt_alters.append(
+                "ALTER TABLE appointments ADD COLUMN stripe_checkout_session_id VARCHAR(255)"
+            )
+        for stmt in appt_alters:
+            await conn.execute(text(stmt))
+
+        # Expand legacy free-plan channel lists so Messenger/Telegram land in Inbox.
+        await conn.execute(
+            text(
+                """
+                UPDATE businesses
+                SET enabled_channels = '["widget","admin","telegram","messenger","instagram","whatsapp"]'
+                WHERE enabled_channels IS NULL
+                   OR enabled_channels = '["widget","admin"]'
+                   OR enabled_channels = '["admin","widget"]'
+                """
+            )
+        )
+
 
 def _alembic_upgrade() -> None:
     subprocess.check_call(
@@ -79,6 +175,20 @@ async def _ensure_owner_columns_pg() -> None:
         "ALTER TABLE owners ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255)",
         "ALTER TABLE owners ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE",
         "ALTER TABLE owners ADD COLUMN IF NOT EXISTS is_platform_admin BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS plan VARCHAR(32) DEFAULT 'free'",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS license_status VARCHAR(32) DEFAULT 'trial'",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS license_expires_at TIMESTAMPTZ",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS max_appointments_month INTEGER",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS max_messages_month INTEGER",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS max_seats INTEGER",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS enabled_channels JSONB",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS public_slug VARCHAR(64)",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS deposit_percent INTEGER DEFAULT 0",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_account_id VARCHAR(255)",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS staff_id UUID",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS deposit_amount NUMERIC(10,2)",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS deposit_status VARCHAR(32) DEFAULT 'none'",
+        "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS stripe_checkout_session_id VARCHAR(255)",
     ]
     async with engine.begin() as conn:
         for stmt in stmts:

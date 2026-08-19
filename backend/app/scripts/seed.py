@@ -14,6 +14,7 @@ from decimal import Decimal
 from sqlalchemy import select
 
 from app.api.deps import hash_password
+from app.config import settings
 from app.db.session import AsyncSessionLocal
 from app.models import (
     Appointment,
@@ -34,6 +35,11 @@ from app.models.enums import (
     NotificationKind,
     NotificationStatus,
     UserRole,
+)
+from app.services.limits import (
+    LICENSE_ACTIVE,
+    PLAN_PRO,
+    apply_plan_defaults,
 )
 
 
@@ -77,6 +83,28 @@ def _default_templates(business_id: uuid.UUID) -> list[NotificationTemplate]:
             is_default=False,
         ),
     ]
+
+
+async def _ensure_license_defaults(session, business: Business) -> bool:
+    """Ensure demo / existing businesses have usable license fields."""
+    changed = False
+    if not getattr(business, "plan", None):
+        apply_plan_defaults(business, PLAN_PRO, start_trial=False)
+        business.license_status = LICENSE_ACTIVE
+        business.license_expires_at = None
+        return True
+    # Demo salon: keep generous pro limits so local/cloud testing isn't blocked
+    if business.name == "Demo Salon" and business.plan != PLAN_PRO:
+        apply_plan_defaults(business, PLAN_PRO, start_trial=False)
+        business.license_status = LICENSE_ACTIVE
+        business.license_expires_at = None
+        changed = True
+    elif business.max_appointments_month is None and business.max_messages_month is None:
+        # Newly migrated row without defaults applied — leave unlimited only if pro+
+        if business.plan in {"free", "starter"} and business.max_seats is None:
+            apply_plan_defaults(business, business.plan or "free", start_trial=False)
+            changed = True
+    return changed
 
 
 async def _ensure_notification_defaults(session, business_id: uuid.UUID) -> bool:
@@ -146,22 +174,32 @@ async def _ensure_platform_admin(session, business_id: uuid.UUID) -> bool:
 
 
 async def seed() -> None:
+    if settings.environment.lower() in {"production", "prod"}:
+        # Never auto-create weak demo accounts in production.
+        logger = __import__("logging").getLogger(__name__)
+        logger.warning("AUTO_SEED skipped in production environment")
+        return
+
     async with AsyncSessionLocal() as session:
         existing = await session.execute(
             select(Owner).where(Owner.email == "owner@bizchat.local")
         )
         existing_owner = existing.scalar_one_or_none()
         if existing_owner:
+            biz = await session.get(Business, existing_owner.business_id)
+            topped = False
+            if biz is not None:
+                topped = await _ensure_license_defaults(session, biz) or topped
             topped = await _ensure_notification_defaults(
                 session, existing_owner.business_id
-            )
+            ) or topped
             topped = await _ensure_platform_admin(
                 session, existing_owner.business_id
             ) or topped
             if topped:
                 await session.commit()
                 print(
-                    "Seed top-up: notification defaults / platform admin "
+                    "Seed top-up: license / notification defaults / platform admin "
                     "(admin@bizchat.local / changeme)"
                 )
             else:
@@ -174,6 +212,9 @@ async def seed() -> None:
             timezone="Europe/Warsaw",
             settings={"locale": "pl", "currency": "PLN"},
         )
+        apply_plan_defaults(business, PLAN_PRO, start_trial=False)
+        business.license_status = LICENSE_ACTIVE
+        business.license_expires_at = None
         session.add(business)
         await session.flush()
 

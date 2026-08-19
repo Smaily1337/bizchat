@@ -51,6 +51,7 @@ async def create_appointment(
             status=body.status,
             channel=body.channel,
             notes=body.notes,
+            staff_id=body.staff_id,
         )
     except BookingError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -88,6 +89,7 @@ async def update_appointment(
             status=body.status,
             notes=body.notes,
             service_id=body.service_id,
+            staff_id=body.staff_id,
         )
     except BookingError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

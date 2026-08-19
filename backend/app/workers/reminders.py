@@ -141,6 +141,7 @@ async def process_reminders_once() -> int:
                     kind=NotificationKind.reminder,
                     body=body,
                     lead_time_min=current_lead,
+                    with_confirm_buttons=True,
                 )
                 sent_count += 1
 

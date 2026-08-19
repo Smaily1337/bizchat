@@ -21,7 +21,7 @@
     style.textContent =
       "#" + ROOT_ID + "{position:fixed;right:20px;bottom:20px;z-index:99999;font-family:system-ui,sans-serif}" +
       "#" + ROOT_ID + " .bc-launcher{width:56px;height:56px;border-radius:16px;border:1px solid rgba(255,255,255,.18);" +
-      "background:#F4E04D;color:#121417;font-weight:800;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.35)}" +
+      "background:#FFFFFF;color:#2F3131;font-weight:800;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.35)}" +
       "#" + ROOT_ID + " .bc-panel{display:none;position:absolute;right:0;bottom:70px;width:min(360px,calc(100vw - 32px));" +
       "height:480px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.14);" +
       "background:rgba(18,20,23,.92);backdrop-filter:blur(16px);color:#fff;box-shadow:0 16px 48px rgba(0,0,0,.45);" +
@@ -32,11 +32,11 @@
       "#" + ROOT_ID + " .bc-msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}" +
       "#" + ROOT_ID + " .bc-bubble{max-width:85%;padding:8px 11px;border-radius:12px;font-size:13px;line-height:1.4;white-space:pre-wrap}" +
       "#" + ROOT_ID + " .bc-bot{align-self:flex-start;background:rgba(255,255,255,.08)}" +
-      "#" + ROOT_ID + " .bc-user{align-self:flex-end;background:rgba(244,224,77,.2);border:1px solid rgba(244,224,77,.35)}" +
+      "#" + ROOT_ID + " .bc-user{align-self:flex-end;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25)}" +
       "#" + ROOT_ID + " .bc-form{display:flex;gap:8px;padding:10px;border-top:1px solid rgba(255,255,255,.12)}" +
       "#" + ROOT_ID + " .bc-form input{flex:1;border-radius:10px;border:1px solid rgba(255,255,255,.14);" +
       "background:rgba(255,255,255,.06);color:#fff;padding:10px 12px;outline:none}" +
-      "#" + ROOT_ID + " .bc-form button{border:0;border-radius:10px;background:#F4E04D;color:#121417;font-weight:700;padding:0 14px;cursor:pointer}";
+      "#" + ROOT_ID + " .bc-form button{border:0;border-radius:10px;background:#FFFFFF;color:#2F3131;font-weight:700;padding:0 14px;cursor:pointer}";
     document.head.appendChild(style);
   }
 

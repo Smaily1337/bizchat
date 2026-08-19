@@ -25,13 +25,18 @@ from app.api import (
     inbox,
     knowledge,
     notifications,
+    payments,
     platform,
+    public_booking,
     services,
+    staff,
+    tags,
     users,
     ws,
 )
+from app.api import channels_status
 from app.api.feedback_waitlist import feedback_router, waitlist_router
-from app.api.webhooks import meta_router, telegram_router, widget_router
+from app.api.webhooks import meta_router, telegram_router, whatsapp_router, widget_router
 from app.config import settings
 from app.db.session import engine
 from app.schemas import HealthResponse
@@ -76,16 +81,22 @@ app.include_router(calendar.router)
 app.include_router(dashboard.router)
 app.include_router(business.router)
 app.include_router(services.router)
+app.include_router(staff.router)
 app.include_router(customers.router)
+app.include_router(tags.router)
 app.include_router(hours.router)
 app.include_router(knowledge.router)
 app.include_router(feedback_router)
 app.include_router(waitlist_router)
 app.include_router(inbox.router)
 app.include_router(notifications.router)
+app.include_router(channels_status.router)
+app.include_router(public_booking.router)
+app.include_router(payments.router)
 app.include_router(ws.router)
 app.include_router(telegram_router)
 app.include_router(meta_router)
+app.include_router(whatsapp_router)
 app.include_router(widget_router)
 
 _widget_candidates = [
@@ -105,7 +116,7 @@ async def root() -> str:
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BizChat API</title>
+  <title>Automovia API</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 36rem; margin: 3rem auto; padding: 0 1.25rem; line-height: 1.5; color: #1a1a1a; }
     h1 { font-size: 1.35rem; margin-bottom: 0.5rem; }
@@ -115,7 +126,7 @@ async def root() -> str:
   </style>
 </head>
 <body>
-  <h1>BizChat API</h1>
+  <h1>Automovia API</h1>
   <p>To jest backend (FastAPI), nie panel administracyjny.</p>
   <ul>
     <li>Panel admin (Liquid Glass): <a href="http://localhost:5173/">http://localhost:5173/</a></li>

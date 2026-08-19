@@ -14,8 +14,10 @@ from app.api.deps import (
     RequireOwnerOrAdmin,
     hash_password,
 )
-from app.models import Owner, UserRole
+from app.models import Business, Owner, UserRole
 from app.schemas import OwnerOut
+from app.services import limits as limits_service
+from app.services.limits import LimitExceededError
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -109,6 +111,16 @@ async def create_user(
             status_code=status.HTTP_409_CONFLICT,
             detail="Konto z tym e-mailem już istnieje",
         )
+    business = await db.get(Business, actor.business_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Firma nie znaleziona")
+    try:
+        await limits_service.assert_can_add_seat(db, business)
+    except LimitExceededError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        ) from exc
     user = Owner(
         email=body.email.lower().strip(),
         password_hash=hash_password(body.password),

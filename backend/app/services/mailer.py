@@ -47,10 +47,10 @@ def send_verification_email(*, to: str, token: str) -> None:
     link = f"{settings.public_frontend_url.rstrip('/')}/verify-email?token={token}"
     send_email(
         to=to,
-        subject="BizChat — potwierdź adres e-mail",
+        subject="Automovia — potwierdź adres e-mail",
         body=(
             "Cześć!\n\n"
-            "Potwierdź adres e-mail w BizChat, klikając link:\n"
+            "Potwierdź adres e-mail w Automovia, klikając link:\n"
             f"{link}\n\n"
             "Jeśli nie zakładałeś konta, zignoruj tę wiadomość.\n"
         ),

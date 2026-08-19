@@ -9,6 +9,7 @@ export type Channel =
   | "telegram"
   | "messenger"
   | "instagram"
+  | "whatsapp"
   | "widget"
   | "admin";
 
@@ -61,6 +62,47 @@ export type Business = {
   timezone: string;
   google_calendar_id: string | null;
   settings: Record<string, unknown>;
+  public_slug?: string | null;
+  deposit_percent?: number | null;
+  stripe_account_id?: string | null;
+  plan?: string;
+  license_status?: string;
+  license_expires_at?: string | null;
+  max_appointments_month?: number | null;
+  max_messages_month?: number | null;
+  max_seats?: number | null;
+  enabled_channels?: string[] | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type LicenseUsage = {
+  plan: string;
+  license_status: string;
+  license_expires_at: string | null;
+  is_active: boolean;
+  appointments_month: number;
+  max_appointments_month: number | null;
+  messages_month: number;
+  max_messages_month: number | null;
+  seats: number;
+  max_seats: number | null;
+  enabled_channels: string[];
+  period_start: string;
+  period_end: string;
+};
+
+export type PlanCatalogItem = {
+  id: string;
+  max_appointments_month: number | null;
+  max_messages_month: number | null;
+  max_seats: number | null;
+  enabled_channels: string[];
+  trial_days: number;
+};
+
+export type PlatformBusiness = Business & {
+  usage?: LicenseUsage | null;
 };
 
 export type Service = {
@@ -72,12 +114,22 @@ export type Service = {
   description: string | null;
 };
 
+export type CustomerTag = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
 export type Customer = {
   id: string;
   business_id: string;
   name: string | null;
   phone: string | null;
   email: string | null;
+  external_ids?: Record<string, string>;
+  tags?: CustomerTag[];
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type Appointment = {
@@ -85,13 +137,27 @@ export type Appointment = {
   business_id: string;
   customer_id: string;
   service_id: string;
+  staff_id?: string | null;
   start_at: string;
   end_at: string;
   status: AppointmentStatus;
   channel: Channel;
   notes: string | null;
+  deposit_amount?: string | number | null;
+  deposit_status?: string | null;
+  gcal_event_id?: string | null;
   customer_name?: string | null;
   service_name?: string | null;
+  staff_name?: string | null;
+};
+
+export type StaffMember = {
+  id: string;
+  business_id: string;
+  name: string;
+  color: string | null;
+  is_active: boolean;
+  sort_order: number;
 };
 
 export type WorkingHours = {
@@ -170,6 +236,9 @@ export type DashboardAnalytics = {
   by_channel: ChannelBucket[];
   gaps_today: number;
   feedback_avg: number | null;
+  visits?: number;
+  no_show_rate?: number | null;
+  cancel_rate?: number | null;
 };
 
 export type NotificationChannel =
@@ -178,6 +247,7 @@ export type NotificationChannel =
   | "telegram"
   | "messenger"
   | "instagram"
+  | "whatsapp"
   | "widget";
 export type NotificationKind = "reminder" | "custom" | "waitlist" | "feedback";
 export type NotificationStatus = "sent" | "failed";

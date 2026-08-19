@@ -15,13 +15,23 @@ from sqlalchemy.orm import selectinload
 from app.bot.adapters.base import ChannelAdapter
 from app.bot.intents import Intent, detect_intent
 from app.bot.state_machine import booking_step, next_state
-from app.models import Appointment, Conversation, Customer, KnowledgeItem, Message, Service
+from app.models import (
+    Appointment,
+    Business,
+    Conversation,
+    Customer,
+    KnowledgeItem,
+    Message,
+    Service,
+)
 from app.models.enums import AppointmentStatus, Channel, ConversationState, MessageRole
 from app.schemas import InboundMessage, OutboundMessage
 from app.models.mixins import utc_now
 from app.services import availability, booking, waitlist
+from app.services import limits as limits_service
 from app.services.booking import BookingError
 from app.services.events import hub
+from app.services.limits import LimitExceededError
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +48,7 @@ class CoreBotEngine:
         business_id = inbound.business_id
         if business_id is None:
             reply_text = (
-                "BizChat: brak business_id — skonfiguruj webhook z identyfikatorem salonu."
+                "Automovia: brak business_id — skonfiguruj webhook z identyfikatorem salonu."
             )
             outbound = OutboundMessage(
                 channel=inbound.channel,
@@ -48,6 +58,18 @@ class CoreBotEngine:
             await self.adapter.send_outbound(outbound)
             return outbound
 
+        business = await self.db.get(Business, business_id)
+        if business is None:
+            reply_text = "Automovia: salon nie został znaleziony."
+            outbound = OutboundMessage(
+                channel=inbound.channel,
+                external_thread_id=inbound.external_thread_id,
+                text=reply_text,
+            )
+            await self.adapter.send_outbound(outbound)
+            return outbound
+
+        # Always land in Inbox first — even for unknown writers / disabled channels.
         customer = await self._get_or_create_customer(inbound, business_id)
         conversation = await self._get_or_create_conversation(inbound, customer.id)
 
@@ -59,6 +81,47 @@ class CoreBotEngine:
                 raw_payload=inbound.raw_payload,
             )
         )
+        conversation.updated_at = utc_now()
+        await self.db.flush()
+
+        preview = inbound.text.strip()[:100] or "…"
+        await hub.publish(
+            business_id,
+            "chat.message",
+            {
+                "conversation_id": str(conversation.id),
+                "channel": inbound.channel.value
+                if hasattr(inbound.channel, "value")
+                else str(inbound.channel),
+                "customer_name": customer.name,
+                "role": "customer",
+            },
+            title="Nowa wiadomość",
+            message=f"{customer.name or 'Klient'} ({inbound.channel}): {preview}",
+        )
+
+        try:
+            await limits_service.assert_can_receive_message(
+                self.db, business, inbound.channel
+            )
+        except LimitExceededError as exc:
+            reply_text = exc.user_message
+            self.db.add(
+                Message(
+                    conversation_id=conversation.id,
+                    role=MessageRole.bot,
+                    content=reply_text,
+                )
+            )
+            conversation.updated_at = utc_now()
+            await self.db.flush()
+            outbound = OutboundMessage(
+                channel=inbound.channel,
+                external_thread_id=inbound.external_thread_id,
+                text=reply_text,
+            )
+            await self.adapter.send_outbound(outbound)
+            return outbound
 
         intent = await detect_intent(inbound.text)
         ctx = dict(conversation.context or {})
@@ -96,6 +159,40 @@ class CoreBotEngine:
         conversation.updated_at = utc_now()
         await self.db.flush()
 
+        outbound = OutboundMessage(
+            channel=inbound.channel,
+            external_thread_id=inbound.external_thread_id,
+            text=reply_text,
+        )
+        await self.adapter.send_outbound(outbound)
+        return outbound
+
+    async def persist_inbound_only(self, inbound: InboundMessage) -> None:
+        """Zapisz wiadomość do Inbox bez odpowiedzi bota (np. postback potwierdzenia)."""
+        business_id = inbound.business_id
+        if business_id is None:
+            logger.warning("persist_inbound_only skipped: missing business_id")
+            return
+        business = await self.db.get(Business, business_id)
+        if business is None:
+            logger.warning(
+                "persist_inbound_only skipped: business %s not found", business_id
+            )
+            return
+
+        customer = await self._get_or_create_customer(inbound, business_id)
+        conversation = await self._get_or_create_conversation(inbound, customer.id)
+        self.db.add(
+            Message(
+                conversation_id=conversation.id,
+                role=MessageRole.customer,
+                content=inbound.text,
+                raw_payload=inbound.raw_payload,
+            )
+        )
+        conversation.updated_at = utc_now()
+        await self.db.flush()
+
         preview = inbound.text.strip()[:100] or "…"
         await hub.publish(
             business_id,
@@ -111,14 +208,6 @@ class CoreBotEngine:
             title="Nowa wiadomość",
             message=f"{customer.name or 'Klient'} ({inbound.channel}): {preview}",
         )
-
-        outbound = OutboundMessage(
-            channel=inbound.channel,
-            external_thread_id=inbound.external_thread_id,
-            text=reply_text,
-        )
-        await self.adapter.send_outbound(outbound)
-        return outbound
 
     async def _dispatch(
         self,
@@ -160,7 +249,7 @@ class CoreBotEngine:
         if intent == Intent.feedback:
             return (
                 "Dziękujemy za chęć zostawienia opinii! Po wizycie właściciel "
-                "może poprosić o ocenę 1–5 w panelu BizChat."
+                "może poprosić o ocenę 1–5 w panelu Automovia."
             )
 
         faq_answer = await self._match_faq(business_id, inbound.text)

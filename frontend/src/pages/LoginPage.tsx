@@ -7,6 +7,7 @@ import { ClerkAuthPanel } from "@/auth/ClerkAuthPanel";
 import { clerkEnabled } from "@/auth/ClerkProvider";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
+import { useTheme } from "@/theme";
 
 /** Credentials or JWT passed from landing / OAuth in the URL fragment. */
 function readHashAuth(hash: string): {
@@ -36,6 +37,7 @@ function loginErrorMessage(err: unknown): string {
 
 export function LoginPage() {
   const { token, loading, login, acceptToken } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -122,40 +124,78 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
+    <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-control border border-glass-border bg-glass-fill px-3 py-1.5 text-sm font-semibold text-[var(--text-bright)] backdrop-blur-glass transition hover:bg-glass-fillStrong sm:right-8 sm:top-8"
+        aria-label={theme === "dark" ? "Włącz jasny motyw" : "Włącz ciemny motyw"}
+      >
+        {theme === "dark" ? "Jasny" : "Ciemny"}
+      </button>
       <GlassCard className="animate-fade-up w-full max-w-md">
         <p className="font-display text-4xl font-extrabold tracking-tight">
           Automovia
         </p>
-        <h1 className="mt-2 font-display text-xl font-semibold text-canary">
-          Panel admina
+        <h1 className="mt-2 font-display text-xl font-semibold text-[var(--text-bright)]">
+          {mode === "login" ? "Panel salonu" : "Rejestracja"}
         </h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          Zaloguj się przez Clerk (OTP / Google / Apple) albo użyj konta demo.
+          {mode === "login"
+            ? "Zaloguj się przez Clerk (OTP / Google / Apple) albo kontem demo."
+            : "Załóż konto właściciela i nowy salon w kilka sekund."}
         </p>
 
-        {clerkEnabled() && (
+        {clerkEnabled() && mode === "login" && (
           <div className="mt-6">
             <ClerkAuthPanel />
           </div>
         )}
 
-        {clerkEnabled() && (
+        {clerkEnabled() && mode === "login" && (
           <div className="mt-5 flex items-center gap-3 text-xs text-[var(--muted)]">
-            <span className="h-px flex-1 bg-glass-border" />
+            <span className="h-px flex-1 bg-[var(--glass-border-outer)]" />
             <button
               type="button"
               className="shrink-0 underline-offset-2 hover:underline"
               onClick={() => setShowDemo((v) => !v)}
             >
-              {showDemo ? "Ukryj logowanie demo" : "Konto demo / hasło"}
+              {showDemo ? "Ukryj logowanie hasłem" : "Konto demo / hasło"}
             </button>
-            <span className="h-px flex-1 bg-glass-border" />
+            <span className="h-px flex-1 bg-[var(--glass-border-outer)]" />
           </div>
         )}
 
-        {showDemo && (
+        {(showDemo || mode === "register") && (
         <>
+
+        {mode === "login" && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <GlassButton
+              type="button"
+              variant="ghost"
+              className="!px-3 !py-1.5 text-xs"
+              onClick={() => {
+                setEmail("admin@bizchat.local");
+                setPassword("changeme");
+              }}
+            >
+              Superadmin platformy
+            </GlassButton>
+            <GlassButton
+              type="button"
+              variant="ghost"
+              className="!px-3 !py-1.5 text-xs"
+              onClick={() => {
+                setEmail("owner@bizchat.local");
+                setPassword("changeme");
+              }}
+            >
+              Demo salon
+            </GlassButton>
+          </div>
+        )}
+
         <div className="mt-5 flex gap-2">
           <GlassButton
             type="button"
@@ -249,7 +289,7 @@ export function LoginPage() {
             </div>
             <a
               href={`${API_BASE}/api/auth/google/start`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-canary px-4 py-2.5 text-sm font-semibold tracking-wide text-graphite shadow-canary transition duration-200 ease-out hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:brightness-95"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-control bg-[#ffffff] px-4 py-2.5 text-sm font-semibold tracking-wide text-[#0b0b0b] shadow-canary transition duration-200 ease-out hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:brightness-95"
             >
               <GoogleMark />
               Zaloguj przez Google
@@ -265,7 +305,10 @@ export function LoginPage() {
         )}
 
         <p className="mt-5 text-xs text-[var(--muted)]">
-          Demo: owner@bizchat.local / changeme
+          Demo salon: owner@bizchat.local / changeme
+          <br />
+          Platforma: admin@bizchat.local / changeme (albo Google z uprawnieniami
+          platform admin)
         </p>
         </>
         )}

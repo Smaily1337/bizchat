@@ -59,6 +59,16 @@ class BusinessOut(ORMModel):
     timezone: str
     google_calendar_id: Optional[str] = None
     settings: dict[str, Any] = Field(default_factory=dict)
+    public_slug: Optional[str] = None
+    deposit_percent: Optional[int] = 0
+    stripe_account_id: Optional[str] = None
+    plan: str = "free"
+    license_status: str = "trial"
+    license_expires_at: Optional[datetime] = None
+    max_appointments_month: Optional[int] = None
+    max_messages_month: Optional[int] = None
+    max_seats: Optional[int] = None
+    enabled_channels: Optional[list[str]] = None
     created_at: datetime
     updated_at: datetime
 
@@ -68,6 +78,33 @@ class BusinessUpdate(BaseModel):
     timezone: Optional[str] = None
     google_calendar_id: Optional[str] = None
     settings: Optional[dict[str, Any]] = None
+    public_slug: Optional[str] = None
+    deposit_percent: Optional[int] = Field(default=None, ge=0, le=100)
+
+
+class LicenseUsageOut(BaseModel):
+    plan: str
+    license_status: str
+    license_expires_at: Optional[datetime] = None
+    is_active: bool
+    appointments_month: int
+    max_appointments_month: Optional[int] = None
+    messages_month: int
+    max_messages_month: Optional[int] = None
+    seats: int
+    max_seats: Optional[int] = None
+    enabled_channels: list[str] = Field(default_factory=list)
+    period_start: datetime
+    period_end: datetime
+
+
+class PlanCatalogItem(BaseModel):
+    id: str
+    max_appointments_month: Optional[int] = None
+    max_messages_month: Optional[int] = None
+    max_seats: Optional[int] = None
+    enabled_channels: list[str] = Field(default_factory=list)
+    trial_days: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -105,6 +142,12 @@ class ServiceUpdate(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class TagBrief(ORMModel):
+    id: UUID
+    name: str
+    color: Optional[str] = None
+
+
 class CustomerOut(ORMModel):
     id: UUID
     business_id: UUID
@@ -112,6 +155,7 @@ class CustomerOut(ORMModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     external_ids: dict[str, Any] = Field(default_factory=dict)
+    tags: list[TagBrief] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 
@@ -120,12 +164,23 @@ class CustomerCreate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    messenger_psid: Optional[str] = Field(
+        default=None,
+        description="Page-Scoped ID Messengera (z webhooka / narzędzi Meta)",
+    )
+    instagram_id: Optional[str] = None
+    telegram_id: Optional[str] = None
+    external_ids: Optional[dict[str, Any]] = None
 
 
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    messenger_psid: Optional[str] = None
+    instagram_id: Optional[str] = None
+    telegram_id: Optional[str] = None
+    external_ids: Optional[dict[str, Any]] = None
 
 
 # ---------------------------------------------------------------------------
@@ -181,6 +236,7 @@ class AppointmentCreate(BaseModel):
     status: AppointmentStatus = AppointmentStatus.pending
     channel: Channel = Channel.admin
     notes: Optional[str] = None
+    staff_id: Optional[UUID] = None
 
 
 class AppointmentUpdate(BaseModel):
@@ -189,6 +245,7 @@ class AppointmentUpdate(BaseModel):
     status: Optional[AppointmentStatus] = None
     notes: Optional[str] = None
     service_id: Optional[UUID] = None
+    staff_id: Optional[UUID] = None
 
 
 class AppointmentOut(ORMModel):
@@ -196,16 +253,20 @@ class AppointmentOut(ORMModel):
     business_id: UUID
     customer_id: UUID
     service_id: UUID
+    staff_id: Optional[UUID] = None
     start_at: datetime
     end_at: datetime
     status: AppointmentStatus
     channel: Channel
     gcal_event_id: Optional[str] = None
     notes: Optional[str] = None
+    deposit_amount: Optional[Decimal] = None
+    deposit_status: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     customer_name: Optional[str] = None
     service_name: Optional[str] = None
+    staff_name: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -224,6 +285,7 @@ class AvailabilityResponse(BaseModel):
     service_id: UUID
     date: str
     slots: list[SlotOut]
+    staff_id: Optional[UUID] = None
 
 
 # ---------------------------------------------------------------------------

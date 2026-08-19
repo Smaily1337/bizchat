@@ -19,7 +19,14 @@ from app.api.deps import (
 )
 from app.config import settings
 from app.models import Business, Owner, PageView, UserRole
-from app.schemas import BusinessOut, OwnerOut
+from app.schemas import BusinessOut, LicenseUsageOut, OwnerOut, PlanCatalogItem
+from app.services import limits as limits_service
+from app.services.limits import (
+    LICENSE_ACTIVE,
+    PLAN_DEFAULTS,
+    PLAN_FREE,
+    apply_plan_defaults,
+)
 
 router = APIRouter(prefix="/api/platform", tags=["platform"])
 
@@ -86,6 +93,22 @@ class PasswordResetOut(BaseModel):
 class BusinessUpdatePlatform(BaseModel):
     name: str | None = None
     timezone: str | None = None
+    plan: str | None = None
+    license_status: str | None = None
+    license_expires_at: datetime | None = None
+    max_appointments_month: int | None = None
+    max_messages_month: int | None = None
+    max_seats: int | None = None
+    enabled_channels: list[str] | None = None
+    apply_plan_defaults: bool = Field(
+        default=False,
+        description="Przy zmianie planu nadpisz limity wartościami katalogowymi",
+    )
+    clear_expiry: bool = False
+
+
+class PlatformBusinessOut(BusinessOut):
+    usage: LicenseUsageOut | None = None
 
 
 class PageViewDayBucket(BaseModel):
@@ -175,6 +198,7 @@ async def create_account(
             timezone="Europe/Warsaw",
             settings={"locale": "pl", "currency": "PLN"},
         )
+        apply_plan_defaults(business, PLAN_FREE, start_trial=True)
         db.add(business)
         await db.flush()
         business_id = business.id
@@ -286,22 +310,82 @@ async def reset_account_password(
 # ---------------------------------------------------------------------------
 
 
-@router.get("/businesses", response_model=list[BusinessOut])
+@router.get("/plans", response_model=list[PlanCatalogItem])
+async def list_plans(
+    _admin: RequirePlatformAdmin,
+) -> list[PlanCatalogItem]:
+    return [PlanCatalogItem(**item) for item in limits_service.plans_catalog()]
+
+
+@router.get("/businesses", response_model=list[PlatformBusinessOut])
 async def list_businesses(
     db: DbSession,
     _admin: RequirePlatformAdmin,
-) -> list[Business]:
+    include_usage: bool = Query(default=True),
+) -> list[PlatformBusinessOut]:
     result = await db.execute(select(Business).order_by(Business.created_at.desc()))
-    return list(result.scalars().all())
+    businesses = list(result.scalars().all())
+    out: list[PlatformBusinessOut] = []
+    for biz in businesses:
+        usage = None
+        if include_usage:
+            snap = await limits_service.usage_snapshot(db, biz)
+            usage = LicenseUsageOut(
+                plan=snap.plan,
+                license_status=snap.license_status,
+                license_expires_at=snap.license_expires_at,
+                is_active=snap.is_active,
+                appointments_month=snap.appointments_month,
+                max_appointments_month=snap.max_appointments_month,
+                messages_month=snap.messages_month,
+                max_messages_month=snap.max_messages_month,
+                seats=snap.seats,
+                max_seats=snap.max_seats,
+                enabled_channels=snap.enabled_channels,
+                period_start=snap.period_start,
+                period_end=snap.period_end,
+            )
+        out.append(
+            PlatformBusinessOut.model_validate(biz).model_copy(update={"usage": usage})
+        )
+    return out
 
 
-@router.patch("/businesses/{business_id}", response_model=BusinessOut)
+@router.get("/businesses/{business_id}/usage", response_model=LicenseUsageOut)
+async def business_usage(
+    db: DbSession,
+    _admin: RequirePlatformAdmin,
+    business_id: UUID,
+) -> LicenseUsageOut:
+    result = await db.execute(select(Business).where(Business.id == business_id))
+    business = result.scalar_one_or_none()
+    if business is None:
+        raise HTTPException(status_code=404, detail="Firma nie znaleziona")
+    snap = await limits_service.usage_snapshot(db, business)
+    return LicenseUsageOut(
+        plan=snap.plan,
+        license_status=snap.license_status,
+        license_expires_at=snap.license_expires_at,
+        is_active=snap.is_active,
+        appointments_month=snap.appointments_month,
+        max_appointments_month=snap.max_appointments_month,
+        messages_month=snap.messages_month,
+        max_messages_month=snap.max_messages_month,
+        seats=snap.seats,
+        max_seats=snap.max_seats,
+        enabled_channels=snap.enabled_channels,
+        period_start=snap.period_start,
+        period_end=snap.period_end,
+    )
+
+
+@router.patch("/businesses/{business_id}", response_model=PlatformBusinessOut)
 async def update_business(
     db: DbSession,
     _admin: RequirePlatformAdmin,
     business_id: UUID,
     body: BusinessUpdatePlatform,
-) -> Business:
+) -> PlatformBusinessOut:
     result = await db.execute(select(Business).where(Business.id == business_id))
     business = result.scalar_one_or_none()
     if business is None:
@@ -310,8 +394,54 @@ async def update_business(
         business.name = body.name.strip() or business.name
     if body.timezone is not None:
         business.timezone = body.timezone.strip() or business.timezone
+
+    if body.plan is not None:
+        if body.plan not in PLAN_DEFAULTS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Nieznany plan: {body.plan}",
+            )
+        if body.apply_plan_defaults:
+            apply_plan_defaults(business, body.plan, start_trial=False)
+            business.license_status = LICENSE_ACTIVE
+        else:
+            business.plan = body.plan
+
+    if body.license_status is not None:
+        business.license_status = body.license_status.strip().lower()
+    if body.clear_expiry:
+        business.license_expires_at = None
+    elif body.license_expires_at is not None:
+        business.license_expires_at = body.license_expires_at
+    if "max_appointments_month" in body.model_fields_set:
+        business.max_appointments_month = body.max_appointments_month
+    if "max_messages_month" in body.model_fields_set:
+        business.max_messages_month = body.max_messages_month
+    if "max_seats" in body.model_fields_set:
+        business.max_seats = body.max_seats
+    if body.enabled_channels is not None:
+        business.enabled_channels = body.enabled_channels
+
     await db.flush()
-    return business
+    snap = await limits_service.usage_snapshot(db, business)
+    usage = LicenseUsageOut(
+        plan=snap.plan,
+        license_status=snap.license_status,
+        license_expires_at=snap.license_expires_at,
+        is_active=snap.is_active,
+        appointments_month=snap.appointments_month,
+        max_appointments_month=snap.max_appointments_month,
+        messages_month=snap.messages_month,
+        max_messages_month=snap.max_messages_month,
+        seats=snap.seats,
+        max_seats=snap.max_seats,
+        enabled_channels=snap.enabled_channels,
+        period_start=snap.period_start,
+        period_end=snap.period_end,
+    )
+    return PlatformBusinessOut.model_validate(business).model_copy(
+        update={"usage": usage}
+    )
 
 
 # ---------------------------------------------------------------------------

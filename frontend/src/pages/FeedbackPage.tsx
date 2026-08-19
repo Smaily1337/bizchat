@@ -120,7 +120,7 @@ export function FeedbackPage() {
           {items.map((f) => (
             <div
               key={f.id}
-              className="rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm"
             >
               <p className="font-medium">
                 {f.score}/5 · {f.customer_name || "Klient"} ·{" "}
@@ -147,7 +147,7 @@ export function FeedbackPage() {
           {waitlist.map((w) => (
             <div
               key={w.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-soft border border-glass-border bg-glass-fill px-3 py-2 text-sm"
             >
               <div>
                 <p className="font-medium">

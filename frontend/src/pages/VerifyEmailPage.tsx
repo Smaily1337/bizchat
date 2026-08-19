@@ -30,7 +30,7 @@ export function VerifyEmailPage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <GlassCard className="animate-fade-up w-full max-w-md text-center">
-        <p className="font-display text-3xl font-extrabold">BizChat</p>
+        <p className="font-display text-3xl font-semibold">Automovia</p>
         <h1 className="mt-2 font-display text-xl font-semibold text-canary">
           Weryfikacja e-mail
         </h1>

@@ -6,8 +6,12 @@ steps:
       - frontend/Dockerfile
       - --build-arg
       - VITE_API_URL=${_VITE_API_URL}
+      - --build-arg
+      - VITE_CLERK_PUBLISHABLE_KEY=${_VITE_CLERK_PUBLISHABLE_KEY}
       - -t
       - ${_IMAGE}
       - .
 images:
   - ${_IMAGE}
+substitutions:
+  _VITE_CLERK_PUBLISHABLE_KEY: ""
