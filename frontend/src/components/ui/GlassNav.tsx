@@ -475,6 +475,7 @@ export function GlassNav() {
                   { to: "/settings/faq", label: "FAQ bota" },
                   { to: "/settings/plan", label: "Plan i limity" },
                   { to: "/settings/appearance", label: "Wygląd" },
+                  { to: "/settings/integrations", label: "Integracje" },
                   { to: "/settings/account", label: "Konto" },
                 ]}
               />
