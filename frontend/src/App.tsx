@@ -69,6 +69,7 @@ export default function App() {
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/notifications/:section" element={<NotificationsPage />} />
                 <Route path="/channels" element={<ChannelsPage />} />
+                <Route path="/channels/:section" element={<ChannelsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

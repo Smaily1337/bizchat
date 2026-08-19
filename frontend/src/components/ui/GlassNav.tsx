@@ -439,9 +439,24 @@ export function GlassNav() {
           <div>
             <p className="label-caps mb-1.5 px-2">Salon</p>
             <div className="space-y-0.5">
-              {salon.filter((i) => !["/notifications", "/settings", "/account"].includes(i.to)).map((item) => (
+              {salon.filter((i) => !["/channels", "/notifications", "/settings", "/account"].includes(i.to)).map((item) => (
                 <SideLink key={item.to} item={item} />
               ))}
+              <SidebarExpandable
+                to="/channels"
+                label="Kanały"
+                matchPrefixes={["/channels"]}
+                icon={
+                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+                    <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
+                  </svg>
+                }
+                items={[
+                  { to: "/channels", label: "Przegląd", end: true },
+                  { to: "/channels/integrations", label: "Integracje" },
+                ]}
+              />
               <SidebarExpandable
                 to="/notifications"
                 label="Powiadomienia"
@@ -475,7 +490,6 @@ export function GlassNav() {
                   { to: "/settings/faq", label: "FAQ bota" },
                   { to: "/settings/plan", label: "Plan i limity" },
                   { to: "/settings/appearance", label: "Wygląd" },
-                  { to: "/settings/integrations", label: "Integracje" },
                   { to: "/settings/account", label: "Konto" },
                 ]}
               />

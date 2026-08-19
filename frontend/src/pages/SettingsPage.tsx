@@ -132,9 +132,7 @@ export function SettingsPage() {
                     ? "Plan i limity"
                     : active === "appearance"
                       ? "Wygląd"
-                      : active === "integrations"
-                        ? "Integracje"
-                        : "Ustawienia salonu"}
+                      : "Ustawienia salonu"}
         </h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           {!active ? "Skonfiguruj system" : "Zarządzaj ustawieniami"}
@@ -190,15 +188,6 @@ export function SettingsPage() {
               <p className="text-sm text-[var(--muted)]">Motyw i widget</p>
             </div>
           </Link>
-          <Link to="/settings/integrations" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0">
-              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            </div>
-            <div>
-              <p className="font-semibold text-[var(--text-bright)]">Integracje</p>
-              <p className="text-sm text-[var(--muted)]">Połącz z Meta (Facebook, IG)</p>
-            </div>
-          </Link>
           <Link to="/settings/account" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-gray-500/10 flex items-center justify-center text-gray-500 shrink-0">
               <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -215,7 +204,7 @@ export function SettingsPage() {
       {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}
 
       {active === "account" && <AccountPage />}
-      {active && !["salon", "services", "faq", "plan", "appearance", "account", "integrations"].includes(active) && (
+      {active && !["salon", "services", "faq", "plan", "appearance", "account"].includes(active) && (
         <Navigate to="/settings/salon" replace />
       )}
 
@@ -485,32 +474,6 @@ export function SettingsPage() {
           <GlassButton type="submit">Dodaj FAQ</GlassButton>
         </form>
       </GlassCard>
-      )}
-
-      {active === "integrations" && (
-        <GlassCard className="animate-fade-up">
-          <p className="font-display text-lg font-semibold">Integracja z Meta (Facebook, Instagram)</p>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Połącz swoje konta z ekosystemu Meta, aby Automovia mogła zarządzać Twoim kalendarzem i wiadomościami za pomocą jednego przycisku.
-          </p>
-          <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-glass-border bg-[var(--surface-solid)] p-8 text-center">
-            <svg aria-hidden viewBox="0 0 24 24" className="w-12 h-12 text-blue-600 mb-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-            <h3 className="font-semibold text-lg text-[var(--text-bright)]">Połącz z fanpage'em i Instagramem</h3>
-            <p className="mt-2 text-sm text-[var(--muted)] max-w-sm mb-6">
-              Jednym kliknięciem wybierz swój profil, aby aktywować integrację.
-            </p>
-            <GlassButton
-              type="button"
-              onClick={() => {
-                setMsg("Inicjowanie połączenia z Meta...");
-                setTimeout(() => setMsg("Ukończono! Twój fanpage jest połączony."), 1500);
-              }}
-              className="!bg-[#1877F2] hover:!bg-[#1877F2]/90 !text-white font-medium"
-            >
-              Połącz profil z Meta
-            </GlassButton>
-          </div>
-        </GlassCard>
       )}
     </div>
   );

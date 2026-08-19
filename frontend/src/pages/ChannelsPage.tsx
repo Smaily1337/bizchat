@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams, Navigate } from "react-router-dom";
 import { channelsApi } from "@/api";
 import { API_BASE } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
@@ -125,6 +125,8 @@ function channelEnabled(
 }
 
 export function ChannelsPage() {
+  const { section: active } = useParams<{ section: string }>();
+  const [msg, setMsg] = useState("");
   const { business } = useAuth();
   const { start } = useTour();
   const businessId = business?.id || "BUSINESS_UUID";
@@ -167,21 +169,42 @@ export function ChannelsPage() {
     return `${API_BASE}${ch.webhookPath}`;
   };
 
+  if (active && !["integrations"].includes(active)) {
+    return <Navigate to="/channels" replace />;
+  }
+
   return (
     <div className="space-y-6" data-tour="page-channels">
       <header className="animate-fade-up flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Kanały</h1>
-          <p className="mt-1 max-w-2xl text-sm text-[var(--muted)]">
-            Podłącz Messenger, Telegram i widget — tu znajdziesz webhooki,
-            checklistę i snippet. Tokeny trzymasz w zmiennych środowiskowych API.
-          </p>
+        <div className="flex flex-col items-start gap-3">
+          {active && (
+            <Link to="/channels" className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors">
+              <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Wróć do kanałów
+            </Link>
+          )}
+          <div>
+            <h1 className="font-display text-3xl font-bold">
+              {!active ? "Kanały" : "Integracje"}
+            </h1>
+            <p className="mt-1 max-w-2xl text-sm text-[var(--muted)]">
+              {!active 
+                ? "Podłącz Messenger, Telegram i widget — tu znajdziesz webhooki, checklistę i snippet."
+                : "Połącz swoje konta społecznościowe z platformą Automovia."}
+            </p>
+          </div>
         </div>
-        <GlassButton type="button" variant="ghost" onClick={start}>
-          Uruchom samouczek
-        </GlassButton>
+        {!active && (
+          <GlassButton type="button" variant="ghost" onClick={start}>
+            Uruchom samouczek
+          </GlassButton>
+        )}
       </header>
 
+      {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}
+
+      {!active && (
+        <>
       <GlassCard className="animate-fade-up" data-tour="channels-overview">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -320,6 +343,34 @@ export function ChannelsPage() {
           , a potem wysłać wiadomość z Inbox → „Nowa wiadomość”.
         </p>
       </GlassCard>
+        </>
+      )}
+
+      {active === "integrations" && (
+        <GlassCard className="animate-fade-up">
+          <p className="font-display text-lg font-semibold">Integracja z Meta (Facebook, Instagram)</p>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Połącz swoje konta z ekosystemu Meta, aby Automovia mogła zarządzać Twoim kalendarzem i wiadomościami za pomocą jednego przycisku.
+          </p>
+          <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-glass-border bg-[var(--surface-solid)] p-8 text-center">
+            <svg aria-hidden viewBox="0 0 24 24" className="w-12 h-12 text-blue-600 mb-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            <h3 className="font-semibold text-lg text-[var(--text-bright)]">Połącz z fanpage'em i Instagramem</h3>
+            <p className="mt-2 text-sm text-[var(--muted)] max-w-sm mb-6">
+              Jednym kliknięciem wybierz swój profil, aby aktywować integrację.
+            </p>
+            <GlassButton
+              type="button"
+              onClick={() => {
+                setMsg("Inicjowanie połączenia z Meta...");
+                setTimeout(() => setMsg("Ukończono! Twój fanpage jest połączony."), 1500);
+              }}
+              className="!bg-[#1877F2] hover:!bg-[#1877F2]/90 !text-white font-medium"
+            >
+              Połącz profil z Meta
+            </GlassButton>
+          </div>
+        </GlassCard>
+      )}
     </div>
   );
 }
