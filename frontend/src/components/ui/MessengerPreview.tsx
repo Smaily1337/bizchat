@@ -67,14 +67,14 @@ export const MessengerPreview: React.FC<MessengerPreviewProps> = ({
 
   return (
     <div
-      className={`relative mx-auto w-full max-w-[380px] overflow-hidden rounded-[28px] border border-glass-border bg-[var(--surface-solid)]/90 shadow-2xl backdrop-blur-md ${className}`}
+      className={`relative mx-auto flex flex-col w-full max-w-[380px] overflow-hidden rounded-[28px] border border-glass-border bg-[var(--surface-solid)]/90 shadow-2xl backdrop-blur-md ${className}`}
       style={{
         boxShadow:
           "0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--glass-border)",
       }}
     >
       {/* Messenger Header */}
-      <div className="flex items-center justify-between border-b border-glass-border/60 bg-glass-fill px-4 py-3">
+      <div className="flex items-center justify-between border-b border-glass-border/60 bg-glass-fill px-4 py-3 shrink-0">
         <div className="flex items-center gap-3">
           <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-[#0084FF] to-[#00C6FF] text-white shadow-md">
             <span className="font-display text-sm font-bold tracking-tight">
@@ -119,7 +119,7 @@ export const MessengerPreview: React.FC<MessengerPreviewProps> = ({
       </div>
 
       {/* Chat Area */}
-      <div className="flex min-h-[220px] flex-col justify-between p-4">
+      <div className="flex flex-1 min-h-[220px] flex-col justify-between p-4">
         <div>
           {/* Timestamp Pill */}
           <div className="mb-4 text-center">

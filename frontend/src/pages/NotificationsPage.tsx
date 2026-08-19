@@ -374,13 +374,13 @@ export function NotificationsPage() {
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
       {active === "send" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <GlassCard className="animate-fade-up lg:col-span-7">
-            <p className="font-display text-lg font-semibold">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <GlassCard className="animate-fade-up lg:col-span-7 flex flex-col h-full">
+            <p className="font-display text-lg font-semibold shrink-0">
               Wyślij powiadomienie do klienta
             </p>
-            <form className="mt-4 space-y-3" onSubmit={onSend}>
-              <div className="flex flex-wrap gap-2">
+            <form className="mt-4 space-y-3 flex flex-col flex-1" onSubmit={onSend}>
+              <div className="flex flex-wrap gap-2 shrink-0">
                 <GlassButton
                   type="button"
                   variant={targetMode === "appointment" ? "primary" : "ghost"}
@@ -400,53 +400,55 @@ export function NotificationsPage() {
                 </GlassButton>
               </div>
 
-              {targetMode === "appointment" ? (
-                <label className="block space-y-1 text-sm">
-                  <span className="text-[var(--muted)]">Wizyta</span>
-                  <GlassSelect
-                    value={sendForm.appointment_id}
-                    onChange={(e) =>
-                      setSendForm((f) => ({ ...f, appointment_id: e.target.value }))
-                    }
-                    required
-                  >
-                    {appointments.length === 0 && (
-                      <option value="">— brak nadchodzących wizyt —</option>
-                    )}
-                    {appointments.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {(a.customer_name || "Klient") +
-                          " · " +
-                          (a.service_name || "Usługa") +
-                          " · " +
-                          new Date(a.start_at).toLocaleString("pl-PL", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                      </option>
-                    ))}
-                  </GlassSelect>
-                </label>
-              ) : (
-                <label className="block space-y-1 text-sm">
-                  <span className="text-[var(--muted)]">Klient</span>
-                  <GlassSelect
-                    value={sendForm.customer_id}
-                    onChange={(e) =>
-                      setSendForm((f) => ({ ...f, customer_id: e.target.value }))
-                    }
-                    required
-                  >
-                    {customers.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name || c.id.slice(0, 8)}
-                      </option>
-                    ))}
-                  </GlassSelect>
-                </label>
-              )}
+              <div className="shrink-0">
+                {targetMode === "appointment" ? (
+                  <label className="block space-y-1 text-sm">
+                    <span className="text-[var(--muted)]">Wizyta</span>
+                    <GlassSelect
+                      value={sendForm.appointment_id}
+                      onChange={(e) =>
+                        setSendForm((f) => ({ ...f, appointment_id: e.target.value }))
+                      }
+                      required
+                    >
+                      {appointments.length === 0 && (
+                        <option value="">— brak nadchodzących wizyt —</option>
+                      )}
+                      {appointments.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {(a.customer_name || "Klient") +
+                            " · " +
+                            (a.service_name || "Usługa") +
+                            " · " +
+                            new Date(a.start_at).toLocaleString("pl-PL", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
+                        </option>
+                      ))}
+                    </GlassSelect>
+                  </label>
+                ) : (
+                  <label className="block space-y-1 text-sm">
+                    <span className="text-[var(--muted)]">Klient</span>
+                    <GlassSelect
+                      value={sendForm.customer_id}
+                      onChange={(e) =>
+                        setSendForm((f) => ({ ...f, customer_id: e.target.value }))
+                      }
+                      required
+                    >
+                      {customers.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name || c.id.slice(0, 8)}
+                        </option>
+                      ))}
+                    </GlassSelect>
+                  </label>
+                )}
+              </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2 shrink-0">
                 <label className="space-y-1 text-sm">
                   <span className="text-[var(--muted)]">Szablon</span>
                   <GlassSelect
@@ -488,8 +490,8 @@ export function NotificationsPage() {
                 </label>
               </div>
 
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
+              <div className="space-y-1.5 flex flex-col flex-1 min-h-[150px]">
+                <div className="flex items-center justify-between shrink-0">
                   <span className="text-xs text-[var(--muted)]">
                     Treść powiadomienia
                   </span>
@@ -497,7 +499,7 @@ export function NotificationsPage() {
                     Kliknij tag, aby wstawić:
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-1 mb-1">
+                <div className="flex flex-wrap gap-1 mb-1 shrink-0">
                   {VARIABLE_CHIPS.map((chip) => (
                     <button
                       key={chip.tag}
@@ -526,17 +528,20 @@ export function NotificationsPage() {
                   placeholder="np. Cześć {{klient}}! Przypominamy o wizycie {{data}} o {{godzina}}."
                   required
                   rows={4}
+                  className="flex-1"
                 />
               </div>
 
-              <GlassButton type="submit" disabled={sending || !sendForm.body.trim()}>
-                {sending ? "Wysyłanie…" : "Wyślij powiadomienie"}
-              </GlassButton>
+              <div className="pt-2 shrink-0">
+                <GlassButton type="submit" disabled={sending || !sendForm.body.trim()} className="w-full">
+                  {sending ? "Wysyłanie…" : "Wyślij powiadomienie"}
+                </GlassButton>
+              </div>
             </form>
           </GlassCard>
 
-          <div className="lg:col-span-5 animate-fade-up">
-            <div className="mb-2 flex items-center justify-between px-1">
+          <div className="lg:col-span-5 animate-fade-up flex flex-col h-full">
+            <div className="mb-2 flex items-center justify-between px-1 shrink-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
                 Podgląd na żywo (Messenger)
               </p>
@@ -546,6 +551,7 @@ export function NotificationsPage() {
               </span>
             </div>
             <MessengerPreview
+              className="flex-1 w-full"
               body={sendForm.body}
               salonName={salonName}
               customerName={
