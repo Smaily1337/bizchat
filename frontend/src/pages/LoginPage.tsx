@@ -3,6 +3,8 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { API_BASE, ApiError, setToken } from "@/api/client";
 import { authApi } from "@/api";
 import { useAuth } from "@/auth/AuthContext";
+import { ClerkAuthPanel } from "@/auth/ClerkAuthPanel";
+import { clerkEnabled } from "@/auth/ClerkProvider";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 
@@ -45,6 +47,7 @@ export function LoginPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [googleEnabled, setGoogleEnabled] = useState(false);
+  const [showDemo, setShowDemo] = useState(!clerkEnabled());
   const autoLoginTried = useRef(false);
 
   useEffect(() => {
@@ -122,17 +125,37 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <GlassCard className="animate-fade-up w-full max-w-md">
         <p className="font-display text-4xl font-extrabold tracking-tight">
-          BizChat
+          Automovia
         </p>
         <h1 className="mt-2 font-display text-xl font-semibold text-canary">
-          {mode === "login" ? "Panel admina" : "Rejestracja"}
+          Panel admina
         </h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          {mode === "login"
-            ? "Zaloguj się, aby zarządzać wizytami i ustawieniami salonu."
-            : "Załóż konto właściciela i nowy salon w kilka sekund."}
+          Zaloguj się przez Clerk (OTP / Google / Apple) albo użyj konta demo.
         </p>
 
+        {clerkEnabled() && (
+          <div className="mt-6">
+            <ClerkAuthPanel />
+          </div>
+        )}
+
+        {clerkEnabled() && (
+          <div className="mt-5 flex items-center gap-3 text-xs text-[var(--muted)]">
+            <span className="h-px flex-1 bg-glass-border" />
+            <button
+              type="button"
+              className="shrink-0 underline-offset-2 hover:underline"
+              onClick={() => setShowDemo((v) => !v)}
+            >
+              {showDemo ? "Ukryj logowanie demo" : "Konto demo / hasło"}
+            </button>
+            <span className="h-px flex-1 bg-glass-border" />
+          </div>
+        )}
+
+        {showDemo && (
+        <>
         <div className="mt-5 flex gap-2">
           <GlassButton
             type="button"
@@ -244,6 +267,8 @@ export function LoginPage() {
         <p className="mt-5 text-xs text-[var(--muted)]">
           Demo: owner@bizchat.local / changeme
         </p>
+        </>
+        )}
       </GlassCard>
     </div>
   );

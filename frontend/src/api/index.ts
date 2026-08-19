@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, API_BASE, ApiError } from "./client";
 import type {
   Appointment,
   Business,
@@ -39,9 +39,24 @@ export const authApi = {
     }),
   me: () => apiFetch<Owner>("/api/auth/me"),
   config: () =>
-    apiFetch<{ google_oauth_enabled: boolean; registration_enabled: boolean }>(
-      "/api/auth/config",
-    ),
+    apiFetch<{
+      google_oauth_enabled: boolean;
+      clerk_enabled: boolean;
+      registration_enabled: boolean;
+    }>("/api/auth/config"),
+  clerkExchange: async (clerkJwt: string) => {
+    const res = await fetch(`${API_BASE}/api/auth/clerk`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${clerkJwt}`,
+        Accept: "application/json",
+      },
+    });
+    if (!res.ok) {
+      throw new ApiError(res.status, await res.text());
+    }
+    return res.json() as Promise<{ access_token: string }>;
+  },
   verifyEmail: (token: string) =>
     apiFetch<{ message: string }>(
       `/api/auth/verify-email?token=${encodeURIComponent(token)}`,

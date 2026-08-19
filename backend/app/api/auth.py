@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import secrets
+from typing import Annotated
 from urllib.parse import urlencode
 from uuid import uuid4
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field, field_validator
@@ -24,6 +25,7 @@ from app.config import settings
 from app.models import Business, Owner, UserRole
 from app.schemas import LoginRequest, OwnerOut, TokenResponse
 from app.services.mailer import send_verification_email
+from app.services import clerk_jwt as clerk_service
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -53,6 +55,7 @@ class RegisterRequest(BaseModel):
 
 class AuthConfigOut(BaseModel):
     google_oauth_enabled: bool
+    clerk_enabled: bool = False
     registration_enabled: bool = True
 
 
@@ -62,7 +65,95 @@ class MessageOut(BaseModel):
 
 @router.get("/config", response_model=AuthConfigOut)
 async def auth_config() -> AuthConfigOut:
-    return AuthConfigOut(google_oauth_enabled=settings.google_oauth_configured)
+    return AuthConfigOut(
+        google_oauth_enabled=settings.google_oauth_configured,
+        clerk_enabled=settings.clerk_configured,
+    )
+
+
+@router.post("/clerk", response_model=TokenResponse)
+async def login_with_clerk(
+    db: DbSession,
+    authorization: Annotated[str | None, Header()] = None,
+) -> TokenResponse:
+    """Exchange a Clerk session JWT for a BizChat access token.
+
+    Frontend: Authorization: Bearer <clerk_jwt> after Clerk sign-in.
+    """
+    if not settings.clerk_configured:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Clerk nie jest skonfigurowany na API",
+        )
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Brak tokena Clerk",
+        )
+    raw = authorization.split(" ", 1)[1].strip()
+    try:
+        claims = clerk_service.verify_clerk_session_token(raw)
+        clerk_user_id = str(claims.get("sub") or "")
+        if not clerk_user_id:
+            raise ValueError("missing sub")
+        user = await clerk_service.fetch_clerk_user(clerk_user_id)
+        email = clerk_service.primary_email_from_clerk_user(user)
+        if not email:
+            raise ValueError("Clerk user has no email")
+        name = clerk_service.display_name_from_clerk_user(user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:  # noqa: BLE001 — surface Clerk API failures cleanly
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Nie udało się zweryfikować Clerka: {exc}",
+        ) from exc
+
+    result = await db.execute(select(Owner).where(Owner.email == email))
+    owner = result.scalar_one_or_none()
+    if owner is None:
+        business = Business(
+            id=uuid4(),
+            name=(name or email.split("@")[0] or "Mój salon")[:255],
+            timezone="Europe/Warsaw",
+            settings={"locale": "pl", "currency": "PLN", "auth": "clerk"},
+        )
+        db.add(business)
+        await db.flush()
+        owner = Owner(
+            email=email,
+            password_hash="",
+            name=name,
+            role=UserRole.owner,
+            email_verified=True,
+            google_sub=f"clerk:{clerk_user_id}",
+            business_id=business.id,
+            is_active=True,
+        )
+        db.add(owner)
+        await db.flush()
+    elif not owner.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Konto jest nieaktywne",
+        )
+    else:
+        # Link Clerk id if not set
+        if not owner.google_sub:
+            owner.google_sub = f"clerk:{clerk_user_id}"
+        if not owner.email_verified:
+            owner.email_verified = True
+        if name and not owner.name:
+            owner.name = name
+        await db.flush()
+
+    access = create_access_token(
+        subject=owner.email, business_id=owner.business_id, role=owner.role
+    )
+    return TokenResponse(access_token=access)
 
 
 @router.post("/login", response_model=TokenResponse)

@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     google_oauth_client_id: str = ""
     google_oauth_client_secret: str = ""
 
+    # Clerk (panel login via @clerk/clerk-react) — optional dual auth
+    clerk_publishable_key: str = ""
+    clerk_secret_key: str = ""
+    clerk_issuer: str = ""
+    clerk_jwks_url: str = ""
+
     # SMTP (optional). Empty host → console mailer (logs to stdout).
     smtp_host: str = ""
     smtp_port: int = 587
@@ -70,6 +76,13 @@ class Settings(BaseSettings):
     @property
     def google_oauth_configured(self) -> bool:
         return bool(self.google_oauth_client_id and self.google_oauth_client_secret)
+
+    @property
+    def clerk_configured(self) -> bool:
+        return bool(
+            self.clerk_secret_key.strip()
+            and (self.clerk_issuer.strip() or self.clerk_publishable_key.strip())
+        )
 
 
 @lru_cache

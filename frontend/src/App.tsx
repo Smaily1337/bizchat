@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/auth/AuthContext";
+import { ClerkSessionBridge } from "@/auth/ClerkSessionBridge";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { ToastProvider } from "@/components/ToastProvider";
 import { GlassNav } from "@/components/ui";
@@ -38,6 +39,7 @@ function AppLayout() {
 export default function App() {
   return (
     <AuthProvider>
+      <ClerkSessionBridge />
       <ToastProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

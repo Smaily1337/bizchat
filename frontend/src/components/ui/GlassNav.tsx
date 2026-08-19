@@ -1,5 +1,7 @@
+import { useClerk } from "@clerk/clerk-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
+import { clerkEnabled } from "@/auth/ClerkProvider";
 import { GlassButton } from "./GlassButton";
 
 const baseNavItems = [
@@ -15,8 +17,38 @@ const baseNavItems = [
   { to: "/channels", label: "Kanały" },
 ] as const;
 
+function LogoutButton() {
+  const { logout } = useAuth();
+  if (clerkEnabled()) {
+    return <LogoutButtonClerk />;
+  }
+  return (
+    <GlassButton variant="ghost" className="!px-3 !py-1.5" onClick={logout}>
+      Wyloguj
+    </GlassButton>
+  );
+}
+
+function LogoutButtonClerk() {
+  const { logout } = useAuth();
+  const { signOut } = useClerk();
+  return (
+    <GlassButton
+      variant="ghost"
+      className="!px-3 !py-1.5"
+      onClick={() => {
+        logout();
+        void signOut();
+      }}
+    >
+      Wyloguj
+    </GlassButton>
+  );
+}
+
 export function GlassNav() {
-  const { business, owner, logout, resendVerification } = useAuth();
+  const { business, owner, resendVerification } = useAuth();
+
   const navItems = baseNavItems.filter((item) => {
     if ("platformAdmin" in item && item.platformAdmin) {
       return Boolean(owner?.is_platform_admin);
@@ -76,9 +108,7 @@ export function GlassNav() {
                 ? ` · ${owner.role}`
                 : ""}
           </span>
-          <GlassButton variant="ghost" className="!px-3 !py-1.5" onClick={logout}>
-            Wyloguj
-          </GlassButton>
+          <LogoutButton />
         </div>
       </div>
 
