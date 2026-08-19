@@ -6,6 +6,13 @@ import { useAuth } from "@/auth/AuthContext";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { useTour } from "@/tour/TourContext";
 
+declare global {
+  interface Window {
+    fbAsyncInit: () => void;
+    FB: any;
+  }
+}
+
 type ChannelDef = {
   id: string;
   name: string;
@@ -140,6 +147,25 @@ export function ChannelsPage() {
       .status()
       .then(setHealth)
       .catch(() => setHealth(null));
+  }, []);
+
+  useEffect(() => {
+    if (window.FB) return;
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId      : import.meta.env.VITE_META_APP_ID || 'dummy_app_id',
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v21.0'
+      });
+    };
+    (function(d, s, id){
+       var js: any, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://connect.facebook.net/pl_PL/sdk.js";
+       fjs?.parentNode?.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
   }, []);
 
   const metaUrl = useMemo(
@@ -354,19 +380,44 @@ export function ChannelsPage() {
           </p>
           <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-glass-border bg-[var(--surface-solid)] p-8 text-center">
             <svg aria-hidden viewBox="0 0 24 24" className="w-12 h-12 text-blue-600 mb-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-            <h3 className="font-semibold text-lg text-[var(--text-bright)]">Połącz z fanpage'em i Instagramem</h3>
+            <h3 className="font-semibold text-lg text-[var(--text-bright)]">
+              {(business?.settings as any)?.meta_page_name
+                ? `Połączono z: ${(business?.settings as any)?.meta_page_name}`
+                : "Połącz z fanpage'em i Instagramem"}
+            </h3>
             <p className="mt-2 text-sm text-[var(--muted)] max-w-sm mb-6">
-              Jednym kliknięciem wybierz swój profil, aby aktywować integrację.
+              {(business?.settings as any)?.meta_page_id
+                ? "Twój fanpage jest połączony. Zaloguj się ponownie, by zmienić powiązany profil."
+                : "Jednym kliknięciem wybierz swój profil, aby aktywować integrację."}
             </p>
             <GlassButton
               type="button"
               onClick={() => {
-                setMsg("Inicjowanie połączenia z Meta...");
-                setTimeout(() => setMsg("Ukończono! Twój fanpage jest połączony."), 1500);
+                setMsg("");
+                if (!window.FB) {
+                  setMsg("Błąd: SDK Facebooka nie załadowało się.");
+                  return;
+                }
+                window.FB.login((response: any) => {
+                  if (response.authResponse) {
+                    setMsg("Otrzymano token, łączenie z backendem...");
+                    channelsApi.linkMeta(response.authResponse.accessToken)
+                      .then(() => {
+                        setMsg("Ukończono! Twój fanpage jest połączony i webhook jest aktywny.");
+                        // Force full reload to fetch new settings
+                        window.location.reload();
+                      })
+                      .catch((err) => {
+                        setMsg("Błąd podczas łączenia: " + String(err));
+                      });
+                  } else {
+                    setMsg("Logowanie anulowane.");
+                  }
+                }, { scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_metadata' });
               }}
               className="!bg-[#1877F2] hover:!bg-[#1877F2]/90 !text-white font-medium"
             >
-              Połącz profil z Meta
+              {(business?.settings as any)?.meta_page_name ? 'Zmień połączony profil (zaloguj ponownie)' : 'Połącz profil z Meta'}
             </GlassButton>
           </div>
         </GlassCard>

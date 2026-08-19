@@ -109,7 +109,7 @@ async def meta_webhook(
         try:
             if not inbound.display_name and inbound.external_user_id:
                 inbound.display_name = await fetch_messenger_profile_name(
-                    inbound.external_user_id
+                    inbound.external_user_id, await adapter._get_page_token()
                 )
             if await appointment_actions.try_handle_payload(db, inbound.text, inbound):
                 # Still show confirm/cancel taps in Inbox

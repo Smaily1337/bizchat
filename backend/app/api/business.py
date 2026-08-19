@@ -8,6 +8,11 @@ from app.api.deps import CurrentOwner, DbSession, RequireOwnerOrAdmin
 from app.models import Business
 from app.schemas import BusinessOut, BusinessUpdate, LicenseUsageOut
 from app.services import limits as limits_service
+import httpx
+from pydantic import BaseModel
+
+class MetaLinkRequest(BaseModel):
+    access_token: str
 
 router = APIRouter(prefix="/api/business", tags=["business"])
 
@@ -60,3 +65,52 @@ async def update_business(
         setattr(business, key, value)
     await db.flush()
     return business
+
+@router.post("/meta-link")
+async def link_meta_account(
+    db: DbSession,
+    owner: RequireOwnerOrAdmin,
+    body: MetaLinkRequest,
+) -> dict:
+    business = await db.get(Business, owner.business_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    user_token = body.access_token
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            "https://graph.facebook.com/v21.0/me/accounts",
+            params={"access_token": user_token}
+        )
+        if resp.is_error:
+            raise HTTPException(status_code=400, detail="Failed to fetch Meta pages: " + resp.text)
+        data = resp.json()
+        pages = data.get("data", [])
+        if not pages:
+            raise HTTPException(status_code=400, detail="No Meta pages found for this user.")
+
+        page = pages[0]
+        page_id = page.get("id")
+        page_name = page.get("name")
+        page_token = page.get("access_token")
+
+        if not page_id or not page_token:
+            raise HTTPException(status_code=400, detail="Invalid Meta page data returned.")
+
+        settings_map = dict(business.settings or {})
+        settings_map["meta_page_id"] = str(page_id)
+        settings_map["meta_page_name"] = str(page_name)
+        settings_map["meta_page_access_token"] = str(page_token)
+        business.settings = settings_map
+        await db.flush()
+
+        # Subscribe app to page webhooks
+        await client.post(
+            f"https://graph.facebook.com/v21.0/{page_id}/subscribed_apps",
+            params={
+                "subscribed_fields": "messages,messaging_postbacks,messaging_optins,message_reads,standby",
+                "access_token": page_token,
+            },
+        )
+
+        return {"ok": True, "page_id": page_id, "page_name": page_name}

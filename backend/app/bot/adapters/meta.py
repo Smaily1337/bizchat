@@ -16,9 +16,9 @@ from app.schemas import InboundMessage, OutboundMessage
 logger = logging.getLogger(__name__)
 
 
-async def fetch_messenger_profile_name(psid: str) -> str | None:
+async def fetch_messenger_profile_name(psid: str, token: str | None = None) -> str | None:
     """Resolve Facebook/Messenger display name for a Page-Scoped ID."""
-    token = settings.meta_page_access_token
+    token = token or settings.meta_page_access_token
     if not token or not psid:
         return None
     url = f"https://graph.facebook.com/v21.0/{psid}"
@@ -140,6 +140,19 @@ class MetaAdapter(ChannelAdapter):
             raw_payload=event,
         )
 
+    async def _get_page_token(self) -> str | None:
+        from app.config import settings
+        if self.business_id:
+            from app.db.session import AsyncSessionLocal
+            from app.models import Business
+            async with AsyncSessionLocal() as db:
+                biz = await db.get(Business, self.business_id)
+                if biz and isinstance(biz.settings, dict):
+                    t = biz.settings.get("meta_page_access_token")
+                    if t:
+                        return str(t)
+        return settings.meta_page_access_token
+
     async def send_outbound(
         self,
         message: OutboundMessage,
@@ -150,10 +163,10 @@ class MetaAdapter(ChannelAdapter):
         """Send a Messenger/IG message. Returns True on success.
 
         For panel outreach outside the standard reply window, pass
-        messaging_type=\"MESSAGE_TAG\" and tag=\"HUMAN_AGENT\".
+        messaging_type="MESSAGE_TAG" and tag="HUMAN_AGENT".
         Optional metadata.quick_replies: [{title, payload}, ...]
         """
-        token = settings.meta_page_access_token
+        token = await self._get_page_token()
         quick = message.metadata.get("quick_replies") or []
         msg_body: dict[str, Any] = {"text": message.text}
         if quick:
