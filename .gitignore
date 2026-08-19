@@ -28,3 +28,9 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 *.log
+node_modules/
+
+# Next.js web app
+web/node_modules/
+web/.next/
+web/.env.local
