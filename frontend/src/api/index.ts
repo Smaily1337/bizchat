@@ -142,7 +142,7 @@ export const channelsApi = {
       meta_verify_token: string;
     }>("/api/channels/status"),
   linkMeta: (accessToken: string) =>
-    apiFetch<void>(`/api/business/meta-link`, {
+    apiFetch<{ ok: boolean; page_id: string; page_name: string }>(`/api/business/meta-link`, {
       method: "POST",
       body: JSON.stringify({ access_token: accessToken }),
     }),

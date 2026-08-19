@@ -149,23 +149,66 @@ export function ChannelsPage() {
       .catch(() => setHealth(null));
   }, []);
 
+  function initFb(appId: string) {
+    if (window.FB && typeof window.FB.init === "function") {
+      try {
+        window.FB.init({
+          appId: appId,
+          cookie: true,
+          xfbml: true,
+          version: "v21.0",
+        });
+        return true;
+      } catch (err) {
+        console.warn("FB.init error:", err);
+      }
+    }
+    return false;
+  }
+
+  function loadFacebookSdk(appId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (window.FB && typeof window.FB.login === "function") {
+        initFb(appId);
+        return resolve(window.FB);
+      }
+
+      window.fbAsyncInit = function () {
+        initFb(appId);
+        resolve(window.FB);
+      };
+
+      if (document.getElementById("facebook-jssdk")) {
+        let attempts = 0;
+        const interval = setInterval(() => {
+          attempts++;
+          if (window.FB && typeof window.FB.login === "function") {
+            clearInterval(interval);
+            initFb(appId);
+            resolve(window.FB);
+          } else if (attempts > 50) {
+            clearInterval(interval);
+            reject(new Error("Nie udało się zainicjalizować SDK Facebooka (timeout)."));
+          }
+        }, 100);
+        return;
+      }
+
+      const js = document.createElement("script");
+      js.id = "facebook-jssdk";
+      js.src = "https://connect.facebook.net/pl_PL/sdk.js";
+      js.async = true;
+      js.defer = true;
+      js.onerror = () => reject(new Error("Nie udało się pobrać skryptu Facebook SDK."));
+      document.body.appendChild(js);
+    });
+  }
+
   useEffect(() => {
-    if (window.FB) return;
-    window.fbAsyncInit = function() {
-      window.FB.init({
-        appId      : import.meta.env.VITE_META_APP_ID || 'dummy_app_id',
-        cookie     : true,
-        xfbml      : true,
-        version    : 'v21.0'
-      });
-    };
-    (function(d, s, id){
-       var js: any, fjs = d.getElementsByTagName(s)[0];
-       if (d.getElementById(id)) {return;}
-       js = d.createElement(s); js.id = id;
-       js.src = "https://connect.facebook.net/pl_PL/sdk.js";
-       fjs?.parentNode?.insertBefore(js, fjs);
-     }(document, 'script', 'facebook-jssdk'));
+    const appId = (import.meta.env.VITE_META_APP_ID || "").trim();
+    if (appId) {
+      loadFacebookSdk(appId).catch((err) => console.warn(err));
+    }
   }, []);
 
   const metaUrl = useMemo(
@@ -392,28 +435,43 @@ export function ChannelsPage() {
             </p>
             <GlassButton
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 setMsg("");
-                if (!window.FB) {
-                  setMsg("Błąd: SDK Facebooka nie załadowało się.");
+                const appId = (import.meta.env.VITE_META_APP_ID || "").trim();
+                if (!appId || appId === "twoje_app_id" || appId === "dummy_app_id") {
+                  setMsg("Błąd: Nie skonfigurowano VITE_META_APP_ID. Podaj prawidłowe ID aplikacji Facebook podczas deployu.");
                   return;
                 }
-                window.FB.login((response: any) => {
-                  if (response.authResponse) {
-                    setMsg("Otrzymano token, łączenie z backendem...");
-                    channelsApi.linkMeta(response.authResponse.accessToken)
-                      .then(() => {
-                        setMsg("Ukończono! Twój fanpage jest połączony i webhook jest aktywny.");
-                        // Force full reload to fetch new settings
-                        window.location.reload();
-                      })
-                      .catch((err) => {
-                        setMsg("Błąd podczas łączenia: " + String(err));
-                      });
-                  } else {
-                    setMsg("Logowanie anulowane.");
-                  }
-                }, { scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_metadata' });
+
+                setMsg("Inicjowanie okna logowania Facebook...");
+                try {
+                  const FB = await loadFacebookSdk(appId);
+                  initFb(appId);
+
+                  FB.login(
+                    (response: any) => {
+                      if (response?.authResponse?.accessToken) {
+                        setMsg("Pobrano uprawnienia z Meta. Zapisywanie konfiguracji i podpinanie webhooka...");
+                        channelsApi
+                          .linkMeta(response.authResponse.accessToken)
+                          .then((res) => {
+                            setMsg(`Sukces! Połączono z fanpagem: ${res?.page_name || "Twój Fanpage"}.`);
+                            setTimeout(() => {
+                              window.location.reload();
+                            }, 1000);
+                          })
+                          .catch((err) => {
+                            setMsg("Błąd połączenia na backendzie: " + (err.message || String(err)));
+                          });
+                      } else {
+                        setMsg("Logowanie przerwane lub anulowane.");
+                      }
+                    },
+                    { scope: "pages_show_list,pages_messaging,pages_read_engagement,pages_manage_metadata" }
+                  );
+                } catch (err: any) {
+                  setMsg("Błąd: " + (err.message || String(err)));
+                }
               }}
               className="!bg-[#1877F2] hover:!bg-[#1877F2]/90 !text-white font-medium"
             >
