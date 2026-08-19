@@ -3,8 +3,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { API_BASE, ApiError, setToken } from "@/api/client";
 import { authApi } from "@/api";
 import { useAuth } from "@/auth/AuthContext";
-import { ClerkAuthPanel } from "@/auth/ClerkAuthPanel";
-import { GlassButton } from "@/components/ui";
+import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";
 
 /** Credentials or JWT passed from landing / OAuth in the URL fragment. */

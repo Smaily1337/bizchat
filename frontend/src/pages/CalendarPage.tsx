@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { appointmentsApi, customersApi, dashboardApi } from "@/api";
 import type { Appointment, Customer, DashboardAnalytics } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
-import { GlassButton } from "@/components/ui";
 
 type CalendarView = "day" | "week";
 
@@ -21,9 +20,15 @@ type CalEvent = {
   endAt: string;
 };
 
-const DEFAULT_FIRST = 8;
-const DEFAULT_LAST = 18;
 const WEEKDAYS = ["Pon", "Wto", "Śro", "Czw", "Pią", "Sob", "Nie"];
+
+const STATUS_PL: Record<string, string> = {
+  pending: "Oczekuje",
+  confirmed: "Potwierdzona",
+  completed: "Zakończona",
+  no_show: "Nieobecność",
+  cancelled: "Anulowana",
+};
 
 function startOfWeek(d: Date) {
   const x = new Date(d);
@@ -43,22 +48,6 @@ function formatHour(hour: number) {
   const h = Math.floor(hour);
   const m = Math.round((hour - h) * 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-function formatRangeLabel(anchor: Date, view: CalendarView) {
-  const fmt = new Intl.DateTimeFormat("pl-PL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  if (view === "day") {
-    const weekday = new Intl.DateTimeFormat("pl-PL", { weekday: "long" }).format(
-      anchor,
-    );
-    return `${weekday}, ${fmt.format(anchor)}`;
-  }
-  const end = addDays(anchor, 6);
-  return `${fmt.format(anchor)} – ${fmt.format(end)}`;
 }
 
 function toEvents(
@@ -165,16 +154,6 @@ export function CalendarPage() {
     () => toEvents(appointments, rangeStart, view, dayOffset),
     [appointments, rangeStart, view, dayOffset],
   );
-
-  const { firstHour, lastHour } = useMemo(() => {
-    let first = DEFAULT_FIRST;
-    let last = DEFAULT_LAST;
-    for (const e of events) {
-      first = Math.min(first, Math.floor(e.startHour));
-      last = Math.max(last, Math.ceil(e.startHour + e.durationHours));
-    }
-    return { firstHour: first, lastHour: last };
-  }, [events]);
 
   const visibleDays = view === "week" ? WEEKDAYS : [WEEKDAYS[dayOffset]];
   const nextAppt = appointments
