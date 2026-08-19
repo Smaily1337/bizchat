@@ -9,7 +9,7 @@ type GlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<GlassButtonVariant, string> = {
   primary:
-    "rounded-control bg-[var(--ink)] text-[#fafafa] shadow-canary hover:opacity-90 active:opacity-80 dark:text-[#0b0b0b]",
+    "rounded-control bg-[var(--ink)] text-[var(--bg)] shadow-canary hover:opacity-90 active:opacity-80",
   ghost:
     "rounded-control border border-glass-border bg-[var(--glass-fill-strong)] text-[var(--text-bright)] backdrop-blur-glass hover:border-[var(--accent)]",
   subtle:

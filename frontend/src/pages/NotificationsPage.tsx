@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { appointmentsApi, customersApi, notificationsApi } from "@/api";
 import type {
   Appointment,
@@ -45,6 +45,7 @@ function leadLabel(minutes: number): string {
 
 export function NotificationsPage() {
   const { section } = useParams<{ section?: string }>();
+  const [searchParams] = useSearchParams();
   const active = section || "send";
   const { push } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -60,8 +61,8 @@ export function NotificationsPage() {
     "appointment",
   );
   const [sendForm, setSendForm] = useState({
-    appointment_id: "",
-    customer_id: "",
+    appointment_id: searchParams.get("appointment") || "",
+    customer_id: searchParams.get("customer") || "",
     template_id: "",
     channel: "" as NotificationChannel | "",
     body: "",
