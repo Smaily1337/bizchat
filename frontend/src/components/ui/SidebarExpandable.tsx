@@ -8,6 +8,7 @@ export type SubNavLink = {
 };
 
 type Props = {
+  to: string;
   label: string;
   icon: ReactNode;
   /** Paths that keep this group expanded / active */
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function SidebarExpandable({
+  to,
   label,
   icon,
   matchPrefixes,
@@ -36,27 +38,36 @@ export function SidebarExpandable({
 
   return (
     <div className="sidebar-group">
-      <button
-        type="button"
-        className={`sidebar-group-toggle ${active ? "is-active" : ""}`}
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className="flex min-w-0 flex-1 items-center gap-2">
+      <div className={`sidebar-group-toggle flex items-center ${active ? "is-active" : ""}`}>
+        <NavLink
+          to={to}
+          className="flex min-w-0 flex-1 items-center gap-2"
+          onClick={() => setOpen(true)}
+        >
           {icon}
           <span className="truncate">{label}</span>
-        </span>
-        <svg
-          aria-hidden
-          viewBox="0 0 24 24"
-          className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
+        </NavLink>
+        <button
+          type="button"
+          className="p-1 hover:bg-black/5 rounded"
+          onClick={(e) => {
+            e.preventDefault();
+            setOpen((v) => !v);
+          }}
+          aria-expanded={open}
         >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            className={`h-3.5 w-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+      </div>
       {open && (
         <div className="sidebar-group-children">
           {items.map((item) => (

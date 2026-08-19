@@ -284,9 +284,15 @@ export function NotificationsPage() {
   return (
     <div className="space-y-6">
       {active ? (
-        <header className="animate-fade-up">
-          <h1 className="font-display text-3xl font-bold">{titles[active as keyof typeof titles].h}</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">{titles[active as keyof typeof titles].s}</p>
+        <header className="animate-fade-up flex flex-col items-start gap-3">
+          <Link to="/notifications" className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors">
+            <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Wróć do powiadomień
+          </Link>
+          <div>
+            <h1 className="font-display text-3xl font-bold">{titles[active as keyof typeof titles].h}</h1>
+            <p className="mt-1 text-sm text-[var(--muted)]">{titles[active as keyof typeof titles].s}</p>
+          </div>
         </header>
       ) : (
         <header className="animate-fade-up">

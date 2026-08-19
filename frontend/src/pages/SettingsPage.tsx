@@ -113,8 +113,15 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       {active === "account" ? null : (
-      <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">
+      <header className="animate-fade-up flex flex-col items-start gap-3">
+        {active && (
+          <Link to="/settings" className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors">
+            <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Wróć do ustawień
+          </Link>
+        )}
+        <div>
+          <h1 className="font-display text-3xl font-bold">
           {!active 
               ? "Ustawienia"
               : active === "services"
@@ -130,6 +137,7 @@ export function SettingsPage() {
         <p className="mt-1 text-sm text-[var(--muted)]">
           {!active ? "Skonfiguruj system" : "Zarządzaj ustawieniami"}
         </p>
+        </div>
       </header>
       )}
 
