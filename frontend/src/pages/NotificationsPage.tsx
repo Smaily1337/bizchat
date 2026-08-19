@@ -270,7 +270,7 @@ export function NotificationsPage() {
     );
   }
 
-  if (!["send", "reminders", "templates", "log"].includes(active)) {
+  if (active && !["send", "reminders", "templates", "log"].includes(active)) {
     return <Navigate to="/notifications/send" replace />;
   }
 
