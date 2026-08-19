@@ -210,29 +210,30 @@ export function SettingsPage() {
 
 
       {active === "appearance" && (
-      <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
-        <p className="font-headline-md text-headline-md">Wygląd panelu</p>
-        <p className="mt-1 text-body-md text-[var(--on-surface-variant)]">
-          Wybierz jasny lub ciemny motyw. Preferencja zapamiętuje się w tej
-          przeglądarce.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <GlassButton
-            type="button"
-            variant={theme === "light" ? "primary" : "ghost"}
-            className="!px-4 !py-2"
-            onClick={() => setTheme("light")}
-          >
-            Jasny
-          </GlassButton>
-          <GlassButton
-            type="button"
-            variant={theme === "dark" ? "primary" : "ghost"}
-            className="!px-4 !py-2"
-            onClick={() => setTheme("dark")}
-          >
-            Ciemny
-          </GlassButton>
+        <div className="glass-panel rounded-[28px] p-6 animate-fade-up">
+          <p className="font-headline-md text-headline-md">Wygląd panelu</p>
+          <p className="mt-1 text-body-md text-[var(--on-surface-variant)]">
+            Wybierz jasny lub ciemny motyw. Preferencja zapamiętuje się w tej
+            przeglądarce.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <GlassButton
+              type="button"
+              variant={theme === "light" ? "primary" : "ghost"}
+              className="!px-4 !py-2"
+              onClick={() => setTheme("light")}
+            >
+              Jasny
+            </GlassButton>
+            <GlassButton
+              type="button"
+              variant={theme === "dark" ? "primary" : "ghost"}
+              className="!px-4 !py-2"
+              onClick={() => setTheme("dark")}
+            >
+              Ciemny
+            </GlassButton>
+          </div>
         </div>
       )}
 
