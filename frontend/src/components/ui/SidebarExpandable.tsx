@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 export type SubNavLink = {
   to: string;

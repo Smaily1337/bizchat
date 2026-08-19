@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   appointmentsApi,
   customersApi,
@@ -23,6 +24,7 @@ const FALLBACK_REMINDER =
   "Cześć {{klient}}! Przypominamy o wizycie ({{usluga}}) w {{firma}} dnia {{data}} o {{godzina}}. Do zobaczenia!";
 
 export function AppointmentsPage() {
+  const [searchParams] = useSearchParams();
   const { push } = useToast();
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
   const [items, setItems] = useState<Appointment[]>([]);
@@ -62,7 +64,18 @@ export function AppointmentsPage() {
   }
 
   useEffect(() => {
-    void reload().catch((e: Error) => setError(e.message));
+    void reload()
+      .then(() => {
+        const editId = searchParams.get("edit");
+        if (editId) {
+          setItems((prev) => {
+            const found = prev.find((a) => a.id === editId);
+            if (found) openEdit(found);
+            return prev;
+          });
+        }
+      })
+      .catch((e: Error) => setError(e.message));
   }, []);
 
   function openCreate() {

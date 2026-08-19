@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/auth/AuthContext";
+import { ClerkSessionBridge } from "@/auth/ClerkSessionBridge";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { ToastProvider } from "@/components/ToastProvider";
 import { GlassNav } from "@/components/ui";
@@ -24,6 +25,8 @@ import { StaffPage } from "@/pages/StaffPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
 
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 function RealtimeBridge() {
   const { token } = useAuth();
   useRealtimeEvents(Boolean(token));
@@ -34,7 +37,9 @@ function AppLayout() {
   return (
     <TourProvider>
       <RealtimeBridge />
-      <GlassNav />
+      <ErrorBoundary>
+        <GlassNav />
+      </ErrorBoundary>
       <ProductTour />
     </TourProvider>
   );
@@ -44,6 +49,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <ClerkSessionBridge />
         <ToastProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -59,11 +65,15 @@ export default function App() {
                 <Route path="/staff" element={<StaffPage />} />
                 <Route path="/hours" element={<HoursPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/settings/:section" element={<SettingsPage />} />
+                <Route path="/account" element={<Navigate to="/settings/account" replace />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/platform" element={<PlatformPage />} />
                 <Route path="/feedback" element={<FeedbackPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/notifications/:section" element={<NotificationsPage />} />
                 <Route path="/channels" element={<ChannelsPage />} />
+                <Route path="/channels/:section" element={<ChannelsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

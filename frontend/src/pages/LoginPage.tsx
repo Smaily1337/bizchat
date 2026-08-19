@@ -3,6 +3,8 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { API_BASE, ApiError, setToken } from "@/api/client";
 import { authApi } from "@/api";
 import { useAuth } from "@/auth/AuthContext";
+import { ClerkAuthPanel } from "@/auth/ClerkAuthPanel";
+import { clerkEnabled } from "@/auth/ClerkProvider";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 import { useTheme } from "@/theme";
@@ -47,6 +49,7 @@ export function LoginPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [googleEnabled, setGoogleEnabled] = useState(false);
+  const [showDemo, setShowDemo] = useState(!clerkEnabled());
   const autoLoginTried = useRef(false);
 
   useEffect(() => {
@@ -139,9 +142,32 @@ export function LoginPage() {
         </h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           {mode === "login"
-            ? "Zaloguj się, aby zarządzać wizytami i ustawieniami salonu. Panel Platforma wymaga konta z flagą platform admin."
+            ? "Zaloguj się przez Clerk (OTP / Google / Apple) albo kontem demo."
             : "Załóż konto właściciela i nowy salon w kilka sekund."}
         </p>
+
+        {clerkEnabled() && mode === "login" && (
+          <div className="mt-6">
+            <ClerkAuthPanel />
+          </div>
+        )}
+
+        {clerkEnabled() && mode === "login" && (
+          <div className="mt-5 flex items-center gap-3 text-xs text-[var(--muted)]">
+            <span className="h-px flex-1 bg-[var(--glass-border-outer)]" />
+            <button
+              type="button"
+              className="shrink-0 underline-offset-2 hover:underline"
+              onClick={() => setShowDemo((v) => !v)}
+            >
+              {showDemo ? "Ukryj logowanie hasłem" : "Konto demo / hasło"}
+            </button>
+            <span className="h-px flex-1 bg-[var(--glass-border-outer)]" />
+          </div>
+        )}
+
+        {(showDemo || mode === "register") && (
+        <>
 
         {mode === "login" && (
           <div className="mt-4 flex flex-wrap gap-2">
@@ -284,6 +310,8 @@ export function LoginPage() {
           Platforma: admin@bizchat.local / changeme (albo Google z uprawnieniami
           platform admin)
         </p>
+        </>
+        )}
       </GlassCard>
     </div>
   );

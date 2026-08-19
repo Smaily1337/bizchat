@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { useClerk } from "@clerk/clerk-react";
+// import removed
 import { useAuth } from "@/auth/AuthContext";
 import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";

@@ -3,7 +3,7 @@ import { authApi, businessApi } from "@/api";
 import { ApiError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
 import { clerkEnabled } from "@/auth/ClerkProvider";
-import { useClerk } from "@clerk/clerk-react";
+// import removed
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 

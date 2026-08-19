@@ -1,10 +1,12 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { Navigate, useParams, Link } from "react-router-dom";
 import { businessApi, knowledgeApi, servicesApi } from "@/api";
 import type { KnowledgeItem, LicenseUsage, Service } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput, GlassTextarea } from "@/components/ui/GlassInput";
 import { useTheme } from "@/theme";
+import { AccountPage } from "@/pages/AccountPage";
 
 function fmtLimit(used: number, max: number | null) {
   if (max == null) return `${used} / ∞`;
@@ -17,6 +19,8 @@ function usagePct(used: number, max: number | null) {
 }
 
 export function SettingsPage() {
+  const { section } = useParams<{ section?: string }>();
+  const active = section;
   const { business, refreshBusiness } = useAuth();
   const { theme, setTheme } = useTheme();
   const [name, setName] = useState("");
@@ -108,16 +112,104 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Ustawienia</h1>
+      {active === "account" ? null : (
+      <header className="animate-fade-up flex flex-col items-start gap-3">
+        {active && (
+          <Link to="/settings" className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors">
+            <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Wróć do ustawień
+          </Link>
+        )}
+        <div>
+          <h1 className="font-display text-3xl font-bold">
+          {!active 
+              ? "Ustawienia"
+              : active === "services"
+                ? "Usługi"
+                : active === "faq"
+                  ? "FAQ bota"
+                  : active === "plan"
+                    ? "Plan i limity"
+                    : active === "appearance"
+                      ? "Wygląd"
+                      : "Ustawienia salonu"}
+        </h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Salon, licencja, usługi i baza FAQ bota
+          {!active ? "Skonfiguruj system" : "Zarządzaj ustawieniami"}
         </p>
+        </div>
       </header>
+      )}
+
+      {!active && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
+          <Link to="/settings/salon" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0">
+              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div>
+              <p className="font-semibold text-[var(--text-bright)]">Salon</p>
+              <p className="text-sm text-[var(--muted)]">Podstawowe dane</p>
+            </div>
+          </Link>
+          <Link to="/settings/services" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 shrink-0">
+              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div>
+              <p className="font-semibold text-[var(--text-bright)]">Usługi</p>
+              <p className="text-sm text-[var(--muted)]">Twój cennik</p>
+            </div>
+          </Link>
+          <Link to="/settings/faq" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div>
+              <p className="font-semibold text-[var(--text-bright)]">FAQ Bota</p>
+              <p className="text-sm text-[var(--muted)]">Baza wiedzy AI</p>
+            </div>
+          </Link>
+          <Link to="/settings/plan" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 shrink-0">
+              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <p className="font-semibold text-[var(--text-bright)]">Plan i limity</p>
+              <p className="text-sm text-[var(--muted)]">Subskrypcja</p>
+            </div>
+          </Link>
+          <Link to="/settings/appearance" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 shrink-0">
+              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+            </div>
+            <div>
+              <p className="font-semibold text-[var(--text-bright)]">Wygląd</p>
+              <p className="text-sm text-[var(--muted)]">Motyw i widget</p>
+            </div>
+          </Link>
+          <Link to="/settings/account" className="rounded-xl border border-glass-border bg-glass-fill p-5 hover:bg-glass-fill-strong transition-colors flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gray-500/10 flex items-center justify-center text-gray-500 shrink-0">
+              <svg aria-hidden viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <p className="font-semibold text-[var(--text-bright)]">Konto</p>
+              <p className="text-sm text-[var(--muted)]">Twoje dane logowania</p>
+            </div>
+          </Link>
+        </div>
+      )}
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}
 
+      {active === "account" && <AccountPage />}
+      {active && !["salon", "services", "faq", "plan", "appearance", "account"].includes(active) && (
+        <Navigate to="/settings/salon" replace />
+      )}
+
+
+      {active === "appearance" && (
       <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">Wygląd panelu</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
@@ -143,12 +235,17 @@ export function SettingsPage() {
           </GlassButton>
         </div>
       </GlassCard>
+      )}
 
-      {usage && (
+      {active === "plan" && (
         <GlassCard className="animate-fade-up">
           <p className="font-display text-lg font-semibold">
             Licencja i limity
           </p>
+          {!usage ? (
+            <p className="mt-2 text-sm text-[var(--muted)]">Brak danych użycia.</p>
+          ) : (
+            <>
           <p className="mt-1 text-sm text-[var(--muted)]">
             Plan <span className="text-canary">{usage.plan}</span>
             {" · "}
@@ -201,11 +298,14 @@ export function SettingsPage() {
           <p className="mt-3 text-xs text-[var(--muted)]">
             Kanały: {usage.enabled_channels.join(", ") || "—"}
           </p>
+            </>
+          )}
         </GlassCard>
       )}
 
+      {active === "salon" && (
       <GlassCard className="animate-fade-up">
-        <p className="font-display text-lg font-semibold">Biznes</p>
+        <p className="font-display text-lg font-semibold">Salon</p>
         <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={saveBusiness}>
           <label className="space-y-1 text-sm">
             <span className="text-[var(--muted)]">Nazwa</span>
@@ -268,6 +368,9 @@ export function SettingsPage() {
         </form>
       </GlassCard>
 
+      )}
+
+      {active === "services" && (
       <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">Usługi</p>
         <ul className="mt-3 space-y-2">
@@ -319,7 +422,9 @@ export function SettingsPage() {
           <GlassButton type="submit">Dodaj usługę</GlassButton>
         </form>
       </GlassCard>
+      )}
 
+      {active === "faq" && (
       <GlassCard className="animate-fade-up">
         <p className="font-display text-lg font-semibold">FAQ / baza wiedzy</p>
         <ul className="mt-3 space-y-2">
@@ -369,6 +474,7 @@ export function SettingsPage() {
           <GlassButton type="submit">Dodaj FAQ</GlassButton>
         </form>
       </GlassCard>
+      )}
     </div>
   );
 }

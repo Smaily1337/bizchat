@@ -1,4 +1,4 @@
-import { apiFetch, API_BASE, getToken } from "./client";
+import { apiFetch, API_BASE, ApiError, getToken } from "./client";
 import type {
   Appointment,
   Business,
@@ -46,10 +46,35 @@ export const authApi = {
       body: JSON.stringify(body),
     }),
   me: () => apiFetch<Owner>("/api/auth/me"),
+  updateMe: (body: { name: string | null }) =>
+    apiFetch<Owner>("/api/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  changePassword: (current_password: string, new_password: string) =>
+    apiFetch<{ message: string }>("/api/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ current_password, new_password }),
+    }),
   config: () =>
-    apiFetch<{ google_oauth_enabled: boolean; registration_enabled: boolean }>(
-      "/api/auth/config",
-    ),
+    apiFetch<{
+      google_oauth_enabled: boolean;
+      clerk_enabled: boolean;
+      registration_enabled: boolean;
+    }>("/api/auth/config"),
+  clerkExchange: async (clerkJwt: string) => {
+    const res = await fetch(`${API_BASE}/api/auth/clerk`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${clerkJwt}`,
+        Accept: "application/json",
+      },
+    });
+    if (!res.ok) {
+      throw new ApiError(res.status, await res.text());
+    }
+    return res.json() as Promise<{ access_token: string }>;
+  },
   verifyEmail: (token: string) =>
     apiFetch<{ message: string }>(
       `/api/auth/verify-email?token=${encodeURIComponent(token)}`,
@@ -107,6 +132,22 @@ export const businessApi = {
       body: JSON.stringify(body),
     }),
 };
+
+
+export const channelsApi = {
+  status: () =>
+    apiFetch<{
+      channels: { id: string; name: string; configured: boolean; detail: string }[];
+      meta_default_business_id_set: boolean;
+      meta_verify_token: string;
+    }>("/api/channels/status"),
+  linkMeta: (accessToken: string) =>
+    apiFetch<{ ok: boolean; page_id: string; page_name: string }>(`/api/business/meta-link`, {
+      method: "POST",
+      body: JSON.stringify({ access_token: accessToken }),
+    }),
+};
+
 
 export const appointmentsApi = {
   list: (params?: { from_at?: string; to_at?: string; status?: string }) => {

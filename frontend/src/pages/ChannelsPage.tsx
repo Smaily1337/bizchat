@@ -419,7 +419,7 @@ export function ChannelsPage() {
       </GlassCard>
 
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-2">
-        {CHANNELS.map((ch) => {
+        {CHANNELS.map((ch: ChannelDef) => {
           const on = channelEnabled(enabled, ch.licenseKeys);
           return (
             <ChannelCard
@@ -474,7 +474,7 @@ export function ChannelsPage() {
                         setMsg("Pobrano uprawnienia z Meta. Zapisywanie konfiguracji i podpinanie webhooka...");
                         channelsApi
                           .linkMeta(response.authResponse.accessToken)
-                          .then((res) => {
+                          .then((res: { page_name?: string } | void) => {
                             setMsg(`Sukces! Połączono z fanpagem: ${res?.page_name || "Twój Fanpage"}.`);
                             setTimeout(() => {
                               window.location.reload();

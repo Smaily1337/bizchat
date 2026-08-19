@@ -29,12 +29,14 @@ export function InboxPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(
+    () => searchParams.get("compose") === "1",
+  );
   const [importing, setImporting] = useState(false);
   const [importPanel, setImportPanel] = useState(false);
   const [psidText, setPsidText] = useState("");
   const [compose, setCompose] = useState({
-    customer_id: "",
+    customer_id: searchParams.get("customer") || "",
     channel: "messenger" as Channel,
     text: "",
   });

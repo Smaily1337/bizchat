@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { appointmentsApi, dashboardApi } from "@/api";
-import type { Appointment, DashboardAnalytics } from "@/api/types";
+import { Link, useNavigate } from "react-router-dom";
+import { appointmentsApi, customersApi, dashboardApi } from "@/api";
+import type { Appointment, Customer, DashboardAnalytics } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { GlassButton, GlassCard } from "@/components/ui";
 
@@ -11,14 +11,18 @@ type CalEvent = {
   id: string;
   title: string;
   client: string;
+  customerId: string;
   dayIndex: number;
   startHour: number;
   durationHours: number;
   tone: "canary" | "muted";
   status: string;
+  startAt: string;
+  endAt: string;
 };
 
-const HOURS = Array.from({ length: 11 }, (_, i) => i + 8);
+const DEFAULT_FIRST = 8;
+const DEFAULT_LAST = 18;
 const WEEKDAYS = ["Pon", "Wto", "Śro", "Czw", "Pią", "Sob", "Nie"];
 
 function startOfWeek(d: Date) {
@@ -86,22 +90,35 @@ function toEvents(
         id: a.id,
         title: a.service_name || "Wizyta",
         client: a.customer_name || "Klient",
+        customerId: a.customer_id,
         dayIndex,
         startHour,
         durationHours,
         tone: a.status === "confirmed" ? ("canary" as const) : ("muted" as const),
         status: a.status,
+        startAt: a.start_at,
+        endAt: a.end_at,
       };
     })
     .filter(Boolean) as CalEvent[];
 }
 
+const STATUS_PL: Record<string, string> = {
+  pending: "Oczekuje",
+  confirmed: "Potwierdzona",
+  completed: "Zakończona",
+  no_show: "Nieobecność",
+};
+
 export function CalendarPage() {
   const { business } = useAuth();
+  const navigate = useNavigate();
   const [view, setView] = useState<CalendarView>("week");
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [dayOffset, setDayOffset] = useState(() => (new Date().getDay() + 6) % 7);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<CalEvent | null>(null);
   const [summary, setSummary] = useState({
     appointments_today: 0,
     pending_count: 0,
@@ -120,8 +137,6 @@ export function CalendarPage() {
   useEffect(() => {
     const from = weekStart.toISOString();
     const to = addDays(weekStart, 7).toISOString();
-    // Load calendar appointments independently so a charts API failure
-    // never blanks the whole schedule ("Load failed").
     void appointmentsApi
       .list({ from_at: from, to_at: to })
       .then((list) => {
@@ -129,6 +144,8 @@ export function CalendarPage() {
         setError(null);
       })
       .catch((e: Error) => setError(e.message));
+
+    void customersApi.list().then(setCustomers).catch(() => undefined);
 
     void dashboardApi
       .summary()
@@ -156,6 +173,22 @@ export function CalendarPage() {
     [appointments, rangeStart, view, dayOffset],
   );
 
+  const { firstHour, lastHour } = useMemo(() => {
+    let first = DEFAULT_FIRST;
+    let last = DEFAULT_LAST;
+    for (const e of events) {
+      first = Math.min(first, Math.floor(e.startHour));
+      last = Math.max(last, Math.ceil(e.startHour + e.durationHours));
+    }
+    return { firstHour: first, lastHour: last };
+  }, [events]);
+
+  const hours = useMemo(
+    () => Array.from({ length: lastHour - firstHour }, (_, i) => i + firstHour),
+    [firstHour, lastHour],
+  );
+  const totalHours = lastHour - firstHour;
+
   const visibleDays = view === "week" ? WEEKDAYS : [WEEKDAYS[dayOffset]];
   const nextAppt = appointments
     .filter(
@@ -165,6 +198,10 @@ export function CalendarPage() {
     .sort(
       (a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
     )[0];
+
+  const selectedCustomer = selectedEvent
+    ? customers.find((c) => c.id === selectedEvent.customerId) ?? null
+    : null;
 
   function shift(dir: -1 | 1) {
     if (view === "week") {
@@ -184,6 +221,8 @@ export function CalendarPage() {
       });
     }
   }
+
+  const HOUR_HEIGHT = 72;
 
   return (
     <div className="space-y-6">
@@ -224,9 +263,7 @@ export function CalendarPage() {
         <p className="text-sm text-[var(--danger)]">Błąd: {error}</p>
       )}
 
-      <div
-        className="animate-fade-up grid gap-4 lg:grid-cols-[1fr_260px]"
-      >
+      <div className="animate-fade-up grid gap-4 lg:grid-cols-[1fr_260px]">
         <GlassCard padding="none" className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-glass-border px-5 py-4">
             <div>
@@ -262,6 +299,7 @@ export function CalendarPage() {
                 gridTemplateColumns: `64px repeat(${visibleDays.length}, minmax(0, 1fr))`,
               }}
             >
+              {/* Day headers */}
               <div className="border-b border-glass-border" />
               {visibleDays.map((day, i) => {
                 const d =
@@ -283,19 +321,193 @@ export function CalendarPage() {
                 );
               })}
 
-              {HOURS.map((hour) => (
-                <HourRow
-                  key={hour}
-                  hour={hour}
-                  dayCount={visibleDays.length}
-                  events={events}
-                />
-              ))}
+              {/* Hour labels column */}
+              <div>
+                {hours.map((hour) => (
+                  <div
+                    key={hour}
+                    className="border-b border-glass-border px-2 text-right text-xs text-[var(--muted)]"
+                    style={{ height: HOUR_HEIGHT }}
+                  >
+                    <span className="relative -top-2">{formatHour(hour)}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Day columns with absolutely positioned events */}
+              {visibleDays.map((day, dayIdx) => {
+                const colEvents = events.filter((e) => e.dayIndex === dayIdx);
+                return (
+                  <div
+                    key={`col-${day}-${dayIdx}`}
+                    className="relative border-l border-glass-border"
+                    style={{ height: totalHours * HOUR_HEIGHT }}
+                  >
+                    {/* Hour grid lines */}
+                    {hours.map((hour) => (
+                      <div
+                        key={hour}
+                        className="absolute inset-x-0 border-b border-glass-border"
+                        style={{
+                          top: (hour - firstHour) * HOUR_HEIGHT,
+                          height: HOUR_HEIGHT,
+                        }}
+                      />
+                    ))}
+                    {/* Events */}
+                    {colEvents.map((event) => {
+                      const top =
+                        ((event.startHour - firstHour) / totalHours) * 100;
+                      const height =
+                        (event.durationHours / totalHours) * 100;
+                      return (
+                        <button
+                          type="button"
+                          key={event.id}
+                          onClick={() => setSelectedEvent(event)}
+                          className={[
+                            "absolute inset-x-1.5 rounded-control border px-2 py-1.5 text-left transition-shadow hover:shadow-lg hover:z-20 cursor-pointer",
+                            event.tone === "canary"
+                              ? "border-[var(--accent)] bg-[var(--surface-solid)] text-[var(--text-bright)]"
+                              : "border-glass-border bg-[var(--surface-solid)] text-[var(--text-bright)]",
+                            selectedEvent?.id === event.id
+                              ? "ring-2 ring-[var(--accent)] z-30"
+                              : "z-10",
+                          ].join(" ")}
+                          style={{
+                            top: `${top}%`,
+                            height: `calc(${height}% - 2px)`,
+                            minHeight: "2.25rem",
+                          }}
+                        >
+                          <p className="truncate text-xs font-semibold">
+                            {event.title}
+                          </p>
+                          <p className="truncate text-[10px] text-[var(--muted)]">
+                            {event.client} · {formatHour(event.startHour)}–
+                            {formatHour(event.startHour + event.durationHours)}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </GlassCard>
 
         <aside className="space-y-4">
+          {/* Event detail panel */}
+          {selectedEvent && (
+            <GlassCard className="animate-fade-up">
+              <div className="flex items-start justify-between">
+                <p className="font-display text-base font-semibold">
+                  {selectedEvent.title}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedEvent(null)}
+                  className="text-[var(--muted)] hover:text-[var(--text-bright)] text-lg leading-none"
+                >
+                  ×
+                </button>
+              </div>
+              <p className="mt-1 text-sm text-[var(--text-bright)]">
+                {selectedEvent.client}
+              </p>
+              <p className="text-xs text-[var(--muted)]">
+                {new Date(selectedEvent.startAt).toLocaleString("pl-PL", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+                {" – "}
+                {new Date(selectedEvent.endAt).toLocaleString("pl-PL", {
+                  timeStyle: "short",
+                })}
+              </p>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Status: {STATUS_PL[selectedEvent.status] ?? selectedEvent.status}
+              </p>
+
+              {selectedCustomer && (
+                <div className="mt-3 space-y-1 rounded-soft border border-glass-border bg-glass-fill p-3 text-xs">
+                  <p className="font-semibold text-[var(--text-bright)]">
+                    Dane kontaktowe
+                  </p>
+                  {selectedCustomer.phone && (
+                    <p>
+                      <span className="text-[var(--muted)]">Tel:</span>{" "}
+                      <a
+                        href={`tel:${selectedCustomer.phone}`}
+                        className="text-canary underline"
+                      >
+                        {selectedCustomer.phone}
+                      </a>
+                    </p>
+                  )}
+                  {selectedCustomer.email && (
+                    <p>
+                      <span className="text-[var(--muted)]">E-mail:</span>{" "}
+                      <a
+                        href={`mailto:${selectedCustomer.email}`}
+                        className="text-canary underline"
+                      >
+                        {selectedCustomer.email}
+                      </a>
+                    </p>
+                  )}
+                  {selectedCustomer.external_ids &&
+                    Object.entries(selectedCustomer.external_ids).map(
+                      ([k, v]) => (
+                        <p key={k}>
+                          <span className="text-[var(--muted)]">{k}:</span> {v}
+                        </p>
+                      ),
+                    )}
+                  {!selectedCustomer.phone &&
+                    !selectedCustomer.email && (
+                      <p className="text-[var(--muted)]">Brak danych kontaktowych</p>
+                    )}
+                </div>
+              )}
+
+              <div className="mt-4 grid gap-2">
+                <GlassButton
+                  className="w-full"
+                  variant="primary"
+                  onClick={() =>
+                    navigate(
+                      `/appointments?edit=${selectedEvent.id}`,
+                    )
+                  }
+                >
+                  Przełóż wizytę
+                </GlassButton>
+                <GlassButton
+                  className="w-full"
+                  onClick={() =>
+                    navigate(
+                      `/notifications/send?appointment=${selectedEvent.id}`,
+                    )
+                  }
+                >
+                  Powiadom klienta
+                </GlassButton>
+                <GlassButton
+                  className="w-full"
+                  onClick={() =>
+                    navigate(
+                      `/inbox?compose=1&customer=${selectedEvent.customerId}`,
+                    )
+                  }
+                >
+                  Napisz wiadomość
+                </GlassButton>
+              </div>
+            </GlassCard>
+          )}
+
           <GlassCard>
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
               Dziś
@@ -411,56 +623,5 @@ export function CalendarPage() {
         </aside>
       </div>
     </div>
-  );
-}
-
-function HourRow({
-  hour,
-  dayCount,
-  events,
-}: {
-  hour: number;
-  dayCount: number;
-  events: CalEvent[];
-}) {
-  return (
-    <>
-      <div className="border-b border-glass-border px-2 py-6 text-right text-xs text-[var(--muted)]">
-        {formatHour(hour)}
-      </div>
-      {Array.from({ length: dayCount }, (_, dayIndex) => {
-        const cellEvents = events.filter(
-          (e) => e.dayIndex === dayIndex && Math.floor(e.startHour) === hour,
-        );
-        return (
-          <div
-            key={`${hour}-${dayIndex}`}
-            className="relative min-h-[72px] border-b border-l border-glass-border bg-[var(--bg)] p-1.5"
-          >
-            {cellEvents.map((event) => (
-              <div
-                key={event.id}
-                className={[
-                  "absolute inset-x-1.5 rounded-control border px-2 py-1.5 text-left",
-                  event.tone === "canary"
-                    ? "border-[var(--accent)] bg-[var(--surface-solid)] text-[var(--text-bright)]"
-                    : "border-glass-border bg-[var(--surface-solid)] text-[var(--text-bright)]",
-                ].join(" ")}
-                style={{
-                  top: `${(event.startHour % 1) * 100}%`,
-                  height: `calc(${event.durationHours * 100}% - 4px)`,
-                  minHeight: "2.5rem",
-                }}
-              >
-                <p className="truncate text-xs font-semibold">{event.title}</p>
-                <p className="truncate text-[10px] text-[var(--muted)]">
-                  {event.client} · {formatHour(event.startHour)}
-                </p>
-              </div>
-            ))}
-          </div>
-        );
-      })}
-    </>
   );
 }
