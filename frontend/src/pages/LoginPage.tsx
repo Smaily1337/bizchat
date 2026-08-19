@@ -4,9 +4,7 @@ import { API_BASE, ApiError, setToken } from "@/api/client";
 import { authApi } from "@/api";
 import { useAuth } from "@/auth/AuthContext";
 import { ClerkAuthPanel } from "@/auth/ClerkAuthPanel";
-import { clerkEnabled } from "@/auth/ClerkProvider";
-import { GlassButton, GlassCard } from "@/components/ui";
-import { GlassInput } from "@/components/ui/GlassInput";
+import { GlassButton } from "@/components/ui";
 import { useTheme } from "@/theme";
 
 /** Credentials or JWT passed from landing / OAuth in the URL fragment. */

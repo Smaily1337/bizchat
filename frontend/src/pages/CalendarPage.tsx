@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { appointmentsApi, customersApi, dashboardApi } from "@/api";
 import type { Appointment, Customer, DashboardAnalytics } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton } from "@/components/ui";
 
 type CalendarView = "day" | "week";
 
@@ -103,15 +103,8 @@ function toEvents(
     .filter(Boolean) as CalEvent[];
 }
 
-const STATUS_PL: Record<string, string> = {
-  pending: "Oczekuje",
-  confirmed: "Potwierdzona",
-  completed: "Zakończona",
-  no_show: "Nieobecność",
-};
-
 export function CalendarPage() {
-  const { business } = useAuth();
+  useAuth();
   const navigate = useNavigate();
   const [view, setView] = useState<CalendarView>("week");
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
@@ -183,12 +176,6 @@ export function CalendarPage() {
     return { firstHour: first, lastHour: last };
   }, [events]);
 
-  const hours = useMemo(
-    () => Array.from({ length: lastHour - firstHour }, (_, i) => i + firstHour),
-    [firstHour, lastHour],
-  );
-  const totalHours = lastHour - firstHour;
-
   const visibleDays = view === "week" ? WEEKDAYS : [WEEKDAYS[dayOffset]];
   const nextAppt = appointments
     .filter(
@@ -221,8 +208,6 @@ export function CalendarPage() {
       });
     }
   }
-
-  const HOUR_HEIGHT = 72;
 
   return (
     <div className="space-y-6">

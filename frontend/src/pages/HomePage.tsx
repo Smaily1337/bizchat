@@ -256,7 +256,7 @@ export function HomePage() {
                         {c.customer_name || "Klient"}
                       </p>
                       <p className="font-data-mono text-data-mono text-on-surface-variant shrink-0">
-                        {c.last_message_at ? fmtTime(c.last_message_at) : ""}
+                        {c.updated_at ? fmtTime(c.updated_at) : ""}
                       </p>
                     </div>
                     <p className="truncate text-sm text-on-surface-variant mt-0.5">

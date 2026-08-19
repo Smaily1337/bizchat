@@ -12,7 +12,7 @@ import type {
 } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
 import { useAuth } from "@/auth/AuthContext";
-import { GlassButton, GlassCard, MessengerPreview, formatTemplateText } from "@/components/ui";
+import { GlassButton, MessengerPreview, formatTemplateText } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 const CHANNEL_LABEL: Record<NotificationChannel, string> = {

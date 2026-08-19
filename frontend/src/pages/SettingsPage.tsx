@@ -3,7 +3,7 @@ import { Navigate, useParams, Link } from "react-router-dom";
 import { businessApi, knowledgeApi, servicesApi } from "@/api";
 import type { KnowledgeItem, LicenseUsage, Service } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton } from "@/components/ui";
 import { GlassInput, GlassTextarea } from "@/components/ui/GlassInput";
 import { useTheme } from "@/theme";
 import { AccountPage } from "@/pages/AccountPage";
