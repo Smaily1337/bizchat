@@ -219,15 +219,6 @@ export function AppointmentsPage() {
     return acc;
   }, {} as Record<string, Appointment[]>);
 
-  const getStatusColorClass = (status: string) => {
-    switch(status) {
-      case "confirmed": return "bg-gradient-to-b from-primary-container to-tertiary-container";
-      case "completed": return "bg-gradient-to-b from-secondary-container to-secondary";
-      case "cancelled": return "bg-error";
-      default: return "bg-white/20";
-    }
-  };
-
   return (
     <div className="space-y-6">
       <header className="animate-fade-up flex flex-wrap items-end justify-between gap-4">
@@ -468,89 +459,100 @@ export function AppointmentsPage() {
           </div>
         )}
         
-        {Object.entries(groupedAppointments).map(([date, appts]) => (
-          <div key={date} className="glass-panel rounded-[28px] overflow-hidden">
-            <div className="bg-white/5 px-6 py-4 border-b border-white/10 flex items-center justify-between">
-              <h3 className="font-headline-md text-headline-md capitalize">{date}</h3>
-              <span className="bg-surface-container px-3 py-1 rounded-full text-sm font-data-mono">{appts.length}</span>
-            </div>
-            
-            <div className="p-4 flex flex-col gap-3">
-              {appts.map((a) => (
-                <div
-                  key={a.id}
-                  className="glass-card rounded-xl p-4 relative overflow-hidden flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between hover:border-white/20 hover:shadow-glow transition-all bg-surface-container/40"
-                >
-                  <div className={`absolute top-0 left-0 w-1 h-full ${getStatusColorClass(a.status)}`}></div>
-                  
-                  <div className="flex items-center gap-4 pl-2">
-                    <div className="flex flex-col items-center justify-center min-w-[70px]">
-                      <span className="font-data-mono text-data-mono text-primary">
-                        {new Date(a.start_at).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                      <span className="text-xs text-on-surface-variant font-data-mono">
-                        {new Date(a.end_at).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
+        {Object.entries(groupedAppointments).map(([date, appts], index) => (
+          <div key={date} className="animate-fade-up" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
+            <h2 className="font-headline-md text-headline-md text-primary mb-6 flex items-center gap-3 capitalize">
+              <span className="material-symbols-outlined">today</span>
+              {date}
+            </h2>
+            <div className="space-y-4">
+              {appts.map((a) => {
+                const startTime = new Date(a.start_at).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+                const startMs = new Date(a.start_at).getTime();
+                const endMs = new Date(a.end_at).getTime();
+                const durationMin = Math.max(15, Math.round((endMs - startMs) / 60000));
+                const clientInitials = (a.customer_name || "?").trim().split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase()).join("") || "?";
+                
+                return (
+                  <div key={a.id} className="glass-card rounded-28 p-6 md:p-8 relative overflow-hidden group">
+                    <div className="absolute -right-8 -top-8 text-white/5 pointer-events-none transition-transform group-hover:scale-110 duration-500">
+                      <span className="material-symbols-outlined" style={{ fontSize: '160px', fontVariationSettings: "'FILL' 1" }}>
+                        {a.service_name?.toLowerCase().includes("strzyż") || a.service_name?.toLowerCase().includes("włos") ? "content_cut" : a.service_name?.toLowerCase().includes("masaż") || a.service_name?.toLowerCase().includes("spa") ? "spa" : "face_retouching_natural"}
                       </span>
                     </div>
-                    
-                    <div className="h-10 w-px bg-white/10 mx-2 hidden sm:block"></div>
-                    
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-surface-container px-2 py-0.5 rounded text-[10px] font-label-caps text-label-caps uppercase text-on-surface-variant border border-white/5">
-                          {STATUS_LABEL[a.status] || a.status}
-                        </span>
-                        {a.channel && (
-                          <span className="bg-surface-container px-2 py-0.5 rounded text-[10px] font-label-caps text-label-caps uppercase text-primary border border-primary/20">
-                            {a.channel}
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="material-symbols-outlined text-[18px] text-tertiary">person</span>
-                        <p className="font-display text-base font-medium">
-                          {a.customer_name || "Nieznany klient"}
-                        </p>
-                      </div>
-                      
-                      <p className="text-sm text-on-surface-variant flex items-center gap-1.5 font-data-mono">
-                        <span className="material-symbols-outlined text-[16px]">design_services</span>
-                        {a.service_name || "Brak usługi"}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-                    <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-primary"
-                      onClick={() => void notifyCustomer(a)}
-                      disabled={a.status === "cancelled" || notifyingId === a.id}
-                      title="Powiadom klienta"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {notifyingId === a.id ? "sync" : "notifications"}
-                      </span>
-                    </button>
-                    <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      onClick={() => openEdit(a)}
-                      disabled={a.status === "cancelled"}
-                      title="Edytuj wizytę"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
-                    <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container hover:bg-error/20 hover:text-error hover:border-error/30 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      onClick={() => void cancelAppt(a.id)}
-                      disabled={a.status === "cancelled"}
-                      title="Anuluj wizytę"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">cancel</span>
-                    </button>
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                      <div className="flex items-start md:items-center gap-6 flex-col md:flex-row w-full lg:w-auto">
+                        <div className="glass-badge px-4 py-3 rounded-xl flex flex-col items-center justify-center min-w-[100px]">
+                          <span className="font-data-mono text-data-mono text-primary font-bold">{startTime}</span>
+                          <span className="font-body-md text-sm text-on-surface-variant mt-1">{durationMin} min</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-full bg-surface-container-high border-2 border-surface-container shadow-lg flex items-center justify-center text-on-surface font-headline-md text-xl">
+                            {clientInitials}
+                          </div>
+                          <div>
+                            <h3 className="font-headline-md text-xl font-semibold text-on-surface">{a.customer_name || "Nieznany klient"}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="font-body-md text-body-md text-tertiary">{a.service_name || "Usługa"}</span>
+                              {a.channel && (
+                                <>
+                                  <span className="text-white/20">•</span>
+                                  <span className="font-body-md text-sm text-on-surface-variant flex items-center gap-1 uppercase">
+                                    {a.channel}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 lg:gap-6 justify-between w-full lg:w-auto border-t lg:border-t-0 border-white/5 pt-4 lg:pt-0">
+                        <div className={`px-3 py-1 rounded-full border font-label-caps text-label-caps flex items-center gap-1.5 ${
+                          a.status === "confirmed"
+                            ? "border-secondary/30 bg-secondary/10 text-secondary"
+                            : a.status === "completed"
+                            ? "border-tertiary/30 bg-tertiary/10 text-tertiary"
+                            : a.status === "cancelled"
+                            ? "border-error/30 bg-error/10 text-error"
+                            : "border-primary/30 bg-primary/10 text-primary"
+                        }`}>
+                          <span className={`w-2 h-2 rounded-full ${a.status === "confirmed" ? "bg-secondary animate-pulse" : a.status === "cancelled" ? "bg-error" : "bg-primary"}`}></span>
+                          {STATUS_LABEL[a.status] || a.status}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => void notifyCustomer(a)}
+                            disabled={a.status === "cancelled" || notifyingId === a.id}
+                            className="px-3 py-2 rounded-lg font-body-md text-xs font-medium text-primary border border-primary/20 bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
+                            title="Powiadom klienta"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">{notifyingId === a.id ? "sync" : "notifications"}</span>
+                            Powiadom
+                          </button>
+                          <button
+                            onClick={() => openEdit(a)}
+                            disabled={a.status === "cancelled"}
+                            className="px-4 py-2 rounded-lg font-body-md text-sm font-medium text-on-surface-variant border border-white/10 hover:bg-white/5 hover:text-on-surface transition-colors"
+                          >
+                            Edytuj
+                          </button>
+                          <button
+                            onClick={() => void cancelAppt(a.id)}
+                            disabled={a.status === "cancelled"}
+                            className="p-2 rounded-lg text-on-surface-variant border border-white/10 hover:bg-error-container/50 hover:text-error hover:border-error/30 transition-colors flex items-center justify-center disabled:opacity-50"
+                            title="Anuluj wizytę"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">close</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
