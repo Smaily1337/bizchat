@@ -17,10 +17,10 @@ export default {
         },
       },
       fontFamily: {
-        display: ["IBM Plex Sans", "system-ui", "sans-serif"],
-        sans: ["IBM Plex Sans", "system-ui", "sans-serif"],
-        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
-        label: ["IBM Plex Sans", "sans-serif"],
+        display: ["Outfit", "system-ui", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        label: ["Inter", "sans-serif"],
       },
       boxShadow: {
         glass: "var(--shadow-glass)",
