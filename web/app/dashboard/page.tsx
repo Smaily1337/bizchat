@@ -27,9 +27,9 @@ export default async function DashboardPage() {
           Call your Python API with a Clerk token
         </h2>
         <p className="mt-2 text-sm text-zinc-400">
-          The button below fetches a short-lived JWT via{" "}
-          <code className="text-teal-300">getToken()</code> and sends it as{" "}
-          <code className="text-teal-300">Authorization: Bearer …</code> to FastAPI.
+          Use the green button (Next.js proxy). FastAPI must be running on port
+          8000 — in another terminal:{" "}
+          <code className="text-teal-300">cd web && ./start-api.sh</code>
         </p>
         <div className="mt-4">
           <ApiTokenDemo />

@@ -2,13 +2,12 @@
 Verify Clerk session JWTs in FastAPI.
 
 Install:
-  pip install fastapi uvicorn PyJWT[crypto] httpx
+  pip install fastapi uvicorn "PyJWT[crypto]" httpx python-dotenv
 
-Env:
-  CLERK_JWKS_URL=https://<your-clerk-frontend-api>/.well-known/jwks.json
-  # Or derive from publishable key instance — Dashboard → API Keys → JWT / JWKS
-  CLERK_ISSUER=https://<your-clerk-frontend-api>
-  CLERK_AUTHORIZED_PARTIES=http://localhost:3000,https://your-app.com
+Run (from web/):
+  ./start-api.sh
+  # or:
+  # source .env.local && uvicorn backend-examples.fastapi_clerk_auth:app --reload --host 0.0.0.0 --port 8000
 
 Frontend sends:
   Authorization: Bearer <clerk_session_jwt>
@@ -16,8 +15,10 @@ Frontend sends:
 
 from __future__ import annotations
 
+import base64
 import os
 import time
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -27,25 +28,90 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
 
+# Load web/.env.local when started from repo (does not override existing env)
+_env_local = Path(__file__).resolve().parents[1] / ".env.local"
+if _env_local.is_file():
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv(_env_local, override=False)
+    except ImportError:
+        for line in _env_local.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+
+
+def _issuer_from_publishable_key(pk: str) -> str | None:
+    """Decode Frontend API host from pk_test_… / pk_live_… (Clerk convention)."""
+    if not pk or "_" not in pk:
+        return None
+    raw = pk.split("_", 2)[-1]
+    pad = "=" * (-len(raw) % 4)
+    try:
+        host = base64.b64decode(raw + pad).decode("utf-8", errors="ignore").strip()
+    except Exception:
+        return None
+    host = host.rstrip("$").strip()
+    if not host:
+        return None
+    if host.startswith("http"):
+        return host.rstrip("/")
+    return f"https://{host}"
+
+
+def _resolve_clerk_urls() -> tuple[str, str]:
+    issuer = (os.getenv("CLERK_ISSUER") or "").rstrip("/")
+    jwks = (os.getenv("CLERK_JWKS_URL") or "").strip()
+    if not issuer:
+        inferred = _issuer_from_publishable_key(
+            os.getenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "")
+            or os.getenv("CLERK_PUBLISHABLE_KEY", "")
+        )
+        if inferred:
+            issuer = inferred
+    if issuer and not jwks:
+        jwks = f"{issuer}/.well-known/jwks.json"
+    if not issuer or not jwks:
+        raise RuntimeError(
+            "Set CLERK_ISSUER + CLERK_JWKS_URL, or provide NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY "
+            "in web/.env.local so issuer can be inferred."
+        )
+    return issuer, jwks
+
+
+CLERK_ISSUER, CLERK_JWKS_URL = _resolve_clerk_urls()
+
+AUTHORIZED_PARTIES = [
+    p.strip()
+    for p in os.getenv(
+        "CLERK_AUTHORIZED_PARTIES",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if p.strip()
+]
+
+CORS_ORIGINS = [
+    o.strip()
+    for o in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if o.strip()
+]
+
 app = FastAPI(title="Clerk + FastAPI example")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv(
-        "CORS_ORIGINS", "http://localhost:3000"
-    ).split(","),
+    allow_origins=CORS_ORIGINS,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-CLERK_JWKS_URL = os.environ["CLERK_JWKS_URL"]
-CLERK_ISSUER = os.environ["CLERK_ISSUER"]
-AUTHORIZED_PARTIES = [
-    p.strip()
-    for p in os.getenv("CLERK_AUTHORIZED_PARTIES", "http://localhost:3000").split(",")
-    if p.strip()
-]
 
 _jwks_client = PyJWKClient(CLERK_JWKS_URL, cache_keys=True)
 _bearer = HTTPBearer(auto_error=True)
@@ -62,7 +128,7 @@ def verify_clerk_token(token: str) -> dict[str, Any]:
             issuer=CLERK_ISSUER,
             options={
                 "require": ["exp", "iss", "sub"],
-                "verify_aud": False,  # Clerk session tokens often omit aud
+                "verify_aud": False,
             },
         )
     except jwt.PyJWTError as exc:
@@ -71,13 +137,17 @@ def verify_clerk_token(token: str) -> dict[str, Any]:
             detail=f"Invalid token: {exc}",
         ) from exc
 
-    # Optional azp (authorized party) check — recommended for SPAs
     azp = payload.get("azp")
     if azp and AUTHORIZED_PARTIES and azp not in AUTHORIZED_PARTIES:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized party",
-        )
+        # Also accept any localhost / 127.0.0.1 port for local Next.js
+        if not (
+            azp.startswith("http://localhost:")
+            or azp.startswith("http://127.0.0.1:")
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorized party",
+            )
 
     if payload.get("exp", 0) < time.time():
         raise HTTPException(
@@ -95,8 +165,11 @@ async def require_clerk_user(
 
 
 @app.get("/api/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+async def health() -> dict[str, Any]:
+    return {
+        "status": "ok",
+        "clerk_issuer": CLERK_ISSUER,
+    }
 
 
 @app.get("/api/me")
@@ -110,7 +183,6 @@ async def me(claims: dict[str, Any] = Depends(require_clerk_user)) -> dict[str, 
     }
 
 
-# Optional: fetch rich user profile from Clerk Backend API with the secret key
 async def fetch_clerk_user(user_id: str) -> dict[str, Any]:
     secret = os.environ["CLERK_SECRET_KEY"]
     async with httpx.AsyncClient(timeout=10.0) as client:

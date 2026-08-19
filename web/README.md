@@ -55,8 +55,15 @@ W aplikacji `app_3I7o5cifFaWX3i8CFJx6VpzFOr8`:
 1. Email → **Email verification code** ON, Password OFF (opcjonalnie)
 2. Social → Google + Apple ON
 
-## Health check
+## FastAPI + Bearer token
+
+W **drugim terminalu**:
 
 ```bash
-clerk doctor
+cd web
+./start-api.sh
 ```
+
+Na dashboardzie kliknij **GET /api/me (via Next proxy)** — Next przekazuje JWT Clerka do `http://localhost:8000/api/me`.
+
+Health check: http://localhost:8000/api/health
