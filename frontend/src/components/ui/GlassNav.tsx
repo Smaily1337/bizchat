@@ -5,7 +5,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
-import { SidebarExpandable } from "./SidebarExpandable";
+
 
 
 function LogoutButton({ className = "!w-full" }: { className?: string }) {
@@ -308,7 +308,7 @@ function AccountMenu({
             Ustawienia konta
           </Link>
           <Link
-            to="/settings/salon"
+            to="/settings"
             onClick={onToggle}
             className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
           >
@@ -346,7 +346,7 @@ function MobileAccountDropdown() {
         Ustawienia konta
       </Link>
       <Link
-        to="/settings/salon"
+        to="/settings"
         className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
       >
         Ustawienia salonu
@@ -442,40 +442,26 @@ export function GlassNav() {
               {salon.filter((i) => !["/notifications", "/settings", "/account"].includes(i.to)).map((item) => (
                 <SideLink key={item.to} item={item} />
               ))}
-              <SidebarExpandable
-                label="Powiadomienia"
-                matchPrefixes={["/notifications"]}
-                icon={
+              <SideLink item={{
+                to: "/notifications",
+                label: "Powiadomienia",
+                icon: (
                   <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
                     <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                     <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
                   </svg>
-                }
-                items={[
-                  { to: "/notifications/send", label: "Wysyłka" },
-                  { to: "/notifications/reminders", label: "Przypomnienia" },
-                  { to: "/notifications/templates", label: "Szablony" },
-                  { to: "/notifications/log", label: "Historia" },
-                ]}
-              />
-              <SidebarExpandable
-                label="Ustawienia"
-                matchPrefixes={["/settings", "/account"]}
-                icon={
+                )
+              }} />
+              <SideLink item={{
+                to: "/settings",
+                label: "Ustawienia",
+                icon: (
                   <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
                     <circle cx="12" cy="12" r="3" />
                     <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
                   </svg>
-                }
-                items={[
-                  { to: "/settings/salon", label: "Salon" },
-                  { to: "/settings/services", label: "Usługi" },
-                  { to: "/settings/faq", label: "FAQ bota" },
-                  { to: "/settings/plan", label: "Plan i limity" },
-                  { to: "/settings/appearance", label: "Wygląd" },
-                  { to: "/settings/account", label: "Konto" },
-                ]}
-              />
+                )
+              }} />
             </div>
           </div>
         </div>
@@ -582,8 +568,8 @@ export function GlassNav() {
                   {item.label}
                 </NavLink>
               ))}
-              <NavLink to="/notifications/send" onClick={() => setMoreOpen(false)} className="sidebar-link">Powiadomienia</NavLink>
-              <NavLink to="/settings/salon" onClick={() => setMoreOpen(false)} className="sidebar-link">Ustawienia</NavLink>
+              <NavLink to="/notifications" onClick={() => setMoreOpen(false)} className="sidebar-link">Powiadomienia</NavLink>
+              <NavLink to="/settings" onClick={() => setMoreOpen(false)} className="sidebar-link">Ustawienia</NavLink>
               <NavLink to="/settings/account" onClick={() => setMoreOpen(false)} className="sidebar-link">Konto</NavLink>
             </div>
           </div>

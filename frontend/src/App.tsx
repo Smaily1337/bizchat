@@ -60,16 +60,13 @@ export default function App() {
                 <Route path="/customers" element={<CustomersPage />} />
                 <Route path="/staff" element={<StaffPage />} />
                 <Route path="/hours" element={<HoursPage />} />
-                <Route path="/settings" element={<Navigate to="/settings/salon" replace />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/settings/:section" element={<SettingsPage />} />
                 <Route path="/account" element={<Navigate to="/settings/account" replace />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/platform" element={<PlatformPage />} />
                 <Route path="/feedback" element={<FeedbackPage />} />
-                <Route
-                  path="/notifications"
-                  element={<Navigate to="/notifications/send" replace />}
-                />
+                <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/notifications/:section" element={<NotificationsPage />} />
                 <Route path="/channels" element={<ChannelsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />

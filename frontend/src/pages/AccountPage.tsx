@@ -1,18 +1,58 @@
 import { type FormEvent, useState } from "react";
-import { authApi } from "@/api";
+import { authApi, businessApi } from "@/api";
 import { ApiError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
+import { clerkEnabled } from "@/auth/ClerkProvider";
+import { useClerk } from "@clerk/clerk-react";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 
 export function AccountPage() {
-  const { owner, acceptToken, token, resendVerification } = useAuth();
+  const { owner, acceptToken, token, resendVerification, business, refreshBusiness, logout } = useAuth();
+  const clerk = clerkEnabled() ? useClerk() : null;
   const [name, setName] = useState(owner?.name || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [nip, setNip] = useState(business?.settings?.nip as string || "");
+  const [address, setAddress] = useState(business?.settings?.address as string || "");
+  const [phone, setPhone] = useState(business?.settings?.phone as string || "");
+  const [publicEmail, setPublicEmail] = useState(business?.settings?.publicEmail as string || "");
+  const [website, setWebsite] = useState(business?.settings?.website as string || "");
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  async function saveBusinessInfo(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    setMsg(null);
+    try {
+      await businessApi.update({
+        settings: {
+          ...(business?.settings || {}),
+          nip,
+          address,
+          phone,
+          publicEmail,
+          website
+        }
+      });
+      await refreshBusiness();
+      setMsg("Dane zapisane pomyślnie");
+    } catch (ex) {
+      setErr(ex instanceof ApiError ? ex.detail : "Nie udało się zapisać");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function handleLogout() {
+    logout();
+    if (clerk) {
+      void clerk.signOut();
+    }
+  }
 
   async function saveProfile(e: FormEvent) {
     e.preventDefault();
@@ -117,6 +157,54 @@ export function AccountPage() {
             Zmień hasło
           </GlassButton>
         </form>
+      </GlassCard>
+
+      <GlassCard className="space-y-3">
+        <h2 className="text-sm font-semibold text-[var(--text-bright)]">Dane firmy</h2>
+        <form className="space-y-3" onSubmit={saveBusinessInfo}>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-[var(--muted)]">NIP</span>
+            <GlassInput value={nip} onChange={(e) => setNip(e.target.value)} placeholder="000-000-00-00" />
+          </label>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-[var(--muted)]">Adres / Siedziba</span>
+            <GlassInput value={address} onChange={(e) => setAddress(e.target.value)} placeholder="ul. Przykładowa 1, 00-000 Miasto" />
+          </label>
+          <GlassButton type="submit" disabled={busy}>
+            Zapisz dane firmy
+          </GlassButton>
+        </form>
+      </GlassCard>
+
+      <GlassCard className="space-y-3">
+        <h2 className="text-sm font-semibold text-[var(--text-bright)]">Dane kontaktowe</h2>
+        <form className="space-y-3" onSubmit={saveBusinessInfo}>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-[var(--muted)]">Telefon publiczny</span>
+            <GlassInput value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+48 000 000 000" />
+          </label>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-[var(--muted)]">E-mail publiczny</span>
+            <GlassInput value={publicEmail} onChange={(e) => setPublicEmail(e.target.value)} placeholder="kontakt@mojafirma.pl" />
+          </label>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-[var(--muted)]">Strona WWW</span>
+            <GlassInput value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://mojafirma.pl" />
+          </label>
+          <GlassButton type="submit" disabled={busy}>
+            Zapisz dane kontaktowe
+          </GlassButton>
+        </form>
+      </GlassCard>
+
+      <GlassCard className="space-y-3 border-[var(--danger)]/30">
+        <h2 className="text-sm font-semibold text-[var(--danger)]">Zarządzanie sesją</h2>
+        <p className="text-xs text-[var(--muted)]">
+          Wyloguj się ze swojego konta na tym urządzeniu.
+        </p>
+        <GlassButton type="button" variant="ghost" onClick={handleLogout} className="text-[var(--danger)] border border-[var(--danger)]/30 hover:bg-[var(--danger)]/10 !w-auto">
+          Wyloguj się
+        </GlassButton>
       </GlassCard>
 
       {(msg || err) && (
