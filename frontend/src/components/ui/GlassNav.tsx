@@ -1,8 +1,39 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { useClerk } from "@clerk/clerk-react";
 import { useAuth } from "@/auth/AuthContext";
+import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
+import { SidebarExpandable } from "./SidebarExpandable";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
+
+function LogoutButton({ className = "!w-full" }: { className?: string }) {
+  const { logout } = useAuth();
+  return (
+    <GlassButton
+      variant="subtle"
+      className={className}
+      onClick={() => {
+        logout();
+        if (clerkEnabled()) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (typeof window !== "undefined" && (window as any).Clerk) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              void (window as any).Clerk.signOut();
+            }
+          } catch {
+            /* ignore if clerk signout is unavailable */
+          }
+        }
+      }}
+    >
+      Wyloguj
+    </GlassButton>
+  );
+}
 
 type NavItem = {
   to: string;
@@ -133,6 +164,16 @@ const salonItems: NavItem[] = [
     ),
   },
   {
+    to: "/account",
+    label: "Konto",
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 19a7 7 0 0 1 14 0" />
+      </svg>
+    ),
+  },
+  {
     to: "/settings",
     label: "Ustawienia",
     tourId: "nav-settings",
@@ -219,7 +260,7 @@ function AccountMenu({
   onToggle: () => void;
   menuRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const { owner, logout, resendVerification } = useAuth();
+  const { owner, resendVerification } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -259,6 +300,20 @@ function AccountMenu({
           <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
             {owner?.email}
           </p>
+          <Link
+            to="/settings/account"
+            onClick={onToggle}
+            className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+          >
+            Ustawienia konta
+          </Link>
+          <Link
+            to="/settings/salon"
+            onClick={onToggle}
+            className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+          >
+            Ustawienia salonu
+          </Link>
           <button
             type="button"
             onClick={toggleTheme}
@@ -269,9 +324,7 @@ function AccountMenu({
               {theme === "dark" ? "Ciemny" : "Jasny"}
             </span>
           </button>
-          <GlassButton variant="subtle" className="!w-full" onClick={logout}>
-            Wyloguj
-          </GlassButton>
+          <LogoutButton />
         </div>
       )}
     </div>
@@ -279,13 +332,25 @@ function AccountMenu({
 }
 
 function MobileAccountDropdown() {
-  const { owner, logout } = useAuth();
+  const { owner } = useAuth();
   const { theme, toggleTheme } = useTheme();
   return (
     <div className="menu-panel absolute right-0 top-full z-50 mt-2 w-56 space-y-1 p-2">
       <p className="break-all px-2 py-1 text-xs text-[var(--muted)]">
         {owner?.email}
       </p>
+      <Link
+        to="/settings/account"
+        className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+      >
+        Ustawienia konta
+      </Link>
+      <Link
+        to="/settings/salon"
+        className="flex w-full items-center rounded-control px-2 py-2 text-sm text-[var(--text-bright)] hover:bg-[var(--surface-solid)]"
+      >
+        Ustawienia salonu
+      </Link>
       <button
         type="button"
         onClick={toggleTheme}
@@ -296,9 +361,7 @@ function MobileAccountDropdown() {
           {theme === "dark" ? "Ciemny" : "Jasny"}
         </span>
       </button>
-      <GlassButton variant="subtle" className="!w-full" onClick={logout}>
-        Wyloguj
-      </GlassButton>
+      <LogoutButton />
     </div>
   );
 }
@@ -376,9 +439,60 @@ export function GlassNav() {
           <div>
             <p className="label-caps mb-1.5 px-2">Salon</p>
             <div className="space-y-0.5">
-              {salon.map((item) => (
+              {salon.filter((i) => !["/channels", "/notifications", "/settings", "/account"].includes(i.to)).map((item) => (
                 <SideLink key={item.to} item={item} />
               ))}
+              <SidebarExpandable
+                to="/channels"
+                label="Kanały"
+                matchPrefixes={["/channels"]}
+                icon={
+                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <path d="M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+                    <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0" />
+                  </svg>
+                }
+                items={[
+                  { to: "/channels", label: "Przegląd", end: true },
+                  { to: "/channels/integrations", label: "Integracje" },
+                ]}
+              />
+              <SidebarExpandable
+                to="/notifications"
+                label="Powiadomienia"
+                matchPrefixes={["/notifications"]}
+                icon={
+                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                    <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+                  </svg>
+                }
+                items={[
+                  { to: "/notifications/send", label: "Wysyłka" },
+                  { to: "/notifications/reminders", label: "Przypomnienia" },
+                  { to: "/notifications/templates", label: "Szablony" },
+                  { to: "/notifications/log", label: "Historia" },
+                ]}
+              />
+              <SidebarExpandable
+                to="/settings"
+                label="Ustawienia"
+                matchPrefixes={["/settings", "/account"]}
+                icon={
+                  <svg aria-hidden viewBox="0 0 24 24" className={ic} fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+                  </svg>
+                }
+                items={[
+                  { to: "/settings/salon", label: "Salon" },
+                  { to: "/settings/services", label: "Usługi" },
+                  { to: "/settings/faq", label: "FAQ bota" },
+                  { to: "/settings/plan", label: "Plan i limity" },
+                  { to: "/settings/appearance", label: "Wygląd" },
+                  { to: "/settings/account", label: "Konto" },
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -418,7 +532,9 @@ export function GlassNav() {
         </div>
 
         <main className="mx-auto w-full max-w-shell flex-1 px-4 py-6 sm:px-6 sm:py-8">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
 
         <nav className="mobile-tabbar" aria-label="Szybka nawigacja">

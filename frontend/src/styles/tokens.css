@@ -7,6 +7,7 @@
   --surface-container: rgba(255, 255, 255, 0.35);
   --accent: #0f766e;
   --accent-soft: rgba(15, 118, 110, 0.14);
+  --accent-grad: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
   --on-accent: #ffffff;
   --text: #3f3f46;
   --text-bright: #0b0b0b;
@@ -56,7 +57,8 @@
   --surface-container: rgba(255, 255, 255, 0.06);
   --accent: #2dd4bf;
   --accent-soft: rgba(45, 212, 191, 0.16);
-  --on-accent: #042f2e;
+  --accent-grad: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%);
+  --on-accent: #ffffff;
   --text: #c5ced8;
   --text-bright: #f4f7fb;
   --glass-border: rgba(255, 255, 255, 0.14);
