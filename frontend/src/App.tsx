@@ -25,6 +25,8 @@ import { StaffPage } from "@/pages/StaffPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
 
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 function RealtimeBridge() {
   const { token } = useAuth();
   useRealtimeEvents(Boolean(token));
@@ -35,7 +37,9 @@ function AppLayout() {
   return (
     <TourProvider>
       <RealtimeBridge />
-      <GlassNav />
+      <ErrorBoundary>
+        <GlassNav />
+      </ErrorBoundary>
       <ProductTour />
     </TourProvider>
   );

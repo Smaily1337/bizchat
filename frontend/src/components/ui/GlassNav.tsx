@@ -6,6 +6,7 @@ import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";
 import { GlassButton } from "./GlassButton";
 import { SidebarExpandable } from "./SidebarExpandable";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 
 function LogoutButton({ className = "!w-full" }: { className?: string }) {
@@ -532,7 +533,9 @@ export function GlassNav() {
         </div>
 
         <main className="mx-auto w-full max-w-shell flex-1 px-4 py-6 sm:px-6 sm:py-8">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
 
         <nav className="mobile-tabbar" aria-label="Szybka nawigacja">

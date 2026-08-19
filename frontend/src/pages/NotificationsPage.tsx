@@ -44,6 +44,28 @@ function leadLabel(minutes: number): string {
   return `${minutes} min`;
 }
 
+function safeFormatDate(val?: string | null): string {
+  if (!val) return "25.08.2026";
+  try {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return "25.08.2026";
+    return d.toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric" });
+  } catch {
+    return "25.08.2026";
+  }
+}
+
+function safeFormatTime(val?: string | null): string {
+  if (!val) return "14:30";
+  try {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return "14:30";
+    return d.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "14:30";
+  }
+}
+
 export function NotificationsPage() {
   const { section } = useParams<{ section?: string }>();
   const [searchParams] = useSearchParams();
@@ -283,6 +305,11 @@ export function NotificationsPage() {
     [customers, sendForm.customer_id]
   );
 
+  const currentTitle = (active && titles[active]) || {
+    h: "Powiadomienia",
+    s: "Wybierz moduł powiadomień",
+  };
+
   return (
     <div className="space-y-6">
       {active ? (
@@ -292,8 +319,8 @@ export function NotificationsPage() {
             Wróć do powiadomień
           </Link>
           <div>
-            <h1 className="font-display text-3xl font-bold">{titles[active as keyof typeof titles].h}</h1>
-            <p className="mt-1 text-sm text-[var(--muted)]">{titles[active as keyof typeof titles].s}</p>
+            <h1 className="font-display text-3xl font-bold">{currentTitle.h}</h1>
+            <p className="mt-1 text-sm text-[var(--muted)]">{currentTitle.s}</p>
           </div>
         </header>
       ) : (
@@ -527,23 +554,8 @@ export function NotificationsPage() {
                   : selectedCust?.name || "Anna Kowalska"
               }
               serviceName={selectedAppt?.service_name || "Strzyżenie & Modelowanie"}
-              dateStr={
-                selectedAppt
-                  ? new Date(selectedAppt.start_at).toLocaleDateString("pl-PL", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })
-                  : "25.08.2026"
-              }
-              timeStr={
-                selectedAppt
-                  ? new Date(selectedAppt.start_at).toLocaleTimeString("pl-PL", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "14:30"
-              }
+              dateStr={safeFormatDate(selectedAppt?.start_at)}
+              timeStr={safeFormatTime(selectedAppt?.start_at)}
             />
           </div>
         </div>

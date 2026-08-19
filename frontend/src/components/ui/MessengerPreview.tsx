@@ -1,7 +1,7 @@
 import React from "react";
 
 interface MessengerPreviewProps {
-  body: string;
+  body?: string;
   salonName?: string;
   customerName?: string;
   serviceName?: string;
@@ -13,7 +13,7 @@ interface MessengerPreviewProps {
 }
 
 export function formatTemplateText(
-  raw: string,
+  raw?: string | null,
   sample: {
     klient?: string;
     usluga?: string;
@@ -33,16 +33,16 @@ export function formatTemplateText(
     firma: sample.firma || "Studio Urody Automovia",
   };
 
-  let res = raw;
+  let res = String(raw);
   for (const [k, v] of Object.entries(defaults)) {
     const reg = new RegExp(`\\{\\{\\s*${k}\\s*\\}\\}`, "gi");
-    res = res.replace(reg, v);
+    res = res.replace(reg, String(v || ""));
   }
   return res;
 }
 
 export const MessengerPreview: React.FC<MessengerPreviewProps> = ({
-  body,
+  body = "",
   salonName = "Automovia Salon",
   customerName = "Anna Kowalska",
   serviceName = "Strzyżenie & Modelowanie",
@@ -52,8 +52,10 @@ export const MessengerPreview: React.FC<MessengerPreviewProps> = ({
   showQuickReplies = true,
   className = "",
 }) => {
+  const safeSalonName = String(salonName || "Automovia Salon");
+  const avatarLetter = (safeSalonName.trim()[0] || "A").toUpperCase();
   const renderedText = formatTemplateText(body, {
-    firma: salonName,
+    firma: safeSalonName,
     klient: customerName,
     usluga: serviceName,
     data: dateStr,
@@ -61,7 +63,7 @@ export const MessengerPreview: React.FC<MessengerPreviewProps> = ({
     cena: priceStr,
   });
 
-  const isReminder = /przypom|wizyt|potwierd|termin/i.test(body);
+  const isReminder = body ? /przypom|wizyt|potwierd|termin/i.test(String(body)) : false;
 
   return (
     <div
@@ -76,7 +78,7 @@ export const MessengerPreview: React.FC<MessengerPreviewProps> = ({
         <div className="flex items-center gap-3">
           <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-[#0084FF] to-[#00C6FF] text-white shadow-md">
             <span className="font-display text-sm font-bold tracking-tight">
-              {salonName.charAt(0).toUpperCase()}
+              {avatarLetter}
             </span>
             <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--surface-solid)] bg-emerald-500" />
           </div>
@@ -129,7 +131,7 @@ export const MessengerPreview: React.FC<MessengerPreviewProps> = ({
           {/* Message Bubble Row */}
           <div className="flex items-end gap-2">
             <div className="h-6 w-6 shrink-0 rounded-full bg-gradient-to-tr from-[#0084FF] to-[#00C6FF] text-[10px] font-bold text-white flex items-center justify-center shadow-sm">
-              {salonName.charAt(0).toUpperCase()}
+              {avatarLetter}
             </div>
 
             <div className="max-w-[85%] space-y-1">
