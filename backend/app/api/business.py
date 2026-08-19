@@ -7,9 +7,12 @@ from fastapi import APIRouter, HTTPException
 from app.api.deps import CurrentOwner, DbSession, RequireOwnerOrAdmin
 from app.models import Business
 from app.schemas import BusinessOut, BusinessUpdate, LicenseUsageOut
+import logging
 from app.services import limits as limits_service
 import httpx
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 class MetaLinkRequest(BaseModel):
     access_token: str
@@ -105,12 +108,22 @@ async def link_meta_account(
         await db.flush()
 
         # Subscribe app to page webhooks
-        await client.post(
+        sub_resp = await client.post(
             f"https://graph.facebook.com/v21.0/{page_id}/subscribed_apps",
             params={
                 "subscribed_fields": "messages,messaging_postbacks,messaging_optins,message_reads,standby",
                 "access_token": page_token,
             },
         )
+        if sub_resp.is_error:
+            logger.warning(
+                "Meta webhook subscription for page %s (%s) returned status %s: %s",
+                page_id,
+                page_name,
+                sub_resp.status_code,
+                sub_resp.text,
+            )
+        else:
+            logger.info("Successfully subscribed webhook for Meta page %s (%s)", page_id, page_name)
 
         return {"ok": True, "page_id": page_id, "page_name": page_name}
