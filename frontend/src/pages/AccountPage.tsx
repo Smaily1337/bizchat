@@ -7,9 +7,41 @@ import { useClerk } from "@clerk/clerk-react";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 
+function LogoutSection({ onLogout }: { onLogout: () => void }) {
+  if (clerkEnabled()) {
+    return <LogoutSectionClerk onLogout={onLogout} />;
+  }
+  return (
+    <GlassButton
+      type="button"
+      variant="ghost"
+      onClick={onLogout}
+      className="text-[var(--danger)] border border-[var(--danger)]/30 hover:bg-[var(--danger)]/10 !w-auto"
+    >
+      Wyloguj się
+    </GlassButton>
+  );
+}
+
+function LogoutSectionClerk({ onLogout }: { onLogout: () => void }) {
+  const { signOut } = useClerk();
+  return (
+    <GlassButton
+      type="button"
+      variant="ghost"
+      onClick={() => {
+        onLogout();
+        void signOut();
+      }}
+      className="text-[var(--danger)] border border-[var(--danger)]/30 hover:bg-[var(--danger)]/10 !w-auto"
+    >
+      Wyloguj się
+    </GlassButton>
+  );
+}
+
 export function AccountPage() {
   const { owner, acceptToken, token, resendVerification, business, refreshBusiness, logout } = useAuth();
-  const clerk = clerkEnabled() ? useClerk() : null;
   const [name, setName] = useState(owner?.name || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -49,9 +81,6 @@ export function AccountPage() {
 
   function handleLogout() {
     logout();
-    if (clerk) {
-      void clerk.signOut();
-    }
   }
 
   async function saveProfile(e: FormEvent) {
@@ -202,9 +231,7 @@ export function AccountPage() {
         <p className="text-xs text-[var(--muted)]">
           Wyloguj się ze swojego konta na tym urządzeniu.
         </p>
-        <GlassButton type="button" variant="ghost" onClick={handleLogout} className="text-[var(--danger)] border border-[var(--danger)]/30 hover:bg-[var(--danger)]/10 !w-auto">
-          Wyloguj się
-        </GlassButton>
+        <LogoutSection onLogout={handleLogout} />
       </GlassCard>
 
       {(msg || err) && (

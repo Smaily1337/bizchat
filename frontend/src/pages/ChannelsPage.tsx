@@ -131,6 +131,61 @@ function channelEnabled(
   return keys.some((k) => set.has(k));
 }
 
+function initFb(appId: string) {
+  if (typeof window !== "undefined" && window.FB && typeof window.FB.init === "function") {
+    try {
+      window.FB.init({
+        appId: appId,
+        cookie: true,
+        xfbml: true,
+        version: "v21.0",
+      });
+      return true;
+    } catch (err) {
+      console.warn("FB.init error:", err);
+    }
+  }
+  return false;
+}
+
+function loadFacebookSdk(appId: string): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    if (typeof window !== "undefined" && window.FB && typeof window.FB.login === "function") {
+      initFb(appId);
+      return resolve(window.FB);
+    }
+
+    window.fbAsyncInit = function () {
+      initFb(appId);
+      resolve(window.FB);
+    };
+
+    if (document.getElementById("facebook-jssdk")) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (window.FB && typeof window.FB.login === "function") {
+          clearInterval(interval);
+          initFb(appId);
+          resolve(window.FB);
+        } else if (attempts > 50) {
+          clearInterval(interval);
+          reject(new Error("Nie udało się zainicjalizować SDK Facebooka (timeout)."));
+        }
+      }, 100);
+      return;
+    }
+
+    const js = document.createElement("script");
+    js.id = "facebook-jssdk";
+    js.src = "https://connect.facebook.net/pl_PL/sdk.js";
+    js.async = true;
+    js.defer = true;
+    js.onerror = () => reject(new Error("Nie udało się pobrać skryptu Facebook SDK."));
+    document.body.appendChild(js);
+  });
+}
+
 export function ChannelsPage() {
   const { section: active } = useParams<{ section: string }>();
   const [msg, setMsg] = useState("");
@@ -148,61 +203,6 @@ export function ChannelsPage() {
       .then(setHealth)
       .catch(() => setHealth(null));
   }, []);
-
-  function initFb(appId: string) {
-    if (window.FB && typeof window.FB.init === "function") {
-      try {
-        window.FB.init({
-          appId: appId,
-          cookie: true,
-          xfbml: true,
-          version: "v21.0",
-        });
-        return true;
-      } catch (err) {
-        console.warn("FB.init error:", err);
-      }
-    }
-    return false;
-  }
-
-  function loadFacebookSdk(appId: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (window.FB && typeof window.FB.login === "function") {
-        initFb(appId);
-        return resolve(window.FB);
-      }
-
-      window.fbAsyncInit = function () {
-        initFb(appId);
-        resolve(window.FB);
-      };
-
-      if (document.getElementById("facebook-jssdk")) {
-        let attempts = 0;
-        const interval = setInterval(() => {
-          attempts++;
-          if (window.FB && typeof window.FB.login === "function") {
-            clearInterval(interval);
-            initFb(appId);
-            resolve(window.FB);
-          } else if (attempts > 50) {
-            clearInterval(interval);
-            reject(new Error("Nie udało się zainicjalizować SDK Facebooka (timeout)."));
-          }
-        }, 100);
-        return;
-      }
-
-      const js = document.createElement("script");
-      js.id = "facebook-jssdk";
-      js.src = "https://connect.facebook.net/pl_PL/sdk.js";
-      js.async = true;
-      js.defer = true;
-      js.onerror = () => reject(new Error("Nie udało się pobrać skryptu Facebook SDK."));
-      document.body.appendChild(js);
-    });
-  }
 
   useEffect(() => {
     const appId = (import.meta.env.VITE_META_APP_ID || "").trim();
@@ -424,12 +424,12 @@ export function ChannelsPage() {
           <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-glass-border bg-[var(--surface-solid)] p-8 text-center">
             <svg aria-hidden viewBox="0 0 24 24" className="w-12 h-12 text-blue-600 mb-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             <h3 className="font-semibold text-lg text-[var(--text-bright)]">
-              {(business?.settings as any)?.meta_page_name
-                ? `Połączono z: ${(business?.settings as any)?.meta_page_name}`
+              {typeof business?.settings?.meta_page_name === "string" && business.settings.meta_page_name
+                ? `Połączono z: ${business.settings.meta_page_name}`
                 : "Połącz z fanpage'em i Instagramem"}
             </h3>
             <p className="mt-2 text-sm text-[var(--muted)] max-w-sm mb-6">
-              {(business?.settings as any)?.meta_page_id
+              {typeof business?.settings?.meta_page_id === "string" && business.settings.meta_page_id
                 ? "Twój fanpage jest połączony. Zaloguj się ponownie, by zmienić powiązany profil."
                 : "Jednym kliknięciem wybierz swój profil, aby aktywować integrację."}
             </p>
@@ -445,11 +445,11 @@ export function ChannelsPage() {
 
                 setMsg("Inicjowanie okna logowania Facebook...");
                 try {
-                  const FB = await loadFacebookSdk(appId);
+                  const FB = await loadFacebookSdk(appId) as { login: (cb: (res: { authResponse?: { accessToken?: string } }) => void, opts: { scope: string }) => void };
                   initFb(appId);
 
                   FB.login(
-                    (response: any) => {
+                    (response) => {
                       if (response?.authResponse?.accessToken) {
                         setMsg("Pobrano uprawnienia z Meta. Zapisywanie konfiguracji i podpinanie webhooka...");
                         channelsApi
@@ -460,7 +460,7 @@ export function ChannelsPage() {
                               window.location.reload();
                             }, 1000);
                           })
-                          .catch((err) => {
+                          .catch((err: Error) => {
                             setMsg("Błąd połączenia na backendzie: " + (err.message || String(err)));
                           });
                       } else {
@@ -469,13 +469,13 @@ export function ChannelsPage() {
                     },
                     { scope: "pages_show_list,pages_messaging,pages_read_engagement,pages_manage_metadata" }
                   );
-                } catch (err: any) {
-                  setMsg("Błąd: " + (err.message || String(err)));
+                } catch (err) {
+                  setMsg("Błąd: " + (err instanceof Error ? err.message : String(err)));
                 }
               }}
               className="!bg-[#1877F2] hover:!bg-[#1877F2]/90 !text-white font-medium"
             >
-              {(business?.settings as any)?.meta_page_name ? 'Zmień połączony profil (zaloguj ponownie)' : 'Połącz profil z Meta'}
+              {typeof business?.settings?.meta_page_name === "string" && business.settings.meta_page_name ? 'Zmień połączony profil (zaloguj ponownie)' : 'Połącz profil z Meta'}
             </GlassButton>
           </div>
         </GlassCard>

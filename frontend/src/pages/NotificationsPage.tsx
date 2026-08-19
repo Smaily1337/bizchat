@@ -152,6 +152,36 @@ export function NotificationsPage() {
     [templates, sendForm.template_id],
   );
 
+  const selectedAppt = useMemo(
+    () => appointments.find((a) => a.id === sendForm.appointment_id) || appointments[0],
+    [appointments, sendForm.appointment_id]
+  );
+  const selectedCust = useMemo(
+    () => customers.find((c) => c.id === sendForm.customer_id) || customers[0],
+    [customers, sendForm.customer_id]
+  );
+
+  const titles: Record<string, { h: string; s: string }> = {
+    send: { h: "Wysyłka", s: "Wyślij powiadomienie do klienta lub wizyty" },
+    reminders: { h: "Przypomnienia", s: "Automatyczne lead time i kanał domyślny" },
+    templates: { h: "Szablony", s: "Treści SMS / e-mail / Messenger" },
+    log: { h: "Historia", s: "Log wysłanych powiadomień" },
+  };
+
+  const VARIABLE_CHIPS = [
+    { tag: "{{klient}}", label: "Klient" },
+    { tag: "{{usluga}}", label: "Usługa" },
+    { tag: "{{data}}", label: "Data" },
+    { tag: "{{godzina}}", label: "Godzina" },
+    { tag: "{{cena}}", label: "Cena" },
+    { tag: "{{firma}}", label: "Firma" },
+  ];
+
+  const currentTitle = (active && titles[active]) || {
+    h: "Powiadomienia",
+    s: "Wybierz moduł powiadomień",
+  };
+
   useEffect(() => {
     if (selectedTemplate) {
       setSendForm((f) => ({ ...f, body: selectedTemplate.body }));
@@ -279,36 +309,6 @@ export function NotificationsPage() {
   if (active && !["send", "reminders", "templates", "log"].includes(active)) {
     return <Navigate to="/notifications/send" replace />;
   }
-
-  const titles: Record<string, { h: string; s: string }> = {
-    send: { h: "Wysyłka", s: "Wyślij powiadomienie do klienta lub wizyty" },
-    reminders: { h: "Przypomnienia", s: "Automatyczne lead time i kanał domyślny" },
-    templates: { h: "Szablony", s: "Treści SMS / e-mail / Messenger" },
-    log: { h: "Historia", s: "Log wysłanych powiadomień" },
-  };
-
-  const VARIABLE_CHIPS = [
-    { tag: "{{klient}}", label: "Klient" },
-    { tag: "{{usluga}}", label: "Usługa" },
-    { tag: "{{data}}", label: "Data" },
-    { tag: "{{godzina}}", label: "Godzina" },
-    { tag: "{{cena}}", label: "Cena" },
-    { tag: "{{firma}}", label: "Firma" },
-  ];
-
-  const selectedAppt = useMemo(
-    () => appointments.find((a) => a.id === sendForm.appointment_id) || appointments[0],
-    [appointments, sendForm.appointment_id]
-  );
-  const selectedCust = useMemo(
-    () => customers.find((c) => c.id === sendForm.customer_id) || customers[0],
-    [customers, sendForm.customer_id]
-  );
-
-  const currentTitle = (active && titles[active]) || {
-    h: "Powiadomienia",
-    s: "Wybierz moduł powiadomień",
-  };
 
   return (
     <div className="space-y-6">
