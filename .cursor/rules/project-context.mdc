@@ -1,0 +1,108 @@
+---
+description: Pełny kontekst projektu Automovia (bizchat) — zawsze czytaj przy pierwszym zadaniu
+globs:
+alwaysApply: true
+---
+
+# Automovia (bizchat) — kontekst projektu
+
+## Właściciel
+Bartłomiej Różycki. Mówi po polsku. Nie pytaj o zgodę — po prostu pisz kod i stosuj zmiany.
+
+## Repo
+- GitHub: `Smaily1337/bizchat`
+- Aktywny branch: `cursor/clerk-nextjs-auth-0cd1`
+- Marka w UI: **Automovia** (kod/infra nadal `bizchat-*`)
+
+## Architektura
+
+### Frontend — `frontend/`
+- **Vite + React + TypeScript + Tailwind CSS**
+- Design system: glass-morphism (GlassCard, GlassButton, GlassNav, GlassInput, SidebarExpandable)
+- Tokeny kolorów w `frontend/src/styles/tokens.css` — dwa motywy: `[data-theme="light"]` i `[data-theme="dark"]`
+- **UWAGA:** Tailwind `dark:` prefix NIE DZIAŁA — motyw jest sterowany przez `data-theme`, nie klasę `dark`. Używaj zmiennych CSS (`var(--text-bright)`, `var(--bg)`, `var(--ink)` itd.)
+- Auth: `@clerk/clerk-react` + `ClerkSessionBridge` → `POST /api/auth/clerk`
+- Routing: React Router v6
+- Strony: Calendar, Dashboard, Appointments, Customers, Inbox, Notifications, Settings, Reports, Staff, Channels, Feedback, Hours, PublicBooking, Account, Platform, Users
+- API client: `frontend/src/api/client.ts` + `types.ts`
+
+### Backend — `backend/`
+- **FastAPI + SQLAlchemy + Alembic + PostgreSQL**
+- `backend/app/main.py` — główny entry point
+- `backend/app/api/` — endpointy (appointments, inbox, customers, notifications, auth, webhooks, staff, hours, channels_status, feedback_waitlist, public_booking, payments, knowledge, tags, calendar, business, users, platform, ws)
+- `backend/app/bot/` — silnik chatbota (intents, state_machine, engine) + adaptery (meta, telegram, widget, whatsapp)
+- `backend/app/models/` — modele SQLAlchemy
+- `backend/app/services/` — logika biznesowa (booking, onboarding, payments, mailer, limits, appointment_actions, google_calendar, webhook_business)
+- Auth: Clerk JWT (`backend/app/api/deps.py`, `clerk_jwt.py`) + legacy email/password
+- Migracje: `backend/alembic/versions/0001-0007`
+- Seed: `backend/app/scripts/seed.py` (tylko dev, nie production)
+
+### Landing — `docs/`
+- Statyczny HTML/CSS/JS (Automovia landing + checkout)
+- `docs/checkout.html` + `checkout.js` — demo płatności z fakturą
+
+### Next.js Clerk scaffold — `web/`
+- Demo @clerk/nextjs (keyless local), nie jest głównym panelem
+
+### Widget — `widget/`
+- Embeddable chat widget (`bizchat-widget.js`)
+
+## Deployment — Google Cloud
+- **Projekt GCP:** `bizchat-504420`
+- **Region:** `europe-central2`
+- **Cloud Run services:**
+  - `bizchat-panel` — frontend (Vite build → nginx) — `https://bizchat-panel-702906501614.europe-central2.run.app`
+  - `bizchat-api` — backend FastAPI — `https://bizchat-api-702906501614.europe-central2.run.app`
+  - `bizchat-landing` — docs/ landing — `https://bizchat-landing-702906501614.europe-central2.run.app`
+- **Build config:** `cloudbuild.panel.yaml`
+- **Dockerfiles:** `frontend/Dockerfile`, `backend/Dockerfile`, `docs/Dockerfile`
+
+### Deploy komendy (Cloud Shell):
+```bash
+cd ~/bizchat
+git fetch origin
+git checkout cursor/clerk-nextjs-auth-0cd1
+git pull
+
+# Panel (frontend):
+gcloud builds submit --config=cloudbuild.panel.yaml --substitutions=_IMAGE=gcr.io/bizchat-504420/bizchat-panel,_VITE_API_URL=https://bizchat-api-702906501614.europe-central2.run.app
+gcloud run deploy bizchat-panel --image=gcr.io/bizchat-504420/bizchat-panel --region=europe-central2 --allow-unauthenticated
+
+# API (backend):
+gcloud builds submit --tag=gcr.io/bizchat-504420/bizchat-api backend/
+gcloud run deploy bizchat-api --image=gcr.io/bizchat-504420/bizchat-api --region=europe-central2 --allow-unauthenticated
+
+# Landing:
+gcloud builds submit --tag=gcr.io/bizchat-504420/bizchat-landing docs/
+gcloud run deploy bizchat-landing --image=gcr.io/bizchat-504420/bizchat-landing --region=europe-central2 --allow-unauthenticated
+```
+
+## Kluczowe typy (frontend)
+- `Appointment`: id, customer_id, customer_name, service_id, service_name, staff_id, start_at, end_at, status, notes
+- `Customer`: id, name, phone, email, external_ids (Record<string,string>), tags
+- `Conversation`, `InboxMessage`, `NotificationTemplate`, `NotificationSettings`
+- `Service`, `StaffMember`, `Business`, `DashboardAnalytics`
+
+## Demo credentials (tylko local dev, NIE production)
+- `owner@bizchat.local` / `changeme`
+- `admin@bizchat.local` / `changeme`
+
+## Meta / WhatsApp / Telegram
+- Meta wymaga: `META_PAGE_ACCESS_TOKEN`, `META_APP_SECRET`, webhook callback z `?business_id=`
+- Telegram: `TELEGRAM_BOT_TOKEN` per business
+- Widget: embeddable, no auth needed
+
+## Co zostało ostatnio zrobione
+1. Kalendarz — naprawione ucięte wydarzenia (absolute positioning w kolumnach dniowych, nie w komórkach godzinowych)
+2. Kliknięcie w wydarzenie → panel z danymi kontaktowymi klienta + 3 akcje: Przełóż / Powiadom / Napisz wiadomość
+3. Query params na stronach docelowych (Appointments ?edit=, Notifications ?appointment=, Inbox ?compose=1&customer=)
+4. Motyw jasny — naprawiony kontrast przycisków (GlassButton primary: `text-[var(--bg)]` zamiast `dark:`)
+5. Expandable sidebar: Powiadomienia i Ustawienia z podsekcjami
+6. Clerk auth w Vite panelu + ClerkSessionBridge
+7. Landing z checkout + demo faktura
+8. Role gates, channel health, account page
+
+## Znane ograniczenia / TODO
+- Clerk `VITE_CLERK_PUBLISHABLE_KEY` trzeba ustawić w Cloud Run env vars jeśli chcesz Clerk auth w produkcji
+- Meta integration wymaga tokenów od użytkownika
+- `dark:` Tailwind prefix nie działa — zawsze używaj CSS variables z tokens.css
