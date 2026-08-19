@@ -234,7 +234,6 @@ export function SettingsPage() {
             Ciemny
           </GlassButton>
         </div>
-      </GlassCard>
       )}
 
       {active === "plan" && (
