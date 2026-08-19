@@ -14,17 +14,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        baseTheme: dark,
-        variables: { colorPrimary: "#2dd4bf" },
-      }}
-    >
-      <html lang="en">
-        <body className="min-h-screen bg-[#07090c] font-sans text-zinc-100 antialiased">
+    <html lang="en">
+      <body className="min-h-screen bg-[#07090c] font-sans text-zinc-100 antialiased">
+        <ClerkProvider
+          appearance={{
+            baseTheme: dark,
+            variables: { colorPrimary: "#2dd4bf" },
+          }}
+        >
           {children}
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

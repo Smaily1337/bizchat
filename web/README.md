@@ -1,111 +1,62 @@
-# Clerk authentication (Next.js 14 App Router)
+# Automovia Web — Clerk auth (Next.js 14)
 
-Self-contained Next.js app under `web/` with Clerk passwordless OTP + Google/Apple SSO,
-Dark Glassmorphism auth pages, protected `/dashboard`, and a FastAPI JWT verification example.
+## Dlaczego localhost „nie działał”
 
-## 1. Install Clerk (Next.js)
+Bez pliku **`.env.local`** z kluczami Clerka Next.js nie odpala logowania (puste `pk_` / brak kluczy → błąd na `/sign-in`).
+
+W Cloud Agent nie da się otworzyć `clerk auth login` w przeglądarce, więc używamy **keyless** (tymczasowe klucze deweloperskie). Na Twoim laptopie podłączysz właściwą aplikację Clerka.
+
+## Odpalanie u Ciebie (zalecane)
 
 ```bash
+# 1) CLI
+curl -fsSL https://clerk.com/install | bash
+export PATH="$HOME/.local/bin:$PATH"
+
+# 2) Wejdź w projekt
 cd web
-npm install @clerk/nextjs @clerk/themes
-# or full deps:
 npm install
-```
 
-Exact Clerk packages:
+# 3) Zaloguj się do Clerka (otworzy przeglądarkę)
+clerk auth login
 
-```bash
-npm install @clerk/nextjs @clerk/themes
-```
+# 4) Podłącz TWOJĄ aplikację Clerk
+clerk init --app app_3I7o5cifFaWX3i8CFJx6VpzFOr8 -y --no-skills
 
-## 2. Clerk Dashboard configuration (OTP + SSO)
-
-In [Clerk Dashboard](https://dashboard.clerk.com) → your application:
-
-1. **User & Authentication → Email, Phone, Username**
-   - Enable **Email address**
-   - Enable **Email verification code** (OTP) for sign-in / sign-up
-   - Disable **Password** if you want passwordless-only
-2. **User & Authentication → Social Connections**
-   - Enable **Google**
-   - Enable **Apple** (requires Apple Developer credentials)
-3. **Paths**
-   - Sign-in URL: `/sign-in`
-   - Sign-up URL: `/sign-up`
-   - After sign-in/up: `/dashboard`
-
-Copy keys into `web/.env.local` (see `.env.example`).
-
-## 3. Folder structure
-
-```
-web/
-├── middleware.ts                          # Protect /dashboard (and non-public routes)
-├── app/
-│   ├── layout.tsx                         # <ClerkProvider>
-│   ├── page.tsx                           # Marketing / entry
-│   ├── globals.css
-│   ├── sign-in/[[...sign-in]]/page.tsx    # Custom Dark Glass SignIn
-│   ├── sign-up/[[...sign-up]]/page.tsx    # Custom Dark Glass SignUp
-│   └── dashboard/page.tsx                 # Protected (middleware + auth())
-├── components/
-│   ├── AuthShell.tsx                      # bg-black/40 + backdrop-blur-md + border-white/10
-│   └── ApiTokenDemo.tsx                   # getToken() → FastAPI Bearer
-├── lib/clerk-appearance.ts
-└── backend-examples/fastapi_clerk_auth.py
-```
-
-## 4. Run Next.js
-
-```bash
-cd web
-cp .env.example .env.local   # paste real Clerk keys
-npm install
+# 5) Start
 npm run dev
 ```
 
-Open http://localhost:3000/sign-in
+Otwórz:
+- http://localhost:3000 — przyciski **Sign up / Sign in** u góry
+- http://localhost:3000/sign-up — rejestracja
+- http://localhost:3000/sign-in — logowanie
 
-## 5. Pass Clerk token to Python (FastAPI)
+Po rejestracji w nav pojawi się avatar (`UserButton`).
 
-### Frontend (browser)
-
-```ts
-"use client";
-import { useAuth } from "@clerk/nextjs";
-
-const { getToken } = useAuth();
-const token = await getToken(); // short-lived session JWT
-
-await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/me`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
-```
-
-### Frontend (Server Component / Route Handler)
-
-```ts
-import { auth } from "@clerk/nextjs/server";
-
-const { getToken } = await auth();
-const token = await getToken();
-```
-
-### Backend
-
-1. In Clerk Dashboard → **API Keys** / JWT, copy **JWKS URL** and **Issuer** (Frontend API URL).
-2. Run the example:
+## Szybki start bez logowania do Clerka (keyless)
 
 ```bash
-export CLERK_JWKS_URL="https://YOUR_INSTANCE.clerk.accounts.dev/.well-known/jwks.json"
-export CLERK_ISSUER="https://YOUR_INSTANCE.clerk.accounts.dev"
-export CLERK_AUTHORIZED_PARTIES="http://localhost:3000"
-pip install fastapi uvicorn "PyJWT[crypto]" httpx
-uvicorn backend-examples.fastapi_clerk_auth:app --reload --port 8000
+cd web
+npm install
+clerk init --framework next --pm npm --keyless -y --no-skills
+npm run dev
 ```
 
-Never send `CLERK_SECRET_KEY` to the browser. Verify JWTs with JWKS on the API; use the secret only for Clerk Backend API (user lookup, etc.).
+albo:
 
-## Middleware summary
+```bash
+./start-dev.sh
+```
 
-`middleware.ts` uses `clerkMiddleware` + `createRouteMatcher`. Public: `/`, `/sign-in`, `/sign-up`. Everything else (including `/dashboard`) calls `auth.protect()`.
+## Dashboard Clerka (OTP + Google/Apple)
+
+W aplikacji `app_3I7o5cifFaWX3i8CFJx6VpzFOr8`:
+1. Email → **Email verification code** ON, Password OFF (opcjonalnie)
+2. Social → Google + Apple ON
+
+## Health check
+
+```bash
+clerk doctor
+```
