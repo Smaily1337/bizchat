@@ -251,17 +251,20 @@ class CoreBotEngine:
         inbound: InboundMessage,
         intent: Intent,
     ) -> str:
+        business = await self.db.get(Business, business_id)
+        b_name = business.name if business else "firmy"
+
         if intent == Intent.greeting:
             name = (customer.name or "").strip()
             hello = f"Hej{(' ' + name) if name and name.lower() not in {'klient', 'messenger'} else ''}!"
             return (
-                f"{hello} 👋 Tu asystent salonu.\n\n"
-                "Mogę:\n"
-                "• umówić wizytę\n"
-                "• pokazać Twoje terminy\n"
-                "• anulować wizytę\n"
-                "• odpowiedzieć na pytania (cennik, godziny)\n\n"
-                "Napisz np. „umów wizytę” albo zadaj pytanie."
+                f"{hello} 👋 Tu wirtualny asystent {b_name}.\n\n"
+                "Mogę pomóc w:\n"
+                "• zarezerwowaniu usługi / terminu\n"
+                "• sprawdzeniu Twoich rezerwacji\n"
+                "• przełożeniu lub anulowaniu terminu\n"
+                "• odpowiedzi na pytania o ofertę, cennik i godziny pracy\n\n"
+                "Napisz np. na jaką usługę chcesz się zapisać lub zadaj pytanie."
             )
 
         if intent == Intent.booking:

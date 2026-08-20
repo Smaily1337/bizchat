@@ -45,10 +45,23 @@ GREETING_EXACT = {
 }
 
 BOOKING_KEYWORDS = {
-    "umow", "rezerw", "wizyt", "termin", "strzyz", "wlos", "paznok", "manicur",
-    "pedicur", "masaz", "brod", "barber", "fryzjer", "farb", "koloryz", "zabieg",
-    "zapis", "potrzebuj", "chce", "chcial", "wolne", "wolny", "godzin", "kiedy mozna",
-    "przyjsc", "book", "appointment", "sciac", "obciac", "balejaz", "makijaz", "pielegnac",
+    # Ogólne rezerwacje i umawianie
+    "umow", "rezerw", "wizyt", "termin", "spotkan", "konsultac", "sesj", "zapis",
+    "potrzebuj", "chce", "chcial", "wolne", "wolny", "godzin", "kiedy mozna",
+    "przyjsc", "book", "appointment", "wolne terminy", "zapisac", "zapisz",
+    # Warsztat / Serwis / Auto / Montaż:
+    "wymian", "opon", "olej", "klimatyzac", "przeglad", "serwis", "napraw", "auto",
+    "samochod", "diagnostyk", "hamulc", "rozrzad", "blacharz", "lakiernik", "montaz",
+    "pomiar", "geometri", "wulkanizac", "usterk",
+    # Beauty & Barber & Wellness:
+    "strzyz", "wlos", "paznok", "manicur", "pedicur", "masaz", "brod", "barber",
+    "fryzjer", "farb", "koloryz", "zabieg", "sciac", "obciac", "balejaz", "makijaz",
+    "pielegnac", "rzes", "brwi", "depilac", "kosmetycz", "peeling",
+    # Zdrowie / Fizjoterapia / Medycyna / Trening:
+    "fizjo", "rehabilitac", "trening", "terapi", "badani", "stomatolog", "dentyst",
+    "masazysta", "trener", "porad", "diagnoz", "plomb", "konsultacj",
+    # Usługi specjalistyczne / Doradztwo / Szkolenia:
+    "wycen", "ogledzin", "prawn", "ksiegow", "korepetycj", "lekcj", "kurs", "audyt",
 }
 
 CANCEL_KEYWORDS = {
