@@ -76,11 +76,11 @@ export function GlassNav() {
     .toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans flex overflow-hidden selection:bg-[var(--primary-container)] selection:text-white">
+    <div className="h-screen w-full flex overflow-hidden bg-[var(--bg)] text-[var(--text)] font-sans relative selection:bg-[var(--primary-container)] selection:text-white">
       {/* SideNavBar Desktop */}
-      <aside className="hidden md:flex flex-col w-64 h-screen shrink-0 sticky top-0 z-30 bg-[var(--surface-solid)]/90 backdrop-blur-2xl border-r border-[var(--glass-border)] shadow-2xl overflow-y-auto">
+      <aside className="hidden md:flex flex-col w-64 h-full shrink-0 bg-[var(--surface-solid)] border-r border-[var(--glass-border)] shadow-2xl z-30 overflow-y-auto select-none">
         {/* Brand / Salon Header */}
-        <div className="p-5 pb-4 flex items-center gap-3 border-b border-white/5">
+        <div className="p-5 pb-4 flex items-center gap-3 border-b border-white/5 shrink-0">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 text-white">
             <span className="material-symbols-outlined text-[22px]">hub</span>
           </div>
@@ -89,13 +89,13 @@ export function GlassNav() {
               {business?.name || "Automovia"}
             </h1>
             <p className="text-[11px] font-medium text-[var(--muted)] truncate">
-              Panel zarządzania salonem
+              Panel zarządzania
             </p>
           </div>
         </div>
 
         {/* Navigation Links */}
-        <div className="flex flex-col gap-1 p-3 flex-1">
+        <div className="flex flex-col gap-1 p-3 flex-1 overflow-y-auto">
           {NAV_LINKS.map((item) => (
             <NavLink
               key={item.to}
@@ -129,11 +129,11 @@ export function GlassNav() {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-3 border-t border-white/5 space-y-2 bg-black/10">
+        <div className="p-3 border-t border-white/5 space-y-2 bg-black/10 shrink-0">
           <button
             type="button"
             onClick={toggleTheme}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--glass-border)] bg-white/5 hover:bg-white/10 text-[var(--text-bright)] text-xs font-medium transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--glass-border)] bg-white/5 hover:bg-white/10 text-[var(--text-bright)] text-xs font-medium transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-sm">
               {theme === "dark" ? "light_mode" : "dark_mode"}
@@ -143,7 +143,7 @@ export function GlassNav() {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-sm">logout</span>
             <span>Wyloguj się</span>
@@ -151,15 +151,15 @@ export function GlassNav() {
         </div>
       </aside>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu (z-index 100) */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
+        <div className="fixed inset-0 z-[100] md:hidden flex">
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
           <div className="relative flex flex-col w-72 h-full bg-[var(--surface-solid)] border-r border-[var(--glass-border)] p-4 overflow-y-auto z-10 shadow-2xl animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-3">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-3 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center text-white">
                   <span className="material-symbols-outlined text-[18px]">hub</span>
@@ -171,13 +171,13 @@ export function GlassNav() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 rounded-lg text-[var(--muted)] hover:text-white hover:bg-white/5"
+                className="p-1.5 rounded-lg text-[var(--muted)] hover:text-white hover:bg-white/5 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
             </div>
 
-            <div className="flex flex-col gap-1 flex-1">
+            <div className="flex flex-col gap-1 flex-1 overflow-y-auto">
               {NAV_LINKS.map((item) => (
                 <NavLink
                   key={item.to}
@@ -198,11 +198,11 @@ export function GlassNav() {
               ))}
             </div>
 
-            <div className="pt-3 border-t border-white/10 space-y-2">
+            <div className="pt-3 border-t border-white/10 space-y-2 shrink-0">
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[var(--glass-border)] bg-white/5 text-[var(--text-bright)] text-xs font-medium"
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[var(--glass-border)] bg-white/5 text-[var(--text-bright)] text-xs font-medium cursor-pointer"
               >
                 <span className="material-symbols-outlined text-sm">
                   {theme === "dark" ? "light_mode" : "dark_mode"}
@@ -212,7 +212,7 @@ export function GlassNav() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-medium"
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-medium cursor-pointer"
               >
                 <span className="material-symbols-outlined text-sm">logout</span>
                 <span>Wyloguj się</span>
@@ -223,23 +223,21 @@ export function GlassNav() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        {/* Abstract Background Glows */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-container/10 rounded-full blur-[120px] pointer-events-none -z-10 translate-x-1/3 -translate-y-1/3" />
-        <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none -z-10 translate-y-1/3" />
-
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative min-w-0 bg-[var(--bg)]">
         {/* TopAppBar */}
-        <header className="flex justify-between items-center px-6 sm:px-8 py-3.5 w-full bg-[var(--surface-solid)]/70 backdrop-blur-xl border-b border-[var(--glass-border)] shrink-0 z-20">
-          <div className="flex items-center gap-3 md:hidden">
+        <header className="flex justify-between items-center px-4 sm:px-8 py-3 w-full bg-[var(--surface-solid)]/80 backdrop-blur-xl border-b border-[var(--glass-border)] shrink-0 z-20">
+          <div className="flex items-center gap-2 md:hidden">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors cursor-pointer p-1 rounded-lg hover:bg-white/5"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[var(--text-bright)] border border-white/10 transition-colors cursor-pointer"
+              title="Otwórz menu nawigacji"
             >
-              <span className="material-symbols-outlined text-[24px]">menu</span>
+              <span className="material-symbols-outlined text-[20px]">menu</span>
+              <span className="text-xs font-bold">Menu</span>
             </button>
-            <span className="text-base font-bold text-[var(--text-bright)]">
-              {business?.name || "Automovia"}
+            <span className="text-sm font-bold text-[var(--text-bright)] truncate max-w-[140px]">
+              {pageTitle}
             </span>
           </div>
 
