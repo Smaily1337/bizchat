@@ -18,16 +18,32 @@ const NAV_LINKS = [
   { to: "/settings", label: "Ustawienia", icon: "settings" },
 ];
 
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Pulpit Dziś",
+  "/calendar": "Kalendarz Wizyt",
+  "/appointments": "Zarządzanie Wizytami",
+  "/inbox": "Wiadomości i Czat",
+  "/customers": "Baza Klientów",
+  "/staff": "Zarządzanie Zespołem",
+  "/channels": "Kanały i Integracje",
+  "/hours": "Godziny Pracy",
+  "/notifications": "Centrum Powiadomień",
+  "/reports": "Raporty i Statystyki",
+  "/settings": "Ustawienia Salonu",
+  "/settings/account": "Moje Konto",
+  "/users": "Użytkownicy",
+  "/feedback": "Opinie i Feedback",
+  "/platform": "Platform Admin",
+};
+
 export function GlassNav() {
   const { business, owner, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMobileMenuOpen(false);
     setProfileOpen(false);
   }, [location.pathname]);
 
@@ -48,6 +64,8 @@ export function GlassNav() {
     }
   }
 
+  const currentPath = "/" + (location.pathname.split("/")[1] || "");
+  const pageTitle = PAGE_TITLES[location.pathname] || PAGE_TITLES[currentPath] || "Automovia";
   const userInitials = (owner?.name || owner?.email || "AD")
     .split(" ")
     .map((p) => p[0])
@@ -56,51 +74,103 @@ export function GlassNav() {
     .toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans flex flex-col selection:bg-[var(--primary-container)] selection:text-white">
-      {/* Top Glass Navigation Bar (Always Visible!) */}
-      <header className="sticky top-0 z-40 w-full bg-[var(--surface-solid)]/90 backdrop-blur-2xl border-b border-[var(--glass-border)] shadow-md select-none">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 gap-4">
-          {/* Left: Brand / Logo */}
-          <div className="flex items-center gap-3 shrink-0">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                <span className="material-symbols-outlined text-[20px]">hub</span>
-              </div>
-              <div>
-                <span className="font-bold text-base tracking-tight text-[var(--text-bright)]">
-                  {business?.name || "Automovia"}
-                </span>
-                <span className="hidden sm:block text-[10px] text-[var(--muted)] font-medium">
-                  Panel biznesowy
-                </span>
-              </div>
-            </Link>
+    <div className="h-screen w-full flex overflow-hidden bg-[var(--bg)] text-[var(--text)] font-sans relative select-none">
+      {/* Permanent Left Sidebar Navigation */}
+      <aside className="w-64 h-full shrink-0 flex flex-col bg-[var(--surface-solid)] border-r border-[var(--glass-border)] shadow-2xl z-30">
+        {/* Brand / Salon Header */}
+        <div className="p-5 pb-4 flex items-center gap-3 border-b border-white/5 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 text-white">
+            <span className="material-symbols-outlined text-[22px]">hub</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base font-bold tracking-tight text-[var(--text-bright)] truncate">
+              {business?.name || "Automovia"}
+            </h1>
+            <p className="text-[11px] font-medium text-[var(--muted)] truncate">
+              Panel zarządzania
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="flex flex-col gap-1 p-3 flex-1 overflow-y-auto">
+          {NAV_LINKS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 group relative ${
+                  isActive
+                    ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow-lg shadow-blue-500/25 font-bold"
+                    : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 hover:translate-x-1"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${
+                      isActive ? "text-white" : "text-[var(--muted)] group-hover:text-[var(--primary)]"
+                    }`}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="truncate">{item.label}</span>
+                  {isActive && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t border-white/5 space-y-2 bg-black/10 shrink-0">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--glass-border)] bg-white/5 hover:bg-white/10 text-[var(--text-bright)] text-xs font-medium transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-sm">
+              {theme === "dark" ? "light_mode" : "dark_mode"}
+            </span>
+            <span>{theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-sm">logout</span>
+            <span>Wyloguj się</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content View with Top Header */}
+      <div className="flex-1 h-full flex flex-col overflow-hidden relative min-w-0 bg-[var(--bg)]">
+        {/* Top Header */}
+        <header className="h-16 px-6 sm:px-8 flex items-center justify-between border-b border-[var(--glass-border)] bg-[var(--surface-solid)]/60 backdrop-blur-xl shrink-0 z-20">
+          <div>
+            <h2 className="text-lg font-bold text-[var(--text-bright)]">{pageTitle}</h2>
           </div>
 
-          {/* Center: Full Horizontal Navigation Tabs (Always Visible across all screens!) */}
-          <nav className="flex items-center gap-1 overflow-x-auto py-1 max-w-[65vw] scrollbar-none">
-            {NAV_LINKS.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 whitespace-nowrap select-none ${
-                    isActive
-                      ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow-md shadow-blue-500/25 font-bold"
-                      : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5"
-                  }`
-                }
-              >
-                <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
-          </nav>
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Search Input */}
+            <div className="relative hidden md:block">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
+                search
+              </span>
+              <input
+                className="bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-full py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-[var(--primary)] transition-all text-[var(--text-bright)] placeholder:text-[var(--muted)] w-60"
+                placeholder="Szukaj..."
+                type="text"
+              />
+            </div>
 
-          {/* Right: Actions + Theme + Profile */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Notifications Link */}
+            {/* Notifications */}
             <Link
               to="/notifications"
               className="p-2 rounded-xl text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors relative"
@@ -109,24 +179,12 @@ export function GlassNav() {
               <span className="material-symbols-outlined text-[20px]">notifications</span>
             </Link>
 
-            {/* Theme Toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-2 rounded-xl text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors cursor-pointer"
-              title={theme === "dark" ? "Przełącz na jasny motyw" : "Przełącz na ciemny motyw"}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {theme === "dark" ? "light_mode" : "dark_mode"}
-              </span>
-            </button>
-
             {/* Profile Dropdown */}
             <div className="relative" ref={profileRef}>
               <button
                 type="button"
                 onClick={() => setProfileOpen((v) => !v)}
-                className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity border border-white/20 text-white font-bold text-xs shadow-md"
+                className="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity border border-white/20 text-white font-bold text-xs shadow-md"
               >
                 {userInitials}
               </button>
@@ -166,86 +224,17 @@ export function GlassNav() {
               )}
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Mobile Fullscreen Drawer Menu (z-index 100) */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] lg:hidden flex">
-          <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="relative flex flex-col w-72 h-full bg-[var(--surface-solid)] border-r border-[var(--glass-border)] p-4 overflow-y-auto z-10 shadow-2xl animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-3 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center text-white">
-                  <span className="material-symbols-outlined text-[18px]">hub</span>
-                </div>
-                <span className="font-bold text-base text-[var(--text-bright)] truncate">
-                  {business?.name || "Automovia"}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 rounded-lg text-[var(--muted)] hover:text-white hover:bg-white/5 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-1 flex-1 overflow-y-auto">
-              {NAV_LINKS.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
-                      isActive
-                        ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow font-bold"
-                        : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5"
-                    }`
-                  }
-                >
-                  <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-
-            <div className="pt-3 border-t border-white/10 space-y-2 shrink-0">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[var(--glass-border)] bg-white/5 text-[var(--text-bright)] text-xs font-medium cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm">
-                  {theme === "dark" ? "light_mode" : "dark_mode"}
-                </span>
-                <span>{theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-medium cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm">logout</span>
-                <span>Wyloguj się</span>
-              </button>
-            </div>
+        {/* Scrollable Main Outlet */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8">
+          <div className="max-w-7xl mx-auto">
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-8">
-        <ErrorBoundary>
-          <Outlet />
-        </ErrorBoundary>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
