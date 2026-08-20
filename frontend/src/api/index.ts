@@ -131,6 +131,11 @@ export const businessApi = {
       method: "PATCH",
       body: JSON.stringify(body),
     }),
+  saveGeminiConfig: (body: { gemini_api_key?: string; gemini_model?: string }) =>
+    apiFetch<{ ok: boolean; message: string }>("/api/business/gemini-config", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };
 
 

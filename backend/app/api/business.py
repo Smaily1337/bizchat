@@ -351,3 +351,30 @@ async def disconnect_meta_page(
 
     return {"ok": True, "message": "Pomyślnie odłączono stronę Facebook."}
 
+
+class GeminiConfigRequest(BaseModel):
+    gemini_api_key: str | None = None
+    gemini_model: str | None = "gemini-2.0-flash"
+
+
+@router.post("/gemini-config")
+async def save_gemini_config(
+    db: DbSession,
+    owner: RequireOwnerOrAdmin,
+    body: GeminiConfigRequest,
+) -> dict:
+    """Configure Google Gemini AI for salon bot."""
+    business = await db.get(Business, owner.business_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    settings_map = dict(business.settings or {})
+    if body.gemini_api_key is not None:
+        settings_map["gemini_api_key"] = body.gemini_api_key.strip()
+    if body.gemini_model:
+        settings_map["gemini_model"] = body.gemini_model.strip()
+    business.settings = settings_map
+    await db.flush()
+    return {"ok": True, "message": "Konfiguracja Gemini AI została pomyślnie zapisana."}
+
+

@@ -31,6 +31,7 @@ from app.services import availability, booking, waitlist
 from app.services import limits as limits_service
 from app.services.booking import BookingError
 from app.services.events import hub
+from app.services.gemini_bot import generate_gemini_bot_reply
 from app.services.limits import LimitExceededError
 
 logger = logging.getLogger(__name__)
@@ -123,31 +124,50 @@ class CoreBotEngine:
             await self.adapter.send_outbound(outbound)
             return outbound
 
-        intent = await detect_intent(inbound.text)
-        ctx = dict(conversation.context or {})
+        # 1. Try Gemini AI First
+        gemini_reply = await generate_gemini_bot_reply(
+            self.db,
+            business=business,
+            customer=customer,
+            conversation=conversation,
+            inbound_text=inbound.text,
+            channel=inbound.channel,
+        )
 
-        # Continue booking flow if already in progress (unless clear exit)
-        in_booking = conversation.state == ConversationState.booking and booking_step(ctx) != "done"
-        text_l = inbound.text.lower().strip()
-        if text_l in {"anuluj", "cancel", "wyjdź", "wyjdz", "stop"} and in_booking:
-            conversation.state = ConversationState.idle
-            conversation.context = {}
-            reply_text = "Anulowano rezerwację. Napisz „umów wizytę”, gdy będziesz gotowy/a."
-        elif in_booking and intent not in {Intent.cancel, Intent.list, Intent.greeting}:
-            conversation.state = ConversationState.booking
-            reply_text = await self._handle_booking(
-                business_id, customer, conversation, inbound.text, inbound.channel
-            )
+        if gemini_reply:
+            reply_text = gemini_reply
+            conversation.context = {
+                **(conversation.context or {}),
+                "ai_engine": "gemini",
+                "last_reply_at": utc_now().isoformat(),
+            }
         else:
-            conversation.state = next_state(conversation.state, intent.value)
-            reply_text = await self._dispatch(
-                business_id, customer, conversation, inbound, intent
-            )
+            # 2. Fallback to Rule-based state machine
+            intent = await detect_intent(inbound.text)
+            ctx = dict(conversation.context or {})
 
-        conversation.context = {
-            **(conversation.context or {}),
-            "last_intent": intent.value,
-        }
+            # Continue booking flow if already in progress (unless clear exit)
+            in_booking = conversation.state == ConversationState.booking and booking_step(ctx) != "done"
+            text_l = inbound.text.lower().strip()
+            if text_l in {"anuluj", "cancel", "wyjdź", "wyjdz", "stop"} and in_booking:
+                conversation.state = ConversationState.idle
+                conversation.context = {}
+                reply_text = "Anulowano rezerwację. Napisz „umów wizytę”, gdy będziesz gotowy/a."
+            elif in_booking and intent not in {Intent.cancel, Intent.list, Intent.greeting}:
+                conversation.state = ConversationState.booking
+                reply_text = await self._handle_booking(
+                    business_id, customer, conversation, inbound.text, inbound.channel
+                )
+            else:
+                conversation.state = next_state(conversation.state, intent.value)
+                reply_text = await self._dispatch(
+                    business_id, customer, conversation, inbound, intent
+                )
+
+            conversation.context = {
+                **(conversation.context or {}),
+                "last_intent": intent.value,
+            }
 
         self.db.add(
             Message(

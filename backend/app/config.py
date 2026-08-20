@@ -61,6 +61,8 @@ class Settings(BaseSettings):
     widget_jwt_secret: str = "change-me-widget-secret"
 
     openai_api_key: str = ""
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
     google_calendar_enabled: bool = False
     google_calendar_id: str = "primary"
     google_client_id: str = ""
