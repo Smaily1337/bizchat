@@ -2,6 +2,18 @@ import { type FormEvent, useEffect, useState } from "react";
 import { staffApi } from "@/api";
 import type { StaffMember } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
+import { GlassButton } from "@/components/ui";
+
+const STAFF_COLORS = [
+  "#3e63dd",
+  "#00a389",
+  "#954181",
+  "#f76808",
+  "#62539f",
+  "#e5484d",
+  "#30a46c",
+  "#8e4ec6",
+];
 
 function initials(name: string) {
   const parts = name.trim().split(" ");
@@ -13,15 +25,22 @@ export function StaffPage() {
   const { push } = useToast();
   const [items, setItems] = useState<StaffMember[]>([]);
   const [name, setName] = useState("");
+  const [selectedColor, setSelectedColor] = useState(STAFF_COLORS[0]);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editColor, setEditColor] = useState(STAFF_COLORS[0]);
+  const [loading, setLoading] = useState(true);
 
   async function reload() {
     setItems(await staffApi.list());
   }
 
   useEffect(() => {
-    void reload().catch((e: Error) => setError(e.message));
+    void reload()
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
   }, []);
 
   async function onCreate(e: FormEvent) {
@@ -29,12 +48,15 @@ export function StaffPage() {
     if (!name.trim()) return;
     setError(null);
     try {
-      await staffApi.create({ name: name.trim() });
+      await staffApi.create({
+        name: name.trim(),
+        color: selectedColor,
+      });
       setName("");
       setShowAdd(false);
       push({
         title: "Dodano pracownika",
-        message: `Pomyślnie dodano specjalistę do zespołu`,
+        message: `Pomyślnie dodano pracownika do zespołu`,
         tone: "canary",
       });
       await reload();
@@ -43,47 +65,77 @@ export function StaffPage() {
     }
   }
 
-  async function onDeactivate(s: StaffMember) {
-    if (!confirm(`Czy chcesz zmienić status pracownika ${s.name}?`)) return;
+  async function onSaveEdit(e: FormEvent) {
+    e.preventDefault();
+    if (!editingStaff || !editName.trim()) return;
     try {
-      await staffApi.remove(s.id);
+      await staffApi.update(editingStaff.id, {
+        name: editName.trim(),
+        color: editColor,
+      });
       push({
         title: "Zaktualizowano pracownika",
-        message: `Zmieniono status dla: ${s.name}`,
+        message: "Dane pracownika zostały zapisane",
+        tone: "canary",
+      });
+      setEditingStaff(null);
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Błąd zapisu danych pracownika");
+    }
+  }
+
+  async function onToggleStatus(s: StaffMember) {
+    const nextStatus = !s.is_active;
+    try {
+      await staffApi.update(s.id, { is_active: nextStatus });
+      push({
+        title: nextStatus ? "Aktywowano pracownika" : "Dezaktywowano pracownika",
+        message: `Status pracownika ${s.name} został zmieniony`,
         tone: "canary",
       });
       await reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Błąd");
+      setError(err instanceof Error ? err.message : "Błąd zmiany statusu");
     }
   }
 
   const activeCount = items.filter((s) => s.is_active).length;
 
   return (
-    <div className="animate-fade-up">
+    <div className="space-y-6 animate-fade-up">
       {/* Page Header & Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">Twój Zespół</h1>
-          <p className="text-sm text-on-surface-variant mt-1">
-            Zarządzaj pracownikami, przypisuj usługi i śledź ich wydajność.
-          </p>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-glass-border">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center text-white shadow-lg shrink-0">
+            <span className="material-symbols-outlined text-[24px]">badge</span>
+          </div>
+          <div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-bright)]">
+              Twój Zespół
+            </h1>
+            <p className="mt-0.5 text-xs text-[var(--muted)]">
+              Zarządzaj pracownikami, przypisuj ich do wizyt i konfiguruj terminarz
+            </p>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAdd((v) => !v)}
-          className="btn-primary flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs text-white font-medium shadow-lg shadow-primary-container/20 cursor-pointer"
+
+        <GlassButton
+          variant={showAdd ? "ghost" : "primary"}
+          onClick={() => {
+            setShowAdd((v) => !v);
+            setEditingStaff(null);
+          }}
         >
-          <span className="material-symbols-outlined text-sm">
+          <span className="material-symbols-outlined text-[18px]">
             {showAdd ? "close" : "add"}
           </span>
-          {showAdd ? "Zamknij formularz" : "Dodaj pracownika"}
-        </button>
-      </div>
+          {showAdd ? "Zamknij" : "Dodaj pracownika"}
+        </GlassButton>
+      </header>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm flex items-center gap-2">
+        <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm flex items-center gap-2">
           <span className="material-symbols-outlined text-lg">error</span>
           <span>{error}</span>
         </div>
@@ -91,251 +143,269 @@ export function StaffPage() {
 
       {/* Add Staff Form */}
       {showAdd && (
-        <div className="glass-panel rounded-xl p-6 mb-8 border border-primary/20 shadow-2xl animate-fade-up">
-          <h2 className="text-lg font-bold text-on-surface mb-1">
-            Dodaj nowego specjalistę
+        <section className="glass-panel rounded-xl p-6 shadow-2xl border border-[var(--primary)]/30 animate-fade-up">
+          <h2 className="font-display text-base font-bold text-[var(--text-bright)] mb-1 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[var(--primary)] text-[20px]">
+              person_add
+            </span>
+            Dodaj nowego pracownika do zespołu
           </h2>
-          <p className="text-xs text-on-surface-variant mb-4">
-            Wpisz imię i nazwisko, aby udostępnić specjalistę w terminarzu i rezerwacjach.
+          <p className="text-xs text-[var(--muted)] mb-4">
+            Wpisz imię i nazwisko pracownika, aby był dostępny przy rezerwacjach i w kalendarzu.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3" onSubmit={onCreate}>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="np. Anna Kowalska"
-              className="flex-1 bg-surface-container border border-white/10 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary"
-              required
-            />
-            <button
-              type="submit"
-              className="btn-primary px-6 py-2 rounded-lg text-xs font-semibold text-white flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-sm">check</span>
-              Zapisz specjalistę
-            </button>
+          <form className="flex flex-col sm:flex-row gap-3 items-end" onSubmit={onCreate}>
+            <div className="flex-1 w-full space-y-1">
+              <label className="block text-xs font-semibold text-[var(--muted)]">
+                Imię i nazwisko
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="np. Jan Kowalski"
+                className="w-full bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-bright)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-[var(--muted)]">
+                Kolor w kalendarzu
+              </label>
+              <div className="flex items-center gap-1.5 py-1">
+                {STAFF_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setSelectedColor(c)}
+                    style={{ backgroundColor: c }}
+                    className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
+                      selectedColor === c ? "ring-2 ring-white scale-125" : "opacity-80 hover:opacity-100"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <GlassButton type="submit" variant="primary" className="shrink-0">
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              Zapisz pracownika
+            </GlassButton>
           </form>
-        </div>
+        </section>
       )}
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-panel p-6 rounded-xl flex items-center justify-between border border-white/5">
-          <div>
-            <p className="text-xs text-on-surface-variant mb-1 font-medium">Aktywni Pracownicy</p>
-            <p className="text-3xl font-bold text-on-surface">{activeCount || 12}</p>
+      {/* Edit Staff Modal */}
+      {editingStaff && (
+        <section className="glass-panel rounded-xl p-6 shadow-2xl border border-[var(--accent)]/40 animate-fade-up">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-base font-bold text-[var(--text-bright)] flex items-center gap-2">
+              <span className="material-symbols-outlined text-[var(--accent)] text-[20px]">
+                edit
+              </span>
+              Edytuj pracownika: {editingStaff.name}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setEditingStaff(null)}
+              className="text-[var(--muted)] hover:text-white p-1"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
           </div>
-          <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center border border-primary/20">
-            <span className="material-symbols-outlined text-primary">badge</span>
-          </div>
-        </div>
 
-        <div className="glass-panel p-6 rounded-xl flex items-center justify-between border border-white/5">
+          <form className="flex flex-col sm:flex-row gap-3 items-end" onSubmit={onSaveEdit}>
+            <div className="flex-1 w-full space-y-1">
+              <label className="block text-xs font-semibold text-[var(--muted)]">
+                Imię i nazwisko
+              </label>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-bright)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-[var(--muted)]">
+                Kolor
+              </label>
+              <div className="flex items-center gap-1.5 py-1">
+                {STAFF_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setEditColor(c)}
+                    style={{ backgroundColor: c }}
+                    className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
+                      editColor === c ? "ring-2 ring-white scale-125" : "opacity-80 hover:opacity-100"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <GlassButton type="submit" variant="primary">
+                Zapisz zmiany
+              </GlassButton>
+              <GlassButton type="button" variant="ghost" onClick={() => setEditingStaff(null)}>
+                Anuluj
+              </GlassButton>
+            </div>
+          </form>
+        </section>
+      )}
+
+      {/* Real Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="glass-panel p-5 rounded-xl flex items-center justify-between border border-[var(--glass-border)]">
           <div>
-            <p className="text-xs text-on-surface-variant mb-1 font-medium">Dostępność (Dzisiaj)</p>
-            <p className="text-3xl font-bold text-on-surface">
-              {activeCount ? `${activeCount}/${items.length}` : "8/12"}
+            <p className="text-xs text-[var(--muted)] mb-1 font-semibold">Aktywni Pracownicy</p>
+            <p className="text-2xl sm:text-3xl font-bold text-[var(--text-bright)]">
+              {activeCount}
             </p>
           </div>
-          <div className="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center border border-secondary/20">
-            <span className="material-symbols-outlined text-secondary">event_available</span>
+          <div className="w-11 h-11 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center border border-green-500/20">
+            <span className="material-symbols-outlined text-[22px]">person_check</span>
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-xl flex items-center justify-between border border-white/5">
+        <div className="glass-panel p-5 rounded-xl flex items-center justify-between border border-[var(--glass-border)]">
           <div>
-            <p className="text-xs text-on-surface-variant mb-1 font-medium">Zrealizowane Wizyty</p>
-            <p className="text-3xl font-bold text-on-surface">148</p>
+            <p className="text-xs text-[var(--muted)] mb-1 font-semibold">Wszyscy w Zespole</p>
+            <p className="text-2xl sm:text-3xl font-bold text-[var(--text-bright)]">
+              {items.length}
+            </p>
           </div>
-          <div className="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center border border-tertiary/20">
-            <span className="material-symbols-outlined text-tertiary">check_circle</span>
+          <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+            <span className="material-symbols-outlined text-[22px]">group</span>
+          </div>
+        </div>
+
+        <div className="glass-panel p-5 rounded-xl flex items-center justify-between border border-[var(--glass-border)]">
+          <div>
+            <p className="text-xs text-[var(--muted)] mb-1 font-semibold">Status Zespołu</p>
+            <p className="text-base sm:text-lg font-bold text-[var(--text-bright)]">
+              {items.length === 0
+                ? "Brak personelu"
+                : activeCount === items.length
+                ? "Wszyscy aktywni"
+                : `${activeCount} z ${items.length} aktywnych`}
+            </p>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+            <span className="material-symbols-outlined text-[22px]">domain_verification</span>
           </div>
         </div>
       </div>
 
-      {/* Staff Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.length === 0 ? (
-          <>
-            <div className="glass-card rounded-xl p-6 flex flex-col relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary opacity-50 group-hover:opacity-100 transition-opacity" />
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full bg-surface-container-high border-2 border-surface-variant flex items-center justify-center text-xl font-bold text-primary">
-                      AK
-                    </div>
-                    <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-surface" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-on-surface">Anna Kowalska</h3>
-                    <p className="text-xs text-primary font-medium">Senior Stylist</p>
-                  </div>
-                </div>
-                <button type="button" className="text-on-surface-variant hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">more_vert</span>
-                </button>
-              </div>
-              <div className="flex flex-col gap-2 mb-6 text-xs text-on-surface-variant font-medium">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">mail</span>
-                  anna.k@automovia.pl
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">call</span>
-                  +48 123 456 789
-                </div>
-              </div>
-              <div className="mt-auto pt-2">
-                <p className="text-[10px] text-on-surface-variant mb-2 uppercase tracking-wider font-semibold">Przypisane Usługi</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface">Strzyżenie Damskie</span>
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface">Koloryzacja</span>
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface">+3 inne</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card rounded-xl p-6 flex flex-col relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary opacity-20 group-hover:opacity-100 transition-opacity" />
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full bg-surface-container-high border-2 border-surface-variant flex items-center justify-center text-xl font-bold text-secondary">
-                      MN
-                    </div>
-                    <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-surface" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-on-surface">Marek Nowak</h3>
-                    <p className="text-xs text-primary font-medium">Master Barber</p>
-                  </div>
-                </div>
-                <button type="button" className="text-on-surface-variant hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">more_vert</span>
-                </button>
-              </div>
-              <div className="flex flex-col gap-2 mb-6 text-xs text-on-surface-variant font-medium">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">mail</span>
-                  marek.n@automovia.pl
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">call</span>
-                  +48 987 654 321
-                </div>
-              </div>
-              <div className="mt-auto pt-2">
-                <p className="text-[10px] text-on-surface-variant mb-2 uppercase tracking-wider font-semibold">Przypisane Usługi</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface">Strzyżenie Męskie</span>
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface">Trymowanie Brody</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card rounded-xl p-6 flex flex-col relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary opacity-20 group-hover:opacity-100 transition-opacity" />
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full bg-surface-container-high border-2 border-surface-variant flex items-center justify-center text-xl font-bold text-on-surface-variant">
-                      EW
-                    </div>
-                    <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-surface-variant border-2 border-surface" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-on-surface">Ewa Wiśniewska</h3>
-                    <p className="text-xs text-primary font-medium">Junior Stylist</p>
-                  </div>
-                </div>
-                <button type="button" className="text-on-surface-variant hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">more_vert</span>
-                </button>
-              </div>
-              <div className="flex flex-col gap-2 mb-6 text-xs text-on-surface-variant font-medium">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">mail</span>
-                  ewa.w@automovia.pl
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">call</span>
-                  +48 555 444 333
-                </div>
-              </div>
-              <div className="mt-auto pt-2">
-                <p className="text-[10px] text-on-surface-variant mb-2 uppercase tracking-wider font-semibold">Przypisane Usługi</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface">Strzyżenie Dziecięce</span>
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface">Modelowanie</span>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          items.map((s, idx) => (
+      {/* Staff Grid or Clean Empty State */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="glass-panel rounded-xl p-6 h-40 skeleton-shimmer" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="py-16 px-6 glass-panel rounded-2xl text-center flex flex-col items-center justify-center border border-[var(--glass-border)]">
+          <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[var(--muted)] mb-4 shadow-inner">
+            <span className="material-symbols-outlined text-3xl">badge</span>
+          </div>
+          <h3 className="text-lg font-bold text-[var(--text-bright)] mb-1">
+            Brak pracowników w zespole
+          </h3>
+          <p className="text-xs text-[var(--muted)] max-w-md mb-6 leading-relaxed">
+            Twoje konto jest czyste. Dodaj pracowników lub specjalistów, aby móc przypisywać ich do wizyt, usług oraz zarządzać ich dostępnością w kalendarzu.
+          </p>
+          <GlassButton
+            type="button"
+            variant="primary"
+            onClick={() => {
+              setShowAdd(true);
+              setEditingStaff(null);
+            }}
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Dodaj pierwszego pracownika
+          </GlassButton>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {items.map((s) => (
             <div
               key={s.id}
-              className="glass-card rounded-xl p-6 flex flex-col relative overflow-hidden group border border-white/5"
+              className="glass-panel rounded-xl p-5 flex flex-col justify-between border border-[var(--glass-border)] hover:border-white/20 transition-all hover:scale-[1.01]"
             >
-              <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary ${idx === 0 ? 'opacity-50' : 'opacity-20'} group-hover:opacity-100 transition-opacity`} />
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full bg-surface-container-high border-2 border-surface-variant flex items-center justify-center text-xl font-bold text-primary">
-                      {initials(s.name)}
-                    </div>
-                    <div
-                      className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-surface ${
-                        s.is_active ? "bg-green-500" : "bg-surface-variant"
-                      }`}
-                    />
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    style={{ backgroundColor: s.color || "#3e63dd" }}
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-bold text-white shadow-md shrink-0"
+                  >
+                    {initials(s.name)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-on-surface">{s.name}</h3>
-                    <p className="text-xs text-primary font-medium">
-                      {s.is_active ? "Specjalista" : "Nieaktywny"}
-                    </p>
+                    <h3 className="text-base font-bold text-[var(--text-bright)]">{s.name}</h3>
+                    <span
+                      className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
+                        s.is_active ? "text-green-400" : "text-[var(--muted)]"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          s.is_active ? "bg-green-400" : "bg-gray-500"
+                        }`}
+                      />
+                      {s.is_active ? "Aktywny w grafiku" : "Nieaktywny"}
+                    </span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onDeactivate(s)}
-                  className="text-on-surface-variant hover:text-red-400 transition-colors p-1"
-                  title="Zmień status"
-                >
-                  <span className="material-symbols-outlined">more_vert</span>
-                </button>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingStaff(s);
+                      setEditName(s.name);
+                      setEditColor(s.color || STAFF_COLORS[0]);
+                      setShowAdd(false);
+                    }}
+                    className="p-1.5 text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 rounded-lg transition-colors"
+                    title="Edytuj pracownika"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onToggleStatus(s)}
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      s.is_active
+                        ? "text-[var(--muted)] hover:text-red-400 hover:bg-red-500/10"
+                        : "text-[var(--muted)] hover:text-green-400 hover:bg-green-500/10"
+                    }`}
+                    title={s.is_active ? "Dezaktywuj" : "Aktywuj"}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      {s.is_active ? "block" : "check_circle"}
+                    </span>
+                  </button>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-2 mb-6 text-xs text-on-surface-variant font-medium">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">mail</span>
-                  {s.name.toLowerCase().replace(/\s+/g, ".")}@automovia.pl
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">call</span>
-                  +48 123 456 789
-                </div>
-              </div>
-
-              <div className="mt-auto pt-2 border-t border-white/5">
-                <p className="text-[10px] text-on-surface-variant mb-2 uppercase tracking-wider font-semibold">
-                  Przypisane Usługi
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface font-medium">
-                    Wszystkie usługi
-                  </span>
-                  <span className="px-2 py-1 rounded-md bg-surface-container-high border border-white/5 text-xs text-on-surface font-medium">
-                    Konsultacja
-                  </span>
-                </div>
+              <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-[var(--muted)]">
+                <span>Dostępny w rezerwacjach</span>
+                <span className="font-semibold text-[var(--text-bright)]">
+                  {s.is_active ? "Tak" : "Nie"}
+                </span>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
