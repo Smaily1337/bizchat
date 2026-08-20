@@ -76,83 +76,104 @@ export function GlassNav() {
     .toUpperCase();
 
   return (
-    <div className="bg-background text-on-surface font-sans h-screen flex overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans flex overflow-hidden selection:bg-[var(--primary-container)] selection:text-white">
       {/* SideNavBar Desktop */}
-      <nav className="hidden md:flex flex-col h-full py-4 overflow-y-auto bg-surface-container-low/60 backdrop-blur-2xl border-r border-white/10 shadow-2xl w-64 h-screen shrink-0 z-20">
-        <div className="px-6 mb-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full glass-panel flex items-center justify-center shrink-0 border border-white/10">
-            <span className="material-symbols-outlined text-primary text-[22px]">hub</span>
+      <aside className="hidden md:flex flex-col w-64 h-screen shrink-0 sticky top-0 z-30 bg-[var(--surface-solid)]/90 backdrop-blur-2xl border-r border-[var(--glass-border)] shadow-2xl overflow-y-auto">
+        {/* Brand / Salon Header */}
+        <div className="p-5 pb-4 flex items-center gap-3 border-b border-white/5">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 text-white">
+            <span className="material-symbols-outlined text-[22px]">hub</span>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-primary tracking-tight leading-none">Automovia</h1>
-            <p className="text-xs text-on-surface-variant mt-1 font-medium">
-              {business?.name || "Salon Dashboard"}
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-bold tracking-tight text-[var(--text-bright)] truncate">
+              {business?.name || "Automovia"}
+            </h1>
+            <p className="text-[11px] font-medium text-[var(--muted)] truncate">
+              Panel zarządzania salonem
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 flex-1 px-2">
+        {/* Navigation Links */}
+        <div className="flex flex-col gap-1 p-3 flex-1">
           {NAV_LINKS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 group relative ${
                   isActive
-                    ? "bg-primary-container text-on-primary-container shadow-md shadow-primary-container/30"
-                    : "text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
+                    ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow-lg shadow-blue-500/25 font-bold"
+                    : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 hover:translate-x-1"
                 }`
               }
             >
-              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-              <span>{item.label}</span>
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${
+                      isActive ? "text-white" : "text-[var(--muted)] group-hover:text-[var(--primary)]"
+                    }`}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="truncate">{item.label}</span>
+                  {isActive && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </div>
 
         {/* Sidebar Footer */}
-        <div className="mt-auto px-4 pt-4 border-t border-white/5 space-y-2">
+        <div className="p-3 border-t border-white/5 space-y-2 bg-black/10">
           <button
             type="button"
             onClick={toggleTheme}
-            className="w-full flex items-center justify-center gap-2 btn-secondary py-2 rounded-lg text-on-surface text-xs font-medium"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--glass-border)] bg-white/5 hover:bg-white/10 text-[var(--text-bright)] text-xs font-medium transition-all"
           >
             <span className="material-symbols-outlined text-sm">
               {theme === "dark" ? "light_mode" : "dark_mode"}
             </span>
-            {theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}
+            <span>{theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}</span>
           </button>
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 btn-secondary py-2 rounded-lg text-red-400 hover:text-red-300 text-xs font-medium"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all"
           >
             <span className="material-symbols-outlined text-sm">logout</span>
-            Wyloguj się
+            <span>Wyloguj się</span>
           </button>
         </div>
-      </nav>
+      </aside>
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="relative flex flex-col w-72 h-full bg-[#0d1c2d] border-r border-white/10 p-4 overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[24px]">hub</span>
-                <span className="font-bold text-lg text-primary">Automovia</span>
+          <div className="relative flex flex-col w-72 h-full bg-[var(--surface-solid)] border-r border-[var(--glass-border)] p-4 overflow-y-auto z-10 shadow-2xl animate-fade-in">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center text-white">
+                  <span className="material-symbols-outlined text-[18px]">hub</span>
+                </div>
+                <span className="font-bold text-base text-[var(--text-bright)] truncate">
+                  {business?.name || "Automovia"}
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-1 text-on-surface-variant"
+                className="p-1.5 rounded-lg text-[var(--muted)] hover:text-white hover:bg-white/5"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="material-symbols-outlined text-xl">close</span>
               </button>
             </div>
 
@@ -162,11 +183,12 @@ export function GlassNav() {
                   key={item.to}
                   to={item.to}
                   end={item.end}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-semibold ${
+                    `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
                       isActive
-                        ? "bg-primary-container text-on-primary-container"
-                        : "text-on-surface-variant hover:bg-white/5"
+                        ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow font-bold"
+                        : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5"
                     }`
                   }
                 >
@@ -176,24 +198,24 @@ export function GlassNav() {
               ))}
             </div>
 
-            <div className="pt-4 border-t border-white/10 space-y-2">
+            <div className="pt-3 border-t border-white/10 space-y-2">
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="w-full flex items-center justify-center gap-2 btn-secondary py-2 rounded-lg text-on-surface text-xs font-medium"
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[var(--glass-border)] bg-white/5 text-[var(--text-bright)] text-xs font-medium"
               >
                 <span className="material-symbols-outlined text-sm">
                   {theme === "dark" ? "light_mode" : "dark_mode"}
                 </span>
-                {theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}
+                <span>{theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}</span>
               </button>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 btn-secondary py-2 rounded-lg text-red-400 text-xs font-medium"
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-medium"
               >
                 <span className="material-symbols-outlined text-sm">logout</span>
-                Wyloguj się
+                <span>Wyloguj się</span>
               </button>
             </div>
           </div>
@@ -207,37 +229,40 @@ export function GlassNav() {
         <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none -z-10 translate-y-1/3" />
 
         {/* TopAppBar */}
-        <header className="flex justify-between items-center px-6 sm:px-8 py-3.5 w-full bg-surface/40 backdrop-blur-md border-b border-white/10 shrink-0 z-10">
+        <header className="flex justify-between items-center px-6 sm:px-8 py-3.5 w-full bg-[var(--surface-solid)]/70 backdrop-blur-xl border-b border-[var(--glass-border)] shrink-0 z-20">
           <div className="flex items-center gap-3 md:hidden">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer p-1"
+              className="text-[var(--muted)] hover:text-[var(--text-bright)] transition-colors cursor-pointer p-1 rounded-lg hover:bg-white/5"
             >
               <span className="material-symbols-outlined text-[24px]">menu</span>
             </button>
-            <span className="text-lg text-primary font-bold">Automovia</span>
+            <span className="text-base font-bold text-[var(--text-bright)]">
+              {business?.name || "Automovia"}
+            </span>
           </div>
 
           <div className="hidden md:block">
-            <h2 className="text-xl font-semibold text-on-surface">{pageTitle}</h2>
+            <h2 className="text-lg font-bold text-[var(--text-bright)]">{pageTitle}</h2>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative hidden sm:block">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
                 search
               </span>
               <input
-                className="bg-surface-container/50 border border-white/10 rounded-full py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-on-surface placeholder:text-on-surface-variant/50 w-64"
-                placeholder="Szukaj..."
+                className="bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-full py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-[var(--primary)] transition-all text-[var(--text-bright)] placeholder:text-[var(--muted)] w-64"
+                placeholder="Szukaj w systemie..."
                 type="text"
               />
             </div>
 
             <Link
               to="/notifications"
-              className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer p-2 rounded-full hover:bg-white/5 relative"
+              className="text-[var(--muted)] hover:text-[var(--primary)] transition-colors cursor-pointer p-2 rounded-full hover:bg-white/5 relative"
+              title="Powiadomienia"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
             </Link>
@@ -247,30 +272,30 @@ export function GlassNav() {
               <button
                 type="button"
                 onClick={() => setProfileOpen((v) => !v)}
-                className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary-container to-secondary-container flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity border border-white/20 text-white font-bold text-xs shadow-md"
+                className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity border border-white/20 text-white font-bold text-xs shadow-md"
               >
                 {userInitials}
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-56 glass-panel rounded-xl p-2 shadow-2xl border border-white/10 text-xs z-50 animate-fade-in space-y-1">
-                  <p className="px-3 py-1.5 font-bold text-on-surface truncate">
+                <div className="absolute right-0 mt-2 w-56 glass-panel rounded-xl p-2 shadow-2xl border border-[var(--glass-border)] text-xs z-50 animate-fade-in space-y-1">
+                  <p className="px-3 py-1.5 font-bold text-[var(--text-bright)] truncate">
                     {owner?.name || owner?.email}
                   </p>
-                  <p className="px-3 pb-1 text-[11px] text-on-surface-variant truncate">
+                  <p className="px-3 pb-1 text-[11px] text-[var(--muted)] truncate">
                     {owner?.role || "Właściciel"}
                   </p>
                   <div className="h-px bg-white/5 my-1" />
                   <Link
                     to="/settings/account"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface hover:bg-white/5"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
                   >
                     <span className="material-symbols-outlined text-[16px]">account_circle</span>
                     Konto
                   </Link>
                   <Link
                     to="/settings"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface hover:bg-white/5"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
                   >
                     <span className="material-symbols-outlined text-[16px]">settings</span>
                     Ustawienia
