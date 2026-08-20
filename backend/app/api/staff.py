@@ -64,6 +64,8 @@ async def create_staff(
     )
     db.add(row)
     await db.flush()
+    await db.commit()
+    await db.refresh(row)
     return row
 
 
@@ -80,6 +82,8 @@ async def update_staff(
     for k, v in data.items():
         setattr(row, k, v)
     await db.flush()
+    await db.commit()
+    await db.refresh(row)
     return row
 
 
@@ -92,4 +96,5 @@ async def delete_staff(
         raise HTTPException(status_code=404, detail="Staff not found")
     row.is_active = False
     await db.flush()
+    await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
