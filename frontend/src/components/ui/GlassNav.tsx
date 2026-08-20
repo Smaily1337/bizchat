@@ -14,27 +14,9 @@ const NAV_LINKS = [
   { to: "/staff", label: "Zespół", icon: "badge" },
   { to: "/channels", label: "Kanały", icon: "hub" },
   { to: "/hours", label: "Godziny", icon: "schedule" },
-  { to: "/notifications", label: "Powiadomienia", icon: "notifications" },
   { to: "/reports", label: "Raporty", icon: "analytics" },
   { to: "/settings", label: "Ustawienia", icon: "settings" },
 ];
-
-const PAGE_TITLES: Record<string, string> = {
-  "/": "Pulpit Dziś",
-  "/calendar": "Kalendarz Wizyt",
-  "/appointments": "Zarządzanie Wizytami",
-  "/inbox": "Wiadomości i Czat",
-  "/customers": "Baza Klientów",
-  "/staff": "Zarządzanie Zespołem",
-  "/channels": "Kanały i Integracje",
-  "/hours": "Godziny Pracy Salonu",
-  "/notifications": "Centrum Powiadomień",
-  "/reports": "Raporty i Statystyki",
-  "/settings": "Ustawienia Salonu",
-  "/users": "Użytkownicy",
-  "/feedback": "Opinie i Feedback",
-  "/platform": "Platform Admin",
-};
 
 export function GlassNav() {
   const { business, owner, logout } = useAuth();
@@ -66,8 +48,6 @@ export function GlassNav() {
     }
   }
 
-  const currentPath = "/" + (location.pathname.split("/")[1] || "");
-  const pageTitle = PAGE_TITLES[currentPath] || PAGE_TITLES[location.pathname] || "Automovia";
   const userInitials = (owner?.name || owner?.email || "AD")
     .split(" ")
     .map((p) => p[0])
@@ -76,84 +56,154 @@ export function GlassNav() {
     .toUpperCase();
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-[var(--bg)] text-[var(--text)] font-sans relative selection:bg-[var(--primary-container)] selection:text-white">
-      {/* SideNavBar Desktop */}
-      <aside className="hidden md:flex flex-col w-64 h-full shrink-0 bg-[var(--surface-solid)] border-r border-[var(--glass-border)] shadow-2xl z-30 overflow-y-auto select-none">
-        {/* Brand / Salon Header */}
-        <div className="p-5 pb-4 flex items-center gap-3 border-b border-white/5 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 text-white">
-            <span className="material-symbols-outlined text-[22px]">hub</span>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans flex flex-col selection:bg-[var(--primary-container)] selection:text-white">
+      {/* Top Glass Navigation Bar (Always Visible!) */}
+      <header className="sticky top-0 z-40 w-full bg-[var(--surface-solid)]/90 backdrop-blur-2xl border-b border-[var(--glass-border)] shadow-md select-none">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 gap-4">
+          {/* Left: Brand / Logo */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                <span className="material-symbols-outlined text-[20px]">hub</span>
+              </div>
+              <div>
+                <span className="font-bold text-base tracking-tight text-[var(--text-bright)]">
+                  {business?.name || "Automovia"}
+                </span>
+                <span className="hidden sm:block text-[10px] text-[var(--muted)] font-medium">
+                  Panel biznesowy
+                </span>
+              </div>
+            </Link>
           </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold tracking-tight text-[var(--text-bright)] truncate">
-              {business?.name || "Automovia"}
-            </h1>
-            <p className="text-[11px] font-medium text-[var(--muted)] truncate">
-              Panel zarządzania
-            </p>
+
+          {/* Center: Full Horizontal Navigation Tabs (Visible on large screens) */}
+          <nav className="hidden lg:flex items-center gap-1 overflow-x-auto py-1">
+            {NAV_LINKS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                    isActive
+                      ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow-md shadow-blue-500/25 font-bold"
+                      : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5"
+                  }`
+                }
+              >
+                <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Right: Actions + Mobile Menu Toggle + Theme + Profile */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Mobile / Tablet Menu Button (visible on < lg screens) */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[var(--text-bright)] border border-white/10 transition-colors cursor-pointer"
+              title="Otwórz menu nawigacji"
+            >
+              <span className="material-symbols-outlined text-[20px]">menu</span>
+              <span className="text-xs font-bold">Menu</span>
+            </button>
+
+            {/* Notifications Link */}
+            <Link
+              to="/notifications"
+              className="p-2 rounded-xl text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors relative"
+              title="Powiadomienia"
+            >
+              <span className="material-symbols-outlined text-[20px]">notifications</span>
+            </Link>
+
+            {/* Theme Toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-2 rounded-xl text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors cursor-pointer"
+              title={theme === "dark" ? "Przełącz na jasny motyw" : "Przełącz na ciemny motyw"}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {theme === "dark" ? "light_mode" : "dark_mode"}
+              </span>
+            </button>
+
+            {/* Profile Dropdown */}
+            <div className="relative" ref={profileRef}>
+              <button
+                type="button"
+                onClick={() => setProfileOpen((v) => !v)}
+                className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity border border-white/20 text-white font-bold text-xs shadow-md"
+              >
+                {userInitials}
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-56 glass-panel rounded-xl p-2 shadow-2xl border border-[var(--glass-border)] text-xs z-50 animate-fade-in space-y-1">
+                  <p className="px-3 py-1.5 font-bold text-[var(--text-bright)] truncate">
+                    {owner?.name || owner?.email}
+                  </p>
+                  <p className="px-3 pb-1 text-[11px] text-[var(--muted)] truncate">
+                    {owner?.role || "Właściciel"}
+                  </p>
+                  <div className="h-px bg-white/5 my-1" />
+                  <Link
+                    to="/settings/account"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">account_circle</span>
+                    Konto
+                  </Link>
+                  <Link
+                    to="/settings"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">settings</span>
+                    Ustawienia
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 text-left cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">logout</span>
+                    Wyloguj się
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <div className="flex flex-col gap-1 p-3 flex-1 overflow-y-auto">
+        {/* Secondary Sub-Bar for medium screens (sm to lg) so tabs are always visible */}
+        <div className="hidden sm:flex lg:hidden px-4 py-2 border-t border-white/5 overflow-x-auto gap-1 bg-black/5">
           {NAV_LINKS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 group relative ${
+                `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
                   isActive
-                    ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow-lg shadow-blue-500/25 font-bold"
-                    : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 hover:translate-x-1"
+                    ? "bg-[var(--primary-container)] text-white font-bold shadow"
+                    : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5"
                 }`
               }
             >
-              {({ isActive }) => (
-                <>
-                  <span
-                    className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${
-                      isActive ? "text-white" : "text-[var(--muted)] group-hover:text-[var(--primary)]"
-                    }`}
-                  >
-                    {item.icon}
-                  </span>
-                  <span className="truncate">{item.label}</span>
-                  {isActive && (
-                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
-                  )}
-                </>
-              )}
+              <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+              <span>{item.label}</span>
             </NavLink>
           ))}
         </div>
+      </header>
 
-        {/* Sidebar Footer */}
-        <div className="p-3 border-t border-white/5 space-y-2 bg-black/10 shrink-0">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--glass-border)] bg-white/5 hover:bg-white/10 text-[var(--text-bright)] text-xs font-medium transition-all cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-sm">
-              {theme === "dark" ? "light_mode" : "dark_mode"}
-            </span>
-            <span>{theme === "dark" ? "Jasny motyw" : "Ciemny motyw"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-sm">logout</span>
-            <span>Wyloguj się</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Mobile Drawer Menu (z-index 100) */}
+      {/* Mobile Fullscreen Drawer Menu (z-index 100) */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] md:hidden flex">
+        <div className="fixed inset-0 z-[100] lg:hidden flex">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
@@ -223,103 +273,10 @@ export function GlassNav() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative min-w-0 bg-[var(--bg)]">
-        {/* TopAppBar */}
-        <header className="flex justify-between items-center px-4 sm:px-8 py-3 w-full bg-[var(--surface-solid)]/80 backdrop-blur-xl border-b border-[var(--glass-border)] shrink-0 z-20">
-          <div className="flex items-center gap-2 md:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[var(--text-bright)] border border-white/10 transition-colors cursor-pointer"
-              title="Otwórz menu nawigacji"
-            >
-              <span className="material-symbols-outlined text-[20px]">menu</span>
-              <span className="text-xs font-bold">Menu</span>
-            </button>
-            <span className="text-sm font-bold text-[var(--text-bright)] truncate max-w-[140px]">
-              {pageTitle}
-            </span>
-          </div>
-
-          <div className="hidden md:block">
-            <h2 className="text-lg font-bold text-[var(--text-bright)]">{pageTitle}</h2>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
-                search
-              </span>
-              <input
-                className="bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-full py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-[var(--primary)] transition-all text-[var(--text-bright)] placeholder:text-[var(--muted)] w-64"
-                placeholder="Szukaj w systemie..."
-                type="text"
-              />
-            </div>
-
-            <Link
-              to="/notifications"
-              className="text-[var(--muted)] hover:text-[var(--primary)] transition-colors cursor-pointer p-2 rounded-full hover:bg-white/5 relative"
-              title="Powiadomienia"
-            >
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-            </Link>
-
-            {/* Profile Dropdown */}
-            <div className="relative" ref={profileRef}>
-              <button
-                type="button"
-                onClick={() => setProfileOpen((v) => !v)}
-                className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity border border-white/20 text-white font-bold text-xs shadow-md"
-              >
-                {userInitials}
-              </button>
-
-              {profileOpen && (
-                <div className="absolute right-0 mt-2 w-56 glass-panel rounded-xl p-2 shadow-2xl border border-[var(--glass-border)] text-xs z-50 animate-fade-in space-y-1">
-                  <p className="px-3 py-1.5 font-bold text-[var(--text-bright)] truncate">
-                    {owner?.name || owner?.email}
-                  </p>
-                  <p className="px-3 pb-1 text-[11px] text-[var(--muted)] truncate">
-                    {owner?.role || "Właściciel"}
-                  </p>
-                  <div className="h-px bg-white/5 my-1" />
-                  <Link
-                    to="/settings/account"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">account_circle</span>
-                    Konto
-                  </Link>
-                  <Link
-                    to="/settings"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">settings</span>
-                    Ustawienia
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 text-left"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">logout</span>
-                    Wyloguj się
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Content Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8 z-0">
-          <div className="max-w-7xl mx-auto">
-            <ErrorBoundary>
-              <Outlet />
-            </ErrorBoundary>
-          </div>
-        </div>
+      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-8">
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );
