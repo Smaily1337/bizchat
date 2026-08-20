@@ -454,10 +454,37 @@ class CoreBotEngine:
         return "Zrestartowałem rezerwację. Napisz „umów wizytę”."
 
     def _match_service(self, services: list[Service], text: str) -> Service | None:
-        lowered = text.lower()
+        from app.bot.intents import normalize_pl
+        norm_text = normalize_pl(text)
+        
+        # 1. Exact or partial match on full normalized name
         for service in services:
-            if service.name.lower() in lowered:
+            norm_name = normalize_pl(service.name)
+            if norm_name in norm_text or norm_text in norm_name:
                 return service
+
+        # 2. Token match (significant words >= 4 chars)
+        for service in services:
+            tokens = [t for t in normalize_pl(service.name).split() if len(t) >= 4]
+            if any(token in norm_text for token in tokens):
+                return service
+
+        # 3. Synonyms for common salon terms
+        synonyms = {
+            "wlos": ["strzyz", "fryzj", "wlos"],
+            "strzyz": ["strzyz", "sciac", "obciac", "wlos"],
+            "brod": ["brod", "barber", "golen"],
+            "paznok": ["paznok", "manicur", "pedicur", "hybryd"],
+            "masaz": ["masaz", "relaks", "cial"],
+            "farb": ["farb", "koloryz", "balejaz"],
+        }
+        for root, syn_list in synonyms.items():
+            if any(s in norm_text for s in syn_list):
+                for service in services:
+                    norm_s = normalize_pl(service.name)
+                    if root in norm_s or any(s in norm_s for s in syn_list):
+                        return service
+
         return None
 
     async def _list_appointments(self, business_id: UUID, customer_id: UUID) -> str:

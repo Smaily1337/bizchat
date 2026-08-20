@@ -1,4 +1,4 @@
-"""Lightweight intent detection — keywords + optional OpenAI."""
+"""Lightweight intent detection — keywords + Gemini/OpenAI fallback."""
 
 from __future__ import annotations
 
@@ -25,111 +25,114 @@ class Intent(str, Enum):
     unknown = "unknown"
 
 
-# Exact / near-exact short greetings (slang included)
+def normalize_pl(text: str) -> str:
+    """Normalize text by lowering and removing Polish diacritics."""
+    t = text.lower().strip().strip("!?.🙂😊👋 \t\n\r")
+    mapping = {
+        "ą": "a", "ć": "c", "ę": "e", "ł": "l", "ń": "n",
+        "ó": "o", "ś": "s", "ź": "z", "ż": "z",
+    }
+    for k, v in mapping.items():
+        t = t.replace(k, v)
+    return t
+
+
+# Exact short greetings
 GREETING_EXACT = {
-    "cześć",
-    "czesc",
-    "cześć!",
-    "czesc!",
-    "hej",
-    "hej!",
-    "hejka",
-    "heja",
-    "hello",
-    "hi",
-    "yo",
-    "elo",
-    "eloo",
-    "elooo",
-    "siema",
-    "siemka",
-    "siemanko",
-    "siemano",
-    "witam",
-    "witaj",
-    "dzień dobry",
-    "dzien dobry",
-    "dobry",
-    "dobry wieczór",
-    "dobry wieczor",
-    "good morning",
-    "hey",
+    "czesc", "hej", "hejka", "heja", "hello", "hi", "yo", "elo", "eloo",
+    "siema", "siemka", "siemanko", "siemano", "witam", "witaj",
+    "dzien dobry", "dobry", "dobry wieczor", "good morning", "hey",
 }
 
-GREETING_KEYWORDS = GREETING_EXACT | {
-    "dzień dobry",
-    "dzien dobry",
-}
 BOOKING_KEYWORDS = {
-    "rezerwuj",
-    "umów",
-    "umow",
-    "termin",
-    "wizyta",
-    "book",
-    "appointment",
-    "zarezerwuj",
+    "umow", "rezerw", "wizyt", "termin", "strzyz", "wlos", "paznok", "manicur",
+    "pedicur", "masaz", "brod", "barber", "fryzjer", "farb", "koloryz", "zabieg",
+    "zapis", "potrzebuj", "chce", "chcial", "wolne", "wolny", "godzin", "kiedy mozna",
+    "przyjsc", "book", "appointment", "sciac", "obciac", "balejaz", "makijaz", "pielegnac",
 }
-CANCEL_KEYWORDS = {"anuluj", "odwołaj", "odwolaj", "cancel", "rezygnuję", "rezygnuje"}
-LIST_KEYWORDS = {"moje wizyty", "moja wizyta", "lista wizyt", "kiedy mam", "moje terminy"}
-WAITLIST_KEYWORDS = {"lista oczekujących", "waitlist", "kolejka", "wolny termin"}
-FEEDBACK_KEYWORDS = {"opinia", "ocena", "feedback", "recenzja"}
+
+CANCEL_KEYWORDS = {
+    "anuluj", "odwolaj", "odwolac", "cancel", "rezygnuj", "nie dam rady",
+    "nie moge", "zrezygnuj", "anulowac",
+}
+
+LIST_KEYWORDS = {
+    "moje wizyty", "moja wizyta", "lista wizyt", "kiedy mam", "moje terminy",
+    "kiedy wizyta", "jaki mam termin", "kiedy jestem zapisany", "sprawdz termin",
+}
+
+WAITLIST_KEYWORDS = {
+    "lista oczekujacych", "waitlist", "kolejka", "powiadom jak sie zwolni",
+    "zapisz na rezerwe", "gdy bedzie wolne",
+}
+
+FEEDBACK_KEYWORDS = {"opinia", "ocena", "feedback", "recenzja", "gwiazdki"}
 
 
 def detect_intent_keywords(text: str) -> Intent:
-    lowered = text.lower().strip().strip("!?.🙂😊👋")
-    # Normalize repeated letters in slang: elooo → elo, hejjj → hej
-    collapsed = re.sub(r"(.)\1{2,}", r"\1\1", lowered)
+    norm = normalize_pl(text)
+    collapsed = re.sub(r"(.)\1{2,}", r"\1\1", norm)
 
-    if collapsed in GREETING_EXACT or lowered in GREETING_EXACT:
-        return Intent.greeting
-    if any(k in lowered for k in GREETING_KEYWORDS):
-        return Intent.greeting
-    if any(k in lowered for k in CANCEL_KEYWORDS):
+    # 1. Action intents have HIGHEST priority
+    if any(k in norm for k in CANCEL_KEYWORDS):
         return Intent.cancel
-    if any(k in lowered for k in LIST_KEYWORDS):
+    if any(k in norm for k in LIST_KEYWORDS):
         return Intent.list
-    if any(k in lowered for k in WAITLIST_KEYWORDS):
+    if any(k in norm for k in WAITLIST_KEYWORDS):
         return Intent.waitlist
-    if any(k in lowered for k in FEEDBACK_KEYWORDS):
+    if any(k in norm for k in FEEDBACK_KEYWORDS):
         return Intent.feedback
-    if any(k in lowered for k in BOOKING_KEYWORDS):
+    if any(k in norm for k in BOOKING_KEYWORDS):
         return Intent.booking
+
+    # 2. Check greetings only if no specific booking action was detected
+    if collapsed in GREETING_EXACT or norm in GREETING_EXACT:
+        return Intent.greeting
+    if any(norm.startswith(k) for k in GREETING_EXACT) and len(norm.split()) <= 3:
+        return Intent.greeting
+
     return Intent.faq
 
 
 async def detect_intent(text: str) -> Intent:
-    """Rule-based first; OpenAI only if key set and keywords are ambiguous (faq)."""
+    """Classifies user intent using keyword rules with AI fallback."""
     base = detect_intent_keywords(text)
-    if base != Intent.faq or not settings.openai_api_key:
+    if base != Intent.faq:
         return base
 
-    try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            resp = await client.post(
-                "https://api.openai.com/v1/chat/completions",
-                headers={"Authorization": f"Bearer {settings.openai_api_key}"},
-                json={
-                    "model": "gpt-4o-mini",
-                    "temperature": 0,
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": (
-                                "Classify the user message for a salon booking bot. "
-                                "Reply JSON only: {\"intent\": one of "
-                                "greeting,booking,cancel,list,waitlist,feedback,faq}."
-                            ),
-                        },
-                        {"role": "user", "content": text},
-                    ],
-                },
-            )
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"]
-            data = json.loads(content)
-            value = str(data.get("intent", "faq")).lower()
-            return Intent(value) if value in Intent.__members__ else Intent.faq
-    except Exception as exc:  # noqa: BLE001 — graceful fallback
-        logger.debug("OpenAI intent fallback: %s", exc)
-        return base
+    # Try Gemini if API key available
+    gemini_key = settings.gemini_api_key.strip()
+    if gemini_key:
+        try:
+            model = settings.gemini_model or "gemini-2.0-flash"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
+            async with httpx.AsyncClient(timeout=6.0) as client:
+                prompt = (
+                    "Sklasyfikuj intencję klienta salonu. Odpowiedz TYLKO jednym słowem z listy: "
+                    "greeting, booking, cancel, list, waitlist, feedback, faq.\n\n"
+                    f"Wiadomość klienta: {text}"
+                )
+                resp = await client.post(
+                    url,
+                    json={
+                        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                        "generationConfig": {"temperature": 0.1, "maxOutputTokens": 20},
+                    },
+                )
+                if resp.is_success:
+                    data = resp.json()
+                    val = (
+                        data.get("candidates", [{}])[0]
+                        .get("content", {})
+                        .get("parts", [{}])[0]
+                        .get("text", "")
+                        .strip()
+                        .lower()
+                    )
+                    for member in Intent:
+                        if member.value == val:
+                            return member
+        except Exception as exc:
+            logger.debug("Gemini intent fallback error: %s", exc)
+
+    return base
