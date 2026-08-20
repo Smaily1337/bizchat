@@ -83,7 +83,7 @@ class CoreBotEngine:
             )
         )
         conversation.updated_at = utc_now()
-        await self.db.flush()
+        await self.db.commit()
 
         preview = inbound.text.strip()[:100] or "…"
         await hub.publish(
@@ -115,7 +115,7 @@ class CoreBotEngine:
                 )
             )
             conversation.updated_at = utc_now()
-            await self.db.flush()
+            await self.db.commit()
             outbound = OutboundMessage(
                 channel=inbound.channel,
                 external_thread_id=inbound.external_thread_id,
@@ -177,7 +177,21 @@ class CoreBotEngine:
             )
         )
         conversation.updated_at = utc_now()
-        await self.db.flush()
+        await self.db.commit()
+
+        # Publish event for bot reply so UI stream updates instantly!
+        await hub.publish(
+            business_id,
+            "chat.message",
+            {
+                "conversation_id": str(conversation.id),
+                "channel": inbound.channel.value
+                if hasattr(inbound.channel, "value")
+                else str(inbound.channel),
+                "customer_name": customer.name,
+                "role": "bot",
+            },
+        )
 
         outbound = OutboundMessage(
             channel=inbound.channel,
@@ -211,7 +225,7 @@ class CoreBotEngine:
             )
         )
         conversation.updated_at = utc_now()
-        await self.db.flush()
+        await self.db.commit()
 
         preview = inbound.text.strip()[:100] or "…"
         await hub.publish(

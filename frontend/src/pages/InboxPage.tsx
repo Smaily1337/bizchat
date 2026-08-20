@@ -90,6 +90,19 @@ export function InboxPage() {
     el.scrollTop = el.scrollHeight;
   }, [messages, selectedId]);
 
+  // Periodic background refresh (polling fallback every 2.5s) to guarantee instant message delivery
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void reloadList().catch(() => undefined);
+        if (selectedId) {
+          void reloadMessages(selectedId).catch(() => undefined);
+        }
+      }
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [selectedId]);
+
   useRealtimeEvents(
     true,
     (ev) => {
@@ -97,10 +110,13 @@ export function InboxPage() {
         void reloadList().catch(() => undefined);
         if (
           selectedId &&
-          ev.payload?.conversation_id &&
-          String(ev.payload.conversation_id) === selectedId
+          (!ev.payload?.conversation_id || String(ev.payload.conversation_id) === selectedId)
         ) {
           void reloadMessages(selectedId).catch(() => undefined);
+          setTimeout(() => {
+            void reloadMessages(selectedId).catch(() => undefined);
+            void reloadList().catch(() => undefined);
+          }, 1200);
         }
       }
     },
