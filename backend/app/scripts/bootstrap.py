@@ -145,6 +145,16 @@ async def _sqlite_prepare() -> None:
         for stmt in appt_alters:
             await conn.execute(text(stmt))
 
+        staff_cols = (
+            await conn.execute(text("PRAGMA table_info(staff)"))
+        ).mappings().all()
+        staff_existing = {c["name"] for c in staff_cols}
+        staff_alters: list[str] = []
+        if "avatar_url" not in staff_existing:
+            staff_alters.append("ALTER TABLE staff ADD COLUMN avatar_url TEXT")
+        for stmt in staff_alters:
+            await conn.execute(text(stmt))
+
         # Expand legacy free-plan channel lists so Messenger/Telegram land in Inbox.
         await conn.execute(
             text(
@@ -189,6 +199,7 @@ async def _ensure_owner_columns_pg() -> None:
         "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS deposit_amount NUMERIC(10,2)",
         "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS deposit_status VARCHAR(32) DEFAULT 'none'",
         "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS stripe_checkout_session_id VARCHAR(255)",
+        "ALTER TABLE staff ADD COLUMN IF NOT EXISTS avatar_url TEXT",
     ]
     async with engine.begin() as conn:
         for stmt in stmts:

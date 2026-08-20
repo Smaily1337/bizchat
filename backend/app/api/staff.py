@@ -19,6 +19,7 @@ class StaffOut(ORMModel):
     id: UUID
     business_id: UUID
     name: str
+    avatar_url: str | None = None
     color: str | None = None
     is_active: bool
     sort_order: int
@@ -26,12 +27,14 @@ class StaffOut(ORMModel):
 
 class StaffCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
+    avatar_url: str | None = None
     color: str | None = None
     sort_order: int = 0
 
 
 class StaffUpdate(BaseModel):
     name: str | None = None
+    avatar_url: str | None = None
     color: str | None = None
     is_active: bool | None = None
     sort_order: int | None = None
@@ -54,6 +57,7 @@ async def create_staff(
     row = Staff(
         business_id=owner.business_id,
         name=body.name.strip(),
+        avatar_url=body.avatar_url,
         color=body.color,
         sort_order=body.sort_order,
         is_active=True,

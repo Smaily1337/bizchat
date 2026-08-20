@@ -304,12 +304,12 @@ export const tagsApi = {
 
 export const staffApi = {
   list: () => apiFetch<StaffMember[]>("/api/staff"),
-  create: (body: { name: string; color?: string; sort_order?: number }) =>
+  create: (body: { name: string; avatar_url?: string | null; color?: string; sort_order?: number }) =>
     apiFetch<StaffMember>("/api/staff", {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  update: (id: string, body: Record<string, unknown>) =>
+  update: (id: string, body: Partial<StaffMember> & Record<string, unknown>) =>
     apiFetch<StaffMember>(`/api/staff/${id}`, {
       method: "PATCH",
       body: JSON.stringify(body),

@@ -155,6 +155,7 @@ export type StaffMember = {
   id: string;
   business_id: string;
   name: string;
+  avatar_url?: string | null;
   color: string | null;
   is_active: boolean;
   sort_order: number;

@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState, useRef } from "react";
 import { staffApi } from "@/api";
 import type { StaffMember } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
@@ -21,17 +21,60 @@ function initials(name: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
+function compressImage(file: File, maxSize = 320): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        } else {
+          resolve(e.target?.result as string);
+        }
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export function StaffPage() {
   const { push } = useToast();
   const [items, setItems] = useState<StaffMember[]>([]);
   const [name, setName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState(STAFF_COLORS[0]);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [editName, setEditName] = useState("");
+  const [editAvatarUrl, setEditAvatarUrl] = useState<string | null>(null);
   const [editColor, setEditColor] = useState(STAFF_COLORS[0]);
   const [loading, setLoading] = useState(true);
+
+  const addFileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   async function reload() {
     setItems(await staffApi.list());
@@ -43,6 +86,24 @@ export function StaffPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function handleAvatarSelect(
+    e: ChangeEvent<HTMLInputElement>,
+    setter: (val: string | null) => void,
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressImage(file, 360);
+      setter(compressed);
+    } catch {
+      push({
+        title: "Błąd zdjęcia",
+        message: "Nie udało się wczytać wybranego pliku graficznego",
+        tone: "canary",
+      });
+    }
+  }
+
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
@@ -50,9 +111,11 @@ export function StaffPage() {
     try {
       await staffApi.create({
         name: name.trim(),
+        avatar_url: avatarUrl,
         color: selectedColor,
       });
       setName("");
+      setAvatarUrl(null);
       setShowAdd(false);
       push({
         title: "Dodano pracownika",
@@ -71,11 +134,12 @@ export function StaffPage() {
     try {
       await staffApi.update(editingStaff.id, {
         name: editName.trim(),
+        avatar_url: editAvatarUrl,
         color: editColor,
       });
       push({
         title: "Zaktualizowano pracownika",
-        message: "Dane pracownika zostały zapisane",
+        message: "Dane pracownika i zdjęcie zostały zapisane",
         tone: "canary",
       });
       setEditingStaff(null);
@@ -115,7 +179,7 @@ export function StaffPage() {
               Twój Zespół
             </h1>
             <p className="mt-0.5 text-xs text-[var(--muted)]">
-              Zarządzaj pracownikami, przypisuj ich do wizyt i konfiguruj terminarz
+              Zarządzaj pracownikami, zdjęciami profilowymi i dostępnością w kalendarzu
             </p>
           </div>
         </div>
@@ -143,62 +207,114 @@ export function StaffPage() {
 
       {/* Add Staff Form */}
       {showAdd && (
-        <section className="glass-panel rounded-xl p-6 shadow-2xl border border-[var(--primary)]/30 animate-fade-up">
+        <section className="glass-panel rounded-2xl p-6 shadow-2xl border border-[var(--primary)]/30 animate-fade-up">
           <h2 className="font-display text-base font-bold text-[var(--text-bright)] mb-1 flex items-center gap-2">
             <span className="material-symbols-outlined text-[var(--primary)] text-[20px]">
               person_add
             </span>
             Dodaj nowego pracownika do zespołu
           </h2>
-          <p className="text-xs text-[var(--muted)] mb-4">
-            Wpisz imię i nazwisko pracownika, aby był dostępny przy rezerwacjach i w kalendarzu.
+          <p className="text-xs text-[var(--muted)] mb-5">
+            Wpisz dane pracownika i dodaj opcjonalne zdjęcie profilowe do wyświetlania w terminarzu.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 items-end" onSubmit={onCreate}>
-            <div className="flex-1 w-full space-y-1">
-              <label className="block text-xs font-semibold text-[var(--muted)]">
-                Imię i nazwisko
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="np. Jan Kowalski"
-                className="w-full bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-bright)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--primary)] transition-colors"
-                required
-                autoFocus
-              />
-            </div>
 
-            <div className="space-y-1">
-              <label className="block text-xs font-semibold text-[var(--muted)]">
-                Kolor w kalendarzu
-              </label>
-              <div className="flex items-center gap-1.5 py-1">
-                {STAFF_COLORS.map((c) => (
+          <form className="space-y-4" onSubmit={onCreate}>
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+              {/* Avatar Upload Preview */}
+              <div className="flex flex-col items-center gap-2 shrink-0">
+                <input
+                  type="file"
+                  ref={addFileInputRef}
+                  onChange={(e) => void handleAvatarSelect(e, setAvatarUrl)}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <div
+                  onClick={() => addFileInputRef.current?.click()}
+                  style={{ backgroundColor: avatarUrl ? "transparent" : selectedColor }}
+                  className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/30 flex flex-col items-center justify-center cursor-pointer hover:border-[var(--primary)] transition-all overflow-hidden relative group shadow-md"
+                  title="Kliknij, aby wybrać zdjęcie profilowe"
+                >
+                  {avatarUrl ? (
+                    <>
+                      <img
+                        src={avatarUrl}
+                        alt="Podgląd"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                        <span className="material-symbols-outlined text-xl">edit</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center text-white/80 group-hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-2xl">add_a_photo</span>
+                      <span className="text-[10px] font-semibold mt-0.5">Zdjęcie</span>
+                    </div>
+                  )}
+                </div>
+                {avatarUrl && (
                   <button
-                    key={c}
                     type="button"
-                    onClick={() => setSelectedColor(c)}
-                    style={{ backgroundColor: c }}
-                    className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
-                      selectedColor === c ? "ring-2 ring-white scale-125" : "opacity-80 hover:opacity-100"
-                    }`}
+                    onClick={() => setAvatarUrl(null)}
+                    className="text-[11px] text-red-400 hover:underline cursor-pointer"
+                  >
+                    Usuń zdjęcie
+                  </button>
+                )}
+              </div>
+
+              {/* Fields */}
+              <div className="flex-1 w-full space-y-3">
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-[var(--muted)]">
+                    Imię i nazwisko pracownika
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="np. Jan Kowalski"
+                    className="w-full bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-bright)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                    required
+                    autoFocus
                   />
-                ))}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-[var(--muted)]">
+                    Kolor w kalendarzu
+                  </label>
+                  <div className="flex items-center gap-1.5 py-1">
+                    {STAFF_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setSelectedColor(c)}
+                        style={{ backgroundColor: c }}
+                        className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
+                          selectedColor === c ? "ring-2 ring-white scale-125" : "opacity-80 hover:opacity-100"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <GlassButton type="submit" variant="primary" className="shrink-0">
-              <span className="material-symbols-outlined text-[18px]">check</span>
-              Zapisz pracownika
-            </GlassButton>
+            <div className="flex justify-end pt-2 border-t border-white/5">
+              <GlassButton type="submit" variant="primary">
+                <span className="material-symbols-outlined text-[18px]">check</span>
+                Zapisz pracownika
+              </GlassButton>
+            </div>
           </form>
         </section>
       )}
 
-      {/* Edit Staff Modal */}
+      {/* Edit Staff Modal / Section */}
       {editingStaff && (
-        <section className="glass-panel rounded-xl p-6 shadow-2xl border border-[var(--accent)]/40 animate-fade-up">
+        <section className="glass-panel rounded-2xl p-6 shadow-2xl border border-[var(--accent)]/40 animate-fade-up">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-base font-bold text-[var(--text-bright)] flex items-center gap-2">
               <span className="material-symbols-outlined text-[var(--accent)] text-[20px]">
@@ -209,51 +325,100 @@ export function StaffPage() {
             <button
               type="button"
               onClick={() => setEditingStaff(null)}
-              className="text-[var(--muted)] hover:text-white p-1"
+              className="text-[var(--muted)] hover:text-white p-1 cursor-pointer"
             >
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
 
-          <form className="flex flex-col sm:flex-row gap-3 items-end" onSubmit={onSaveEdit}>
-            <div className="flex-1 w-full space-y-1">
-              <label className="block text-xs font-semibold text-[var(--muted)]">
-                Imię i nazwisko
-              </label>
-              <input
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="w-full bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-bright)] focus:outline-none focus:border-[var(--primary)] transition-colors"
-                required
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-xs font-semibold text-[var(--muted)]">
-                Kolor
-              </label>
-              <div className="flex items-center gap-1.5 py-1">
-                {STAFF_COLORS.map((c) => (
+          <form className="space-y-4" onSubmit={onSaveEdit}>
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+              {/* Edit Avatar Upload Preview */}
+              <div className="flex flex-col items-center gap-2 shrink-0">
+                <input
+                  type="file"
+                  ref={editFileInputRef}
+                  onChange={(e) => void handleAvatarSelect(e, setEditAvatarUrl)}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <div
+                  onClick={() => editFileInputRef.current?.click()}
+                  style={{ backgroundColor: editAvatarUrl ? "transparent" : editColor }}
+                  className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/30 flex flex-col items-center justify-center cursor-pointer hover:border-[var(--primary)] transition-all overflow-hidden relative group shadow-md"
+                  title="Kliknij, aby zmienić zdjęcie profilowe"
+                >
+                  {editAvatarUrl ? (
+                    <>
+                      <img
+                        src={editAvatarUrl}
+                        alt="Podgląd"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                        <span className="material-symbols-outlined text-xl">edit</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center text-white/80 group-hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-2xl">add_a_photo</span>
+                      <span className="text-[10px] font-semibold mt-0.5">Dodaj foto</span>
+                    </div>
+                  )}
+                </div>
+                {editAvatarUrl && (
                   <button
-                    key={c}
                     type="button"
-                    onClick={() => setEditColor(c)}
-                    style={{ backgroundColor: c }}
-                    className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
-                      editColor === c ? "ring-2 ring-white scale-125" : "opacity-80 hover:opacity-100"
-                    }`}
+                    onClick={() => setEditAvatarUrl(null)}
+                    className="text-[11px] text-red-400 hover:underline cursor-pointer"
+                  >
+                    Usuń zdjęcie
+                  </button>
+                )}
+              </div>
+
+              {/* Fields */}
+              <div className="flex-1 w-full space-y-3">
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-[var(--muted)]">
+                    Imię i nazwisko
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-bright)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                    required
                   />
-                ))}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-[var(--muted)]">
+                    Kolor w kalendarzu
+                  </label>
+                  <div className="flex items-center gap-1.5 py-1">
+                    {STAFF_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setEditColor(c)}
+                        style={{ backgroundColor: c }}
+                        className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
+                          editColor === c ? "ring-2 ring-white scale-125" : "opacity-80 hover:opacity-100"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <GlassButton type="submit" variant="primary">
-                Zapisz zmiany
-              </GlassButton>
+            <div className="flex justify-end gap-2 pt-2 border-t border-white/5">
               <GlassButton type="button" variant="ghost" onClick={() => setEditingStaff(null)}>
                 Anuluj
+              </GlassButton>
+              <GlassButton type="submit" variant="primary">
+                Zapisz zmiany
               </GlassButton>
             </div>
           </form>
@@ -319,7 +484,7 @@ export function StaffPage() {
             Brak pracowników w zespole
           </h3>
           <p className="text-xs text-[var(--muted)] max-w-md mb-6 leading-relaxed">
-            Twoje konto jest czyste. Dodaj pracowników lub specjalistów, aby móc przypisywać ich do wizyt, usług oraz zarządzać ich dostępnością w kalendarzu.
+            Twoje konto jest czyste. Dodaj pracowników lub specjalistów ze zdjęciami profilowymi, aby móc przypisywać ich do wizyt i zarządzać ich dostępnością w kalendarzu.
           </p>
           <GlassButton
             type="button"
@@ -342,12 +507,21 @@ export function StaffPage() {
             >
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
-                  <div
-                    style={{ backgroundColor: s.color || "#3e63dd" }}
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-bold text-white shadow-md shrink-0"
-                  >
-                    {initials(s.name)}
-                  </div>
+                  {s.avatar_url ? (
+                    <img
+                      src={s.avatar_url}
+                      alt={s.name}
+                      className="w-12 h-12 rounded-xl object-cover border border-white/20 shadow-md shrink-0"
+                    />
+                  ) : (
+                    <div
+                      style={{ backgroundColor: s.color || "#3e63dd" }}
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-bold text-white shadow-md shrink-0"
+                    >
+                      {initials(s.name)}
+                    </div>
+                  )}
+
                   <div>
                     <h3 className="text-base font-bold text-[var(--text-bright)]">{s.name}</h3>
                     <span
@@ -371,18 +545,19 @@ export function StaffPage() {
                     onClick={() => {
                       setEditingStaff(s);
                       setEditName(s.name);
+                      setEditAvatarUrl(s.avatar_url || null);
                       setEditColor(s.color || STAFF_COLORS[0]);
                       setShowAdd(false);
                     }}
-                    className="p-1.5 text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 rounded-lg transition-colors"
-                    title="Edytuj pracownika"
+                    className="p-1.5 text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                    title="Edytuj pracownika i zdjęcie"
                   >
                     <span className="material-symbols-outlined text-[18px]">edit</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onToggleStatus(s)}
-                    className={`p-1.5 rounded-lg transition-colors ${
+                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                       s.is_active
                         ? "text-[var(--muted)] hover:text-red-400 hover:bg-red-500/10"
                         : "text-[var(--muted)] hover:text-green-400 hover:bg-green-500/10"
