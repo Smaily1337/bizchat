@@ -1,0 +1,39 @@
+# Środowisko / sekrety — nigdy nie commitować
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite*
+backend/*.db
+
+# Dane lokalnego Postgresa i inne pliki lokalne
+.local/
+
+# Python
+.venv/
+backend/.venv/
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+*.tsbuildinfo
+npm-debug.log*
+
+# System / edytor
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+
+# Next.js web app
+web/node_modules/
+web/.next/
+web/.env.local

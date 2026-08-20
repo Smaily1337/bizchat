@@ -1,0 +1,66 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        background: "var(--bg)",
+        surface: "var(--surface)",
+        "surface-container-lowest": "#010f1f",
+        "surface-container-low": "#0d1c2d",
+        "surface-container": "#122131",
+        "surface-container-high": "#1c2b3c",
+        "surface-container-highest": "#273647",
+        "surface-variant": "#273647",
+        "surface-bright": "#2c3a4c",
+        primary: "#b7c4ff",
+        "primary-container": "#3e63dd",
+        "on-primary": "#002681",
+        "on-primary-container": "#eeeeff",
+        secondary: "#dfb7ff",
+        "secondary-container": "#65219c",
+        "on-secondary": "#4b007e",
+        "on-secondary-container": "#d3a0ff",
+        tertiary: "#c5c6ce",
+        "tertiary-container": "#6b6c74",
+        "on-surface": "#d4e4fa",
+        "on-surface-variant": "#c4c5d6",
+        "outline-variant": "#444654",
+        outline: "#8e909f",
+        error: "#ffb4ab",
+        "error-container": "#93000a",
+        graphite: "var(--bg)",
+        void: "var(--bg)",
+        canary: "var(--accent)",
+        accent: "var(--accent)",
+        frost: "var(--text)",
+        glass: {
+          border: "var(--glass-border)",
+          fill: "var(--glass-fill)",
+          fillStrong: "var(--glass-fill-strong)",
+        },
+      },
+      fontFamily: {
+        display: ["IBM Plex Sans", "system-ui", "sans-serif"],
+        sans: ["IBM Plex Sans", "system-ui", "sans-serif"],
+        mono: ["IBM Plex Mono", "JetBrains Mono", "ui-monospace", "monospace"],
+        label: ["IBM Plex Sans", "sans-serif"],
+      },
+      boxShadow: {
+        glass: "var(--shadow-glass)",
+        canary: "var(--shadow-accent)",
+        active: "var(--shadow-active)",
+      },
+      backdropBlur: {
+        glass: "22px",
+      },
+      borderRadius: {
+        soft: "1rem",
+        glass: "1rem",
+        control: "0.65rem",
+      },
+    },
+  },
+  plugins: [],
+};
+
