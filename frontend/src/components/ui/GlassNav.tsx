@@ -77,15 +77,15 @@ export function GlassNav() {
             </Link>
           </div>
 
-          {/* Center: Full Horizontal Navigation Tabs (Visible on large screens) */}
-          <nav className="hidden lg:flex items-center gap-1 overflow-x-auto py-1">
+          {/* Center: Full Horizontal Navigation Tabs (Always Visible across all screens!) */}
+          <nav className="flex items-center gap-1 overflow-x-auto py-1 max-w-[65vw] scrollbar-none">
             {NAV_LINKS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                  `flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 whitespace-nowrap select-none ${
                     isActive
                       ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow-md shadow-blue-500/25 font-bold"
                       : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5"
@@ -98,19 +98,8 @@ export function GlassNav() {
             ))}
           </nav>
 
-          {/* Right: Actions + Mobile Menu Toggle + Theme + Profile */}
+          {/* Right: Actions + Theme + Profile */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Mobile / Tablet Menu Button (visible on < lg screens) */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[var(--text-bright)] border border-white/10 transition-colors cursor-pointer"
-              title="Otwórz menu nawigacji"
-            >
-              <span className="material-symbols-outlined text-[20px]">menu</span>
-              <span className="text-xs font-bold">Menu</span>
-            </button>
-
             {/* Notifications Link */}
             <Link
               to="/notifications"
@@ -177,27 +166,6 @@ export function GlassNav() {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Secondary Sub-Bar for medium screens (sm to lg) so tabs are always visible */}
-        <div className="hidden sm:flex lg:hidden px-4 py-2 border-t border-white/5 overflow-x-auto gap-1 bg-black/5">
-          {NAV_LINKS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
-                  isActive
-                    ? "bg-[var(--primary-container)] text-white font-bold shadow"
-                    : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5"
-                }`
-              }
-            >
-              <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
         </div>
       </header>
 
