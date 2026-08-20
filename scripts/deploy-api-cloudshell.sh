@@ -2,12 +2,12 @@
 # Redeploy API from salon-features (reports, staff, WhatsApp, deposits, …).
 #
 # Cloud Shell — skopiuj TYLKO tę jedną linię:
-#   curl -fsSL https://raw.githubusercontent.com/Smaily1337/bizchat/cursor/salon-features-0cd1/scripts/deploy-api-cloudshell.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/Smaily1337/bizchat/main/scripts/deploy-api-cloudshell.sh | bash
 set -euo pipefail
 
 PROJECT=bizchat-504420
 REGION=europe-central2
-BRANCH=cursor/salon-features-0cd1
+BRANCH=main
 REPO_URL=https://github.com/Smaily1337/bizchat.git
 REPO_DIR="${REPO_DIR:-$HOME/bizchat}"
 

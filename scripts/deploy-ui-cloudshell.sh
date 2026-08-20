@@ -2,14 +2,14 @@
 # Redeploy panel + landing with salon features (Raporty, Zespół, …).
 #
 # Cloud Shell — skopiuj TYLKO tę jedną linię (nic więcej z czatu):
-#   curl -fsSL https://raw.githubusercontent.com/Smaily1337/bizchat/cursor/salon-features-0cd1/scripts/deploy-ui-cloudshell.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/Smaily1337/bizchat/main/scripts/deploy-ui-cloudshell.sh | bash
 set -euo pipefail
 
 PROJECT=bizchat-504420
 REGION=europe-central2
 API_URL=https://bizchat-api-702906501614.europe-central2.run.app
 IMAGE=europe-central2-docker.pkg.dev/${PROJECT}/cloud-run-source-deploy/bizchat-panel
-BRANCH=cursor/salon-features-0cd1
+BRANCH=main
 REPO_URL=https://github.com/Smaily1337/bizchat.git
 REPO_DIR="${REPO_DIR:-$HOME/bizchat}"
 
