@@ -51,6 +51,7 @@ gcloud run deploy bizchat-api \
   --region="$REGION" \
   --source=./backend \
   --allow-unauthenticated \
+  --update-env-vars="PUBLIC_API_URL=https://bizchat-api-702906501614.europe-central2.run.app,PUBLIC_FRONTEND_URL=https://bizchat-panel-702906501614.europe-central2.run.app,META_APP_ID=1521874379621724,META_APP_SECRET=15ff1f84a7a34674a104f3046e7e2887,META_VERIFY_TOKEN=bizchat-verify" \
   --max-instances=2 \
   --min-instances=0
 
