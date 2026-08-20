@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { appointmentsApi, dashboardApi, inboxApi, customersApi, staffApi } from "@/api";
 import type { Appointment, Conversation, Customer, StaffMember } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
-import { GlassButton } from "@/components/ui";
+import { GlassButton, GlassCardSkeleton } from "@/components/ui";
 
 function fmtTime(iso: string) {
   try {
@@ -177,87 +177,98 @@ export function HomePage() {
 
       {/* Stats Grid */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {/* Stat 1: Wizyty dziś */}
-        <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--primary)]/10 blur-xl group-hover:bg-[var(--primary)]/20 transition-all" />
-          <div className="flex items-center justify-between">
-            <span
-              className="material-symbols-outlined text-[var(--primary)] text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              calendar_today
-            </span>
-            <span className="font-medium text-xs text-[var(--muted)] bg-white/5 px-2 py-1 rounded-md border border-white/5">
-              Dziś
-            </span>
-          </div>
-          <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
-            {today ?? "0"}
-          </h3>
-          <p className="text-xs text-[var(--muted)] font-medium">Wizyty dziś</p>
-        </div>
+        {today === null ? (
+          <>
+            <GlassCardSkeleton />
+            <GlassCardSkeleton />
+            <GlassCardSkeleton />
+            <GlassCardSkeleton />
+          </>
+        ) : (
+          <>
+            {/* Stat 1: Wizyty dziś */}
+            <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group animate-fade-up stagger-1">
+              <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--primary)]/10 blur-xl group-hover:bg-[var(--primary)]/20 transition-all" />
+              <div className="flex items-center justify-between">
+                <span
+                  className="material-symbols-outlined text-[var(--primary)] text-[28px] transition-transform duration-200 group-hover:scale-110"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  calendar_today
+                </span>
+                <span className="font-medium text-xs text-[var(--muted)] bg-white/5 px-2 py-1 rounded-md border border-white/5">
+                  Dziś
+                </span>
+              </div>
+              <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
+                {today}
+              </h3>
+              <p className="text-xs text-[var(--muted)] font-medium">Wizyty dziś</p>
+            </div>
 
-        {/* Stat 2: Oczekujące */}
-        <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--secondary)]/10 blur-xl group-hover:bg-[var(--secondary)]/20 transition-all" />
-          <div className="flex items-center justify-between">
-            <span
-              className="material-symbols-outlined text-[var(--secondary)] text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              pending_actions
-            </span>
-            {pending && pending > 0 ? (
-              <span className="w-2.5 h-2.5 rounded-full bg-[var(--secondary)] animate-pulse" />
-            ) : null}
-          </div>
-          <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
-            {pending ?? "0"}
-          </h3>
-          <p className="text-xs text-[var(--muted)] font-medium">Oczekujące</p>
-        </div>
+            {/* Stat 2: Oczekujące */}
+            <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group animate-fade-up stagger-2">
+              <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--secondary)]/10 blur-xl group-hover:bg-[var(--secondary)]/20 transition-all" />
+              <div className="flex items-center justify-between">
+                <span
+                  className="material-symbols-outlined text-[var(--secondary)] text-[28px] transition-transform duration-200 group-hover:scale-110"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  pending_actions
+                </span>
+                {pending && pending > 0 ? (
+                  <span className="w-2.5 h-2.5 rounded-full bg-[var(--secondary)] animate-pulse" />
+                ) : null}
+              </div>
+              <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
+                {pending ?? "0"}
+              </h3>
+              <p className="text-xs text-[var(--muted)] font-medium">Oczekujące</p>
+            </div>
 
-        {/* Stat 3: Nowi klienci */}
-        <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--tertiary)]/10 blur-xl group-hover:bg-[var(--tertiary)]/20 transition-all" />
-          <div className="flex items-center justify-between">
-            <span
-              className="material-symbols-outlined text-[var(--tertiary)] text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              group
-            </span>
-            <span className="text-xs text-[var(--muted)] bg-white/5 px-2 py-1 rounded-md border border-white/5">
-              Baza
-            </span>
-          </div>
-          <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
-            {customersCount ?? customers.length}
-          </h3>
-          <p className="text-xs text-[var(--muted)] font-medium">Klienci w bazie</p>
-        </div>
+            {/* Stat 3: Nowi klienci */}
+            <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group animate-fade-up stagger-3">
+              <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--tertiary)]/10 blur-xl group-hover:bg-[var(--tertiary)]/20 transition-all" />
+              <div className="flex items-center justify-between">
+                <span
+                  className="material-symbols-outlined text-[var(--tertiary)] text-[28px] transition-transform duration-200 group-hover:scale-110"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  group
+                </span>
+                <span className="text-xs text-[var(--muted)] bg-white/5 px-2 py-1 rounded-md border border-white/5">
+                  Baza
+                </span>
+              </div>
+              <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
+                {customersCount ?? customers.length}
+              </h3>
+              <p className="text-xs text-[var(--muted)] font-medium">Klienci w bazie</p>
+            </div>
 
-        {/* Stat 4: Wiadomości */}
-        <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--primary)]/10 blur-xl group-hover:bg-[var(--primary)]/20 transition-all" />
-          <div className="flex items-center justify-between">
-            <span
-              className="material-symbols-outlined text-[var(--primary)] text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              forum
-            </span>
-            {openChats.length > 0 && (
-              <span className="text-xs font-semibold text-[var(--accent)] bg-[var(--accent-soft)] px-2 py-0.5 rounded-md border border-[var(--accent)]/30">
-                {openChats.length} aktywnych
-              </span>
-            )}
-          </div>
-          <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
-            {openChats.length}
-          </h3>
-          <p className="text-xs text-[var(--muted)] font-medium">Otwarte wątki</p>
-        </div>
+            {/* Stat 4: Wiadomości */}
+            <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group animate-fade-up stagger-4">
+              <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--primary)]/10 blur-xl group-hover:bg-[var(--primary)]/20 transition-all" />
+              <div className="flex items-center justify-between">
+                <span
+                  className="material-symbols-outlined text-[var(--primary)] text-[28px] transition-transform duration-200 group-hover:scale-110"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  forum
+                </span>
+                {openChats.length > 0 && (
+                  <span className="text-xs font-semibold text-[var(--accent)] bg-[var(--accent-soft)] px-2 py-0.5 rounded-md border border-[var(--accent)]/30">
+                    {openChats.length} aktywnych
+                  </span>
+                )}
+              </div>
+              <h3 className="font-display text-3xl font-bold mt-2 text-[var(--text-bright)]">
+                {openChats.length}
+              </h3>
+              <p className="text-xs text-[var(--muted)] font-medium">Otwarte wątki</p>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Main Section: Appointments List */}

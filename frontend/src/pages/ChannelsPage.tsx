@@ -584,7 +584,7 @@ export function ChannelsPage() {
                       <h2 className="text-xl font-bold text-[var(--text-bright)]">
                         {metaDetails?.page_name || "Facebook Fanpage"}
                       </h2>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/30 animate-pulse-glow">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                         Połączono i Aktywne
                       </span>
@@ -607,7 +607,7 @@ export function ChannelsPage() {
                   <button
                     type="button"
                     onClick={handleStartMetaOAuth}
-                    className="px-3 py-1.5 rounded-lg border border-glass-border bg-white/5 text-xs text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/10 transition-colors"
+                    className="px-3 py-1.5 rounded-lg border border-glass-border bg-white/5 text-xs text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/10 transition-all hover:scale-[1.02]"
                   >
                     Zmień stronę
                   </button>
@@ -616,7 +616,7 @@ export function ChannelsPage() {
                     type="button"
                     disabled={disconnectBusy}
                     onClick={handleDisconnectMeta}
-                    className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400 hover:bg-red-500/20 transition-colors"
+                    className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400 hover:bg-red-500/20 transition-all hover:scale-[1.02]"
                   >
                     {disconnectBusy ? "Odłączanie..." : "Odłącz"}
                   </button>
@@ -627,7 +627,7 @@ export function ChannelsPage() {
 
           {/* Facebook History Sync Banner */}
           {isMetaConnected && (
-            <GlassCard className="p-6 border border-blue-500/20 bg-gradient-to-r from-blue-900/10 via-transparent to-purple-900/10">
+            <GlassCard className="p-6 border border-blue-500/20 bg-gradient-to-r from-blue-900/10 via-transparent to-purple-900/10 hover:border-blue-500/40 transition-colors">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5">
                   <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">

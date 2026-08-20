@@ -9,7 +9,7 @@ import {
 } from "@/api";
 import type { Appointment, Customer, Service, StaffMember } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
-import { GlassButton } from "@/components/ui";
+import { GlassButton, GlassTableSkeleton } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -75,6 +75,7 @@ export function AppointmentsPage() {
   const [searchParams] = useSearchParams();
   const { push } = useToast();
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Appointment[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -126,7 +127,8 @@ export function AppointmentsPage() {
           });
         }
       })
-      .catch((e: Error) => setError(e.message));
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
   }, []);
 
   const filteredItems = useMemo(() => {
@@ -567,128 +569,132 @@ export function AppointmentsPage() {
       )}
 
       {/* Appointments List / Table */}
-      <section className="glass-panel rounded-xl overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-white/5 text-[var(--muted)] font-semibold text-xs uppercase tracking-wider bg-white/[0.02]">
-                <th className="py-3.5 px-6">Termin</th>
-                <th className="py-3.5 px-6">Klient</th>
-                <th className="py-3.5 px-6">Usługa</th>
-                <th className="py-3.5 px-6">Pracownik</th>
-                <th className="py-3.5 px-6">Status</th>
-                <th className="py-3.5 px-6 text-right">Akcje</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5 text-sm">
-              {filteredItems.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 px-6 text-center text-[var(--muted)]">
-                    <span className="material-symbols-outlined text-4xl mb-2 block opacity-40">
-                      search_off
-                    </span>
-                    Brak wizyt pasujących do wybranych kryteriów.
-                  </td>
+      {loading ? (
+        <GlassTableSkeleton rows={6} />
+      ) : (
+        <section className="glass-panel rounded-xl overflow-hidden shadow-2xl animate-fade-up">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5 text-[var(--muted)] font-semibold text-xs uppercase tracking-wider bg-white/[0.02]">
+                  <th className="py-3.5 px-6">Termin</th>
+                  <th className="py-3.5 px-6">Klient</th>
+                  <th className="py-3.5 px-6">Usługa</th>
+                  <th className="py-3.5 px-6">Pracownik</th>
+                  <th className="py-3.5 px-6">Status</th>
+                  <th className="py-3.5 px-6 text-right">Akcje</th>
                 </tr>
-              ) : (
-                filteredItems.map((a) => {
-                  const cust = customers.find((c) => c.id === a.customer_id);
-                  const st = staff.find((s) => s.id === a.staff_id);
-                  const startDate = new Date(a.start_at);
-                  return (
-                    <tr
-                      key={a.id}
-                      className="hover:bg-white/[0.03] transition-colors group"
-                    >
-                      <td className="py-4 px-6">
-                        <div className="font-mono text-sm font-semibold text-[var(--text-bright)]">
-                          {startDate.toLocaleDateString("pl-PL", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })}
-                        </div>
-                        <div className="text-xs text-[var(--muted)] font-mono">
-                          {startDate.toLocaleTimeString("pl-PL", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[var(--surface-solid)] border border-glass-border flex items-center justify-center text-[var(--primary)] font-bold text-xs shrink-0">
-                            {getInitials(a.customer_name || cust?.name)}
+              </thead>
+              <tbody className="divide-y divide-white/5 text-sm">
+                {filteredItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 px-6 text-center text-[var(--muted)]">
+                      <span className="material-symbols-outlined text-4xl mb-2 block opacity-40">
+                        search_off
+                      </span>
+                      Brak wizyt pasujących do wybranych kryteriów.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredItems.map((a) => {
+                    const cust = customers.find((c) => c.id === a.customer_id);
+                    const st = staff.find((s) => s.id === a.staff_id);
+                    const startDate = new Date(a.start_at);
+                    return (
+                      <tr
+                        key={a.id}
+                        className="hover:bg-white/[0.03] transition-colors group"
+                      >
+                        <td className="py-4 px-6">
+                          <div className="font-mono text-sm font-semibold text-[var(--text-bright)]">
+                            {startDate.toLocaleDateString("pl-PL", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })}
                           </div>
-                          <div>
-                            <div className="font-semibold text-[var(--text-bright)]">
-                              {a.customer_name || cust?.name || "Klient"}
+                          <div className="text-xs text-[var(--muted)] font-mono">
+                            {startDate.toLocaleTimeString("pl-PL", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[var(--surface-solid)] border border-glass-border flex items-center justify-center text-[var(--primary)] font-bold text-xs shrink-0">
+                              {getInitials(cust?.name || a.customer_name)}
                             </div>
-                            <div className="text-xs text-[var(--muted)]">
-                              {cust?.phone || cust?.email || a.channel || ""}
+                            <div>
+                              <p className="font-semibold text-[var(--text-bright)]">
+                                {cust?.name || a.customer_name || "Brak danych"}
+                              </p>
+                              {cust?.phone && (
+                                <p className="text-xs text-[var(--muted)] font-mono">
+                                  {cust.phone}
+                                </p>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-[var(--text)] font-medium">
-                        {a.service_name || "Usługa"}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[var(--accent)]" />
-                          <span className="text-sm text-[var(--text)]">
-                            {a.staff_name || st?.name || "Dowolny"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <StatusBadge status={a.status} />
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
-                            onClick={() => void notifyCustomer(a)}
-                            disabled={a.status === "cancelled" || notifyingId === a.id}
-                            className="p-1.5 text-[var(--muted)] hover:text-[var(--primary)] hover:bg-white/5 rounded-lg transition-colors disabled:opacity-30"
-                            title="Wyślij przypomnienie"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              {notifyingId === a.id ? "sync" : "notifications"}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openEdit(a)}
-                            disabled={a.status === "cancelled"}
-                            className="p-1.5 text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 rounded-lg transition-colors disabled:opacity-30"
-                            title="Edytuj wizytę"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              edit
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void cancelAppt(a.id)}
-                            disabled={a.status === "cancelled"}
-                            className="p-1.5 text-[var(--muted)] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30"
-                            title="Anuluj wizytę"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              cancel
-                            </span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                        </td>
+                        <td className="py-4 px-6">
+                          <p className="font-medium text-[var(--text-bright)]">
+                            {a.service_name || "Usługa"}
+                          </p>
+                        </td>
+                        <td className="py-4 px-6">
+                          <p className="text-xs text-[var(--muted)]">
+                            {st?.name || a.staff_name || "Dowolny pracownik"}
+                          </p>
+                        </td>
+                        <td className="py-4 px-6">
+                          <StatusBadge status={a.status} />
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex items-center justify-end gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => openEdit(a)}
+                              className="p-1.5 text-[var(--muted)] hover:text-[var(--primary)] hover:bg-white/5 rounded-lg transition-colors"
+                              title="Edytuj wizytę"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">
+                                edit
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void notifyCustomer(a)}
+                              disabled={a.status === "cancelled" || notifyingId === a.id}
+                              className="p-1.5 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-white/5 rounded-lg transition-colors disabled:opacity-30"
+                              title="Wyślij przypomnienie"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">
+                                {notifyingId === a.id ? "sync" : "notifications_active"}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void cancelAppt(a.id)}
+                              disabled={a.status === "cancelled"}
+                              className="p-1.5 text-[var(--muted)] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30"
+                              title="Anuluj wizytę"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">
+                                cancel
+                              </span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

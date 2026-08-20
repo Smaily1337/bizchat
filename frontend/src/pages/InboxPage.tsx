@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { customersApi, inboxApi } from "@/api";
 import { ApiError } from "@/api/client";
 import type { Channel, Conversation, Customer, InboxMessage } from "@/api/types";
-import { GlassButton } from "@/components/ui";
+import { GlassButton, GlassChatSkeleton, GlassSkeleton } from "@/components/ui";
 import { GlassTextarea } from "@/components/ui/GlassInput";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 
@@ -444,12 +444,24 @@ export function InboxPage() {
 
           {/* Conversations Items */}
           <div className="flex-1 overflow-y-auto divide-y divide-white/5">
-            {filteredConversations.length === 0 ? (
+            {loading ? (
+              <div className="p-3 space-y-2.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02]">
+                    <GlassSkeleton className="w-10 h-10 rounded-full shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <GlassSkeleton className="h-4 w-28 rounded-md" />
+                      <GlassSkeleton className="h-3 w-40 rounded-md" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredConversations.length === 0 ? (
               <div className="p-8 text-center text-xs text-[var(--muted)]">
                 <span className="material-symbols-outlined text-3xl mb-2 block opacity-40">
                   inbox
                 </span>
-                {loading ? "Wczytywanie..." : "Brak konwersacji."}
+                Brak konwersacji.
               </div>
             ) : (
               filteredConversations.map((c) => {
@@ -460,10 +472,10 @@ export function InboxPage() {
                     key={c.id}
                     type="button"
                     onClick={() => setSelectedId(c.id)}
-                    className={`w-full p-4 text-left transition-all flex items-start gap-3 relative ${
+                    className={`w-full p-4 text-left transition-all duration-200 flex items-start gap-3 relative ${
                       isSelected
                         ? "bg-[var(--primary-container)]/15 border-l-4 border-l-[var(--primary)]"
-                        : "hover:bg-white/[0.03]"
+                        : "hover:bg-white/[0.03] hover:translate-x-1"
                     }`}
                   >
                     <div className="relative shrink-0">
@@ -508,7 +520,9 @@ export function InboxPage() {
 
         {/* Right Column: Active Chat Stream */}
         <section className="lg:col-span-8 glass-panel rounded-xl flex flex-col overflow-hidden shadow-2xl">
-          {selected ? (
+          {loading ? (
+            <GlassChatSkeleton />
+          ) : selected ? (
             <>
               {/* Chat Header */}
               <div className="px-6 py-4 border-b border-glass-border bg-[var(--surface-container-low)] flex items-center justify-between shrink-0">
@@ -576,7 +590,7 @@ export function InboxPage() {
                     return (
                       <div
                         key={m.id}
-                        className={`flex flex-col ${
+                        className={`flex flex-col animate-pop ${
                           isOwner
                             ? "items-end"
                             : isBot
@@ -585,7 +599,7 @@ export function InboxPage() {
                         }`}
                       >
                         <div
-                          className={`max-w-[78%] rounded-2xl p-4 text-sm leading-relaxed shadow-lg ${
+                          className={`max-w-[78%] rounded-2xl p-4 text-sm leading-relaxed shadow-lg transition-transform duration-150 hover:scale-[1.008] ${
                             isOwner
                               ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white rounded-br-none"
                               : isBot
