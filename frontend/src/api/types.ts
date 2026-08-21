@@ -161,6 +161,61 @@ export type StaffMember = {
   sort_order: number;
 };
 
+export type StaffAppointmentItem = {
+  id: string;
+  start_at: string;
+  end_at: string;
+  service_name: string;
+  service_price: number;
+  service_duration_min: number;
+  customer_name: string;
+  customer_phone?: string | null;
+  customer_email?: string | null;
+  status: string;
+  notes?: string | null;
+  channel: string;
+};
+
+export type StaffServiceStat = {
+  service_name: string;
+  count: number;
+  total_revenue: number;
+  avg_price: number;
+};
+
+export type StaffStats = {
+  staff_id: string;
+  name: string;
+  avatar_url?: string | null;
+  color?: string | null;
+  is_active: boolean;
+  period_days: number | null;
+  total_appointments: number;
+  completed_count: number;
+  confirmed_count: number;
+  cancelled_count: number;
+  no_show_count: number;
+  total_revenue: number;
+  avg_ticket: number;
+  total_hours_worked: number;
+  unique_customers_count: number;
+  no_show_rate: number;
+  cancellation_rate: number;
+  services_breakdown: StaffServiceStat[];
+  appointments: StaffAppointmentItem[];
+};
+
+export type StaffLeaderboardItem = {
+  staff_id: string;
+  name: string;
+  avatar_url?: string | null;
+  color?: string | null;
+  is_active: boolean;
+  appointments_count: number;
+  total_revenue: number;
+  rank: number;
+};
+
 export type WorkingHours = {
   id: string;
   business_id: string;

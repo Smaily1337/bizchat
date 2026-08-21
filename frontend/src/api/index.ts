@@ -29,7 +29,9 @@ import type {
   RedeemLicenseResult,
   CreateLicenseKeyPayload,
   Service,
+  StaffLeaderboardItem,
   StaffMember,
+  StaffStats,
   TimeOff,
   WaitlistEntry,
   WorkingHours,
@@ -317,6 +319,12 @@ export const tagsApi = {
 
 export const staffApi = {
   list: () => apiFetch<StaffMember[]>("/api/staff"),
+  overviewStats: (days = 30) =>
+    apiFetch<StaffLeaderboardItem[]>(`/api/staff/overview-stats?days=${days}`),
+  stats: (id: string, days?: number) =>
+    apiFetch<StaffStats>(
+      `/api/staff/${id}/stats${days !== undefined ? `?days=${days}` : ""}`,
+    ),
   create: (body: { name: string; avatar_url?: string | null; color?: string; sort_order?: number }) =>
     apiFetch<StaffMember>("/api/staff", {
       method: "POST",
