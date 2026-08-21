@@ -20,6 +20,7 @@ from app.models.enums import (
 )
 from app.models.feedback import CancellationEvent, Feedback
 from app.models.knowledge import KnowledgeItem
+from app.models.license_key import LicenseKey
 from app.models.notification import (
     NotificationLog,
     NotificationSettings,
@@ -41,6 +42,7 @@ __all__ = [
     "Feedback",
     "FeedbackRoute",
     "KnowledgeItem",
+    "LicenseKey",
     "Message",
     "MessageRole",
     "NotificationChannel",

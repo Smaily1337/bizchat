@@ -309,3 +309,58 @@ export type InboxMessage = {
   content: string;
   created_at: string;
 };
+
+export type LicenseKey = {
+  id: string;
+  key: string;
+  plan: string;
+  duration_days: number | null;
+  max_uses: number;
+  times_used: number;
+  is_active: boolean;
+  expires_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+};
+
+export type GrantLicensePayload = {
+  email?: string;
+  business_id?: string;
+  plan: string;
+  duration_days?: number | null;
+  custom_max_appointments?: number | null;
+  custom_max_messages?: number | null;
+  custom_max_seats?: number | null;
+  custom_channels?: string[];
+  notes?: string;
+};
+
+export type GrantLicenseResult = {
+  success: boolean;
+  message: string;
+  business_id: string;
+  business_name: string;
+  owner_email: string;
+  plan: string;
+  license_status: string;
+  license_expires_at?: string | null;
+  usage: LicenseUsage;
+};
+
+export type CreateLicenseKeyPayload = {
+  plan: string;
+  duration_days?: number | null;
+  max_uses?: number;
+  custom_key?: string;
+  notes?: string;
+};
+
+export type RedeemLicenseResult = {
+  success: boolean;
+  message: string;
+  plan: string;
+  license_status: string;
+  license_expires_at?: string | null;
+  usage: LicenseUsage;
+};
+

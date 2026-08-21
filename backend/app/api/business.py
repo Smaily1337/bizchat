@@ -65,6 +65,113 @@ async def get_usage(db: DbSession, owner: CurrentOwner) -> LicenseUsageOut:
     )
 
 
+class RedeemLicenseRequest(BaseModel):
+    key: str
+
+
+class RedeemLicenseResponse(BaseModel):
+    success: bool = True
+    message: str
+    plan: str
+    license_status: str
+    license_expires_at: datetime | None = None
+    usage: LicenseUsageOut
+
+
+@router.post("/redeem-license", response_model=RedeemLicenseResponse)
+async def redeem_license(
+    db: DbSession,
+    owner: RequireOwnerOrAdmin,
+    body: RedeemLicenseRequest,
+) -> RedeemLicenseResponse:
+    raw_key = body.key.strip().upper()
+    if not raw_key:
+        raise HTTPException(status_code=400, detail="Wpisz kod licencji")
+
+    from app.models import LicenseKey
+    from sqlalchemy import select
+    from datetime import datetime, timezone, timedelta
+    from app.services.limits import PLAN_DEFAULTS, LICENSE_ACTIVE, apply_plan_defaults
+
+    res = await db.execute(
+        select(LicenseKey).where(LicenseKey.key == raw_key)
+    )
+    lic = res.scalar_one_or_none()
+    if lic is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Podany kod licencji jest nieprawidłowy lub nie istnieje",
+        )
+
+    if not lic.is_active or lic.times_used >= lic.max_uses:
+        raise HTTPException(
+            status_code=400,
+            detail="Ten kod licencji został już w pełni wykorzystany lub został wyłączony",
+        )
+
+    now = datetime.now(timezone.utc)
+    if lic.expires_at and lic.expires_at < now:
+        raise HTTPException(
+            status_code=400,
+            detail="Ten kod licencji wygasł i nie może być aktywowany",
+        )
+
+    business = await db.get(Business, owner.business_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Firma nie znaleziona")
+
+    plan_key = lic.plan.lower() if lic.plan in PLAN_DEFAULTS else "pro"
+    apply_plan_defaults(business, plan_key, start_trial=False)
+    business.license_status = LICENSE_ACTIVE
+
+    if lic.duration_days and lic.duration_days > 0:
+        # If currently active, extend or set
+        base_date = business.license_expires_at if (business.license_expires_at and business.license_expires_at > now) else now
+        business.license_expires_at = base_date + timedelta(days=lic.duration_days)
+    else:
+        business.license_expires_at = None  # Lifetime!
+
+    lic.times_used += 1
+    if lic.times_used >= lic.max_uses:
+        lic.is_active = False
+
+    await db.flush()
+    await db.commit()
+    await db.refresh(business)
+
+    snap = await limits_service.usage_snapshot(db, business)
+    usage = LicenseUsageOut(
+        plan=snap.plan,
+        license_status=snap.license_status,
+        license_expires_at=snap.license_expires_at,
+        is_active=snap.is_active,
+        appointments_month=snap.appointments_month,
+        max_appointments_month=snap.max_appointments_month,
+        messages_month=snap.messages_month,
+        max_messages_month=snap.max_messages_month,
+        seats=snap.seats,
+        max_seats=snap.max_seats,
+        enabled_channels=snap.enabled_channels,
+        period_start=snap.period_start,
+        period_end=snap.period_end,
+    )
+
+    exp_info = (
+        f"do {business.license_expires_at.strftime('%Y-%m-%d')}"
+        if business.license_expires_at
+        else "Dożywotnia VIP (Lifetime)"
+    )
+
+    return RedeemLicenseResponse(
+        success=True,
+        message=f"🎉 Sukces! Pomyślnie aktywowano pakiet {plan_key.upper()} ({exp_info}). Wszystkie limity zostały podniesione.",
+        plan=business.plan,
+        license_status=business.license_status,
+        license_expires_at=business.license_expires_at,
+        usage=usage,
+    )
+
+
 @router.patch("", response_model=BusinessOut)
 async def update_business(
     db: DbSession,

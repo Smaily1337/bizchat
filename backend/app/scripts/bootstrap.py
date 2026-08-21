@@ -200,6 +200,19 @@ async def _ensure_owner_columns_pg() -> None:
         "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS deposit_status VARCHAR(32) DEFAULT 'none'",
         "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS stripe_checkout_session_id VARCHAR(255)",
         "ALTER TABLE staff ADD COLUMN IF NOT EXISTS avatar_url TEXT",
+        """CREATE TABLE IF NOT EXISTS license_keys (
+            id UUID PRIMARY KEY,
+            key VARCHAR(64) UNIQUE NOT NULL,
+            plan VARCHAR(32) NOT NULL DEFAULT 'pro',
+            duration_days INTEGER,
+            max_uses INTEGER NOT NULL DEFAULT 1,
+            times_used INTEGER NOT NULL DEFAULT 0,
+            is_active BOOLEAN NOT NULL DEFAULT TRUE,
+            expires_at TIMESTAMPTZ,
+            notes VARCHAR(255),
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+        )""",
     ]
     async with engine.begin() as conn:
         for stmt in stmts:

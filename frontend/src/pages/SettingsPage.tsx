@@ -46,6 +46,11 @@ export function SettingsPage() {
   const [geminiModel, setGeminiModel] = useState("gemini-2.0-flash");
   const [geminiBusy, setGeminiBusy] = useState(false);
 
+  const [redeemKey, setRedeemKey] = useState("");
+  const [redeemBusy, setRedeemBusy] = useState(false);
+  const [redeemMsg, setRedeemMsg] = useState<string | null>(null);
+  const [redeemError, setRedeemError] = useState<string | null>(null);
+
   const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -136,6 +141,25 @@ export function SettingsPage() {
     }
   }
 
+  async function handleRedeemLicense(e: FormEvent) {
+    e.preventDefault();
+    if (!redeemKey.trim()) return;
+    setRedeemBusy(true);
+    setRedeemError(null);
+    setRedeemMsg(null);
+    try {
+      const res = await businessApi.redeemLicense(redeemKey.trim());
+      setRedeemMsg(res.message);
+      setRedeemKey("");
+      await reload();
+      await refreshBusiness();
+    } catch (err) {
+      setRedeemError(err instanceof Error ? err.message : "Błąd aktywacji kodu licencji");
+    } finally {
+      setRedeemBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {msg && (
@@ -166,7 +190,7 @@ export function SettingsPage() {
                     : active === "faq"
                       ? "FAQ & Gemini AI"
                       : active === "plan"
-                        ? "Plan i Limity"
+                        ? "Pakiet i Licencja"
                         : active === "appearance"
                           ? "Wygląd i Motyw"
                           : "Dane Salonu"}
@@ -183,7 +207,7 @@ export function SettingsPage() {
               { id: "salon", label: "Salon", icon: "store" },
               { id: "services", label: "Usługi", icon: "spa" },
               { id: "faq", label: "FAQ & Gemini AI", icon: "psychology" },
-              { id: "plan", label: "Plan", icon: "credit_card" },
+              { id: "plan", label: "Pakiet & Licencja", icon: "workspace_premium" },
               { id: "appearance", label: "Wygląd", icon: "palette" },
               { id: "account", label: "Konto", icon: "account_circle" },
             ].map((tab) => (
@@ -204,46 +228,47 @@ export function SettingsPage() {
         </header>
       )}
 
+      {/* Grid of Main Settings Navigation Cards */}
       {!active && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
           <Link to="/settings/salon" className="glass-panel glass-panel-interactive rounded-xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0">
               <span className="material-symbols-outlined text-[26px]">store</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Salon</p>
-              <p className="text-xs text-[var(--muted)]">Podstawowe dane, nazwa, strefa i zaliczka</p>
+              <p className="font-semibold text-[var(--text-bright)]">Dane Salonu</p>
+              <p className="text-xs text-[var(--muted)]">Nazwa, strefa, rezerwacje i zaliczki</p>
             </div>
           </Link>
           <Link to="/settings/services" className="glass-panel glass-panel-interactive rounded-xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 shrink-0">
               <span className="material-symbols-outlined text-[26px]">spa</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Usługi</p>
-              <p className="text-xs text-[var(--muted)]">Cennik, czasy trwania i opisy</p>
+              <p className="font-semibold text-[var(--text-bright)]">Usługi i Cennik</p>
+              <p className="text-xs text-[var(--muted)]">Zarządzanie ofertą i czasem trwania</p>
             </div>
           </Link>
           <Link to="/settings/faq" className="glass-panel glass-panel-interactive rounded-xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 shrink-0">
               <span className="material-symbols-outlined text-[26px]">psychology</span>
             </div>
             <div>
               <p className="font-semibold text-[var(--text-bright)]">FAQ & Gemini AI</p>
-              <p className="text-xs text-[var(--muted)]">Asystent Gemini 2.0 i baza wiedzy salonu</p>
+              <p className="text-xs text-[var(--muted)]">Baza wiedzy i klucz Gemini API</p>
             </div>
           </Link>
-          <Link to="/settings/plan" className="glass-panel glass-panel-interactive rounded-xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 shrink-0">
-              <span className="material-symbols-outlined text-[26px]">credit_card</span>
+          <Link to="/settings/plan" className="glass-panel glass-panel-interactive rounded-xl p-5 flex items-center gap-4 border border-amber-500/30 bg-amber-500/5">
+            <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+              <span className="material-symbols-outlined text-[26px]">workspace_premium</span>
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-bright)]">Plan i limity</p>
-              <p className="text-xs text-[var(--muted)]">Subskrypcja, zużycie wiadomości i rezerwacji</p>
+              <p className="font-semibold text-[var(--text-bright)]">Pakiet & Licencja</p>
+              <p className="text-xs text-[var(--muted)]">Twój aktualny plan, limity i kody</p>
             </div>
           </Link>
           <Link to="/settings/appearance" className="glass-panel glass-panel-interactive rounded-xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0">
               <span className="material-symbols-outlined text-[26px]">palette</span>
             </div>
             <div>
@@ -302,75 +327,143 @@ export function SettingsPage() {
         </GlassCard>
       )}
 
+      {/* PLAN & LICENSE TAB */}
       {active === "plan" && (
-        <GlassCard className="animate-fade-up">
-          <p className="font-display text-lg font-semibold">Plan i limity</p>
-          {!usage ? (
-            <p className="mt-2 text-sm text-[var(--muted)]">Ładowanie limitów…</p>
-          ) : (
-            <>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-control bg-[var(--primary)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--primary)] uppercase tracking-wider">
-                  Plan: {usage.plan}
-                </span>
-                <span
-                  className={`rounded-control px-2.5 py-0.5 text-xs font-semibold uppercase ${
-                    usage.license_status === "active" || usage.license_status === "trial"
-                      ? "border border-emerald-500/40 text-emerald-300"
-                      : "border border-red-500/40 text-red-300"
-                  }`}
-                >
-                  Status: {usage.license_status}
-                </span>
-                {usage.license_expires_at && (
-                  <span className="text-xs text-[var(--muted)]">
-                    Wygasa: {usage.license_expires_at.slice(0, 10)}
-                  </span>
-                )}
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {[
-                  {
-                    title: "Wizyty w tym miesiącu",
-                    used: usage.appointments_month,
-                    max: usage.max_appointments_month,
-                  },
-                  {
-                    title: "Wiadomości w tym miesiącu",
-                    used: usage.messages_month,
-                    max: usage.max_messages_month,
-                  },
-                  {
-                    title: "Stanowiska (seats)",
-                    used: usage.seats,
-                    max: usage.max_seats,
-                  },
-                ].map((row) => (
-                  <div
-                    key={row.title}
-                    className="rounded-soft border border-glass-border bg-glass-fill p-3"
-                  >
-                    <p className="text-xs text-[var(--muted)]">{row.title}</p>
-                    <p className="mt-1 font-mono text-base font-semibold">
-                      {fmtLimit(row.used, row.max)}
-                    </p>
-                    {row.max != null && (
-                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--ink)]/10">
-                        <div
-                          className="h-full rounded-full bg-[var(--accent)]"
-                          style={{ width: `${usagePct(row.used, row.max)}%` }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-[var(--muted)]">
-                Kanały: {usage.enabled_channels.join(", ") || "—"}
-              </p>
-            </>
+        <div className="space-y-6 animate-fade-up">
+          {redeemMsg && (
+            <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-lg">check_circle</span>
+              <span className="font-medium">{redeemMsg}</span>
+            </div>
           )}
-        </GlassCard>
+          {redeemError && (
+            <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-lg">error</span>
+              <span className="font-medium">{redeemError}</span>
+            </div>
+          )}
+
+          {/* Active Plan Showcase Banner */}
+          <GlassCard className="p-6 border border-purple-500/30 bg-gradient-to-r from-purple-900/20 via-blue-900/10 to-transparent shadow-2xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-purple-500/20">
+                  <span className="material-symbols-outlined text-[32px]">workspace_premium</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">
+                      Aktualny Pakiet:
+                    </span>
+                    <span className="font-display text-xl font-bold uppercase tracking-wide bg-gradient-to-r from-purple-300 via-pink-300 to-amber-300 bg-clip-text text-transparent">
+                      {usage?.plan || business?.plan || "PRO"}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      (usage?.license_status || business?.license_status) === "active"
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                        : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                    }`}>
+                      ● {usage?.license_status || business?.license_status || "aktywna"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[var(--text-bright)] mt-1 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-amber-400 text-[16px]">schedule</span>
+                    {usage?.license_expires_at ? (
+                      <span>Ważność licencji: <strong>{usage.license_expires_at.slice(0, 10)}</strong></span>
+                    ) : (
+                      <span className="text-amber-300 font-bold">👑 Dożywotnia Licencja VIP (Lifetime - Bez limitu czasu)</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Usage Gauges */}
+            <div className="mt-6 pt-5 border-t border-white/10 grid gap-3 sm:grid-cols-3">
+              {[
+                {
+                  title: "Wizyty w tym miesiącu",
+                  used: usage?.appointments_month ?? 0,
+                  max: usage?.max_appointments_month ?? null,
+                  icon: "calendar_month",
+                },
+                {
+                  title: "Wiadomości czatu / bota",
+                  used: usage?.messages_month ?? 0,
+                  max: usage?.max_messages_month ?? null,
+                  icon: "chat",
+                },
+                {
+                  title: "Stanowiska w zespole",
+                  used: usage?.seats ?? 0,
+                  max: usage?.max_seats ?? 20,
+                  icon: "badge",
+                },
+              ].map((row) => (
+                <div
+                  key={row.title}
+                  className="p-3.5 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between text-xs text-[var(--muted)]">
+                    <span>{row.title}</span>
+                    <span className="material-symbols-outlined text-[16px]">{row.icon}</span>
+                  </div>
+                  <p className="mt-2 text-base font-bold font-mono text-[var(--text-bright)]">
+                    {fmtLimit(row.used, row.max)}
+                  </p>
+                  {row.max != null && (
+                    <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-purple-400"
+                        style={{ width: `${usagePct(row.used, row.max)}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted)]">
+              <span>Włączone kanały: <strong className="text-[var(--text-bright)]">{usage?.enabled_channels.join(", ") || "Wszystkie (Widget, Messenger, Instagram, WhatsApp, Telegram)"}</strong></span>
+              <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">bolt</span>
+                Pełny dostęp do modułów
+              </span>
+            </div>
+          </GlassCard>
+
+          {/* Self-Service Key Activation Box */}
+          <GlassCard className="p-6 border border-amber-500/20">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[20px]">vpn_key</span>
+              </div>
+              <div>
+                <h3 className="font-display text-base font-bold text-[var(--text-bright)]">
+                  Aktywuj Kod Licencji
+                </h3>
+                <p className="text-xs text-[var(--muted)]">
+                  Otrzymałeś kod licencyjny od administratora? Wklej go poniżej, aby natychmiast uaktualnić pakiet i podnieść limity.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleRedeemLicense} className="mt-4 flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <GlassInput
+                  placeholder="Wpisz kod licencji (np. BIZ-PRO-XXXX-XXXX)"
+                  value={redeemKey}
+                  onChange={(e) => setRedeemKey(e.target.value.toUpperCase())}
+                  required
+                />
+              </div>
+              <GlassButton type="submit" variant="primary" disabled={redeemBusy} className="shrink-0">
+                <span className="material-symbols-outlined text-[18px]">verified</span>
+                {redeemBusy ? "Aktywowanie..." : "Aktywuj licencję"}
+              </GlassButton>
+            </form>
+          </GlassCard>
+        </div>
       )}
 
       {active === "salon" && (

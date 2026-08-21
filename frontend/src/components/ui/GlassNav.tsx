@@ -124,6 +124,23 @@ export function GlassNav() {
               )}
             </NavLink>
           ))}
+
+          {/* Superadmin & License Hub for Platform Admins */}
+          {owner?.is_platform_admin && (
+            <NavLink
+              to="/platform"
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all duration-200 group relative mt-3 border ${
+                  isActive
+                    ? "bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-lg shadow-amber-500/25 border-amber-400"
+                    : "text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                }`
+              }
+            >
+              <span className="material-symbols-outlined text-[20px] text-amber-300">verified_user</span>
+              <span className="truncate">Superadmin & Licencje</span>
+            </NavLink>
+          )}
         </div>
 
         {/* Sidebar Footer */}
@@ -198,6 +215,15 @@ export function GlassNav() {
                     {owner?.role || "Właściciel"}
                   </p>
                   <div className="h-px bg-white/5 my-1" />
+                  {owner?.is_platform_admin && (
+                    <Link
+                      to="/platform"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-amber-300 font-bold hover:bg-amber-500/10"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">verified_user</span>
+                      Superadmin & Licencje
+                    </Link>
+                  )}
                   <Link
                     to="/settings/account"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"

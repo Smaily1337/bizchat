@@ -9,8 +9,11 @@ import type {
   DashboardAnalytics,
   DashboardSummary,
   Feedback,
+  GrantLicensePayload,
+  GrantLicenseResult,
   InboxMessage,
   KnowledgeItem,
+  LicenseKey,
   LicenseUsage,
   NotificationLogEntry,
   NotificationSettings,
@@ -20,6 +23,8 @@ import type {
   PlatformAccount,
   PlatformBusiness,
   PlatformPageviewStats,
+  RedeemLicenseResult,
+  CreateLicenseKeyPayload,
   Service,
   StaffMember,
   TimeOff,
@@ -135,6 +140,11 @@ export const businessApi = {
     apiFetch<{ ok: boolean; message: string }>("/api/business/gemini-config", {
       method: "POST",
       body: JSON.stringify(body),
+    }),
+  redeemLicense: (key: string) =>
+    apiFetch<RedeemLicenseResult>("/api/business/redeem-license", {
+      method: "POST",
+      body: JSON.stringify({ key }),
     }),
 };
 
@@ -582,6 +592,22 @@ export const platformApi = {
     apiFetch<PlatformBusiness>(`/api/platform/businesses/${id}`, {
       method: "PATCH",
       body: JSON.stringify(body),
+    }),
+  grantLicense: (body: GrantLicensePayload) =>
+    apiFetch<GrantLicenseResult>("/api/platform/grant-license", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  listLicenseKeys: () =>
+    apiFetch<LicenseKey[]>("/api/platform/license-keys"),
+  createLicenseKey: (body: CreateLicenseKeyPayload) =>
+    apiFetch<LicenseKey>("/api/platform/license-keys", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  deleteLicenseKey: (id: string) =>
+    apiFetch<void>(`/api/platform/license-keys/${id}`, {
+      method: "DELETE",
     }),
   pageviewStats: () =>
     apiFetch<PlatformPageviewStats>("/api/platform/stats/pageviews"),

@@ -18,13 +18,14 @@ from app.api.deps import (
     hash_password,
 )
 from app.config import settings
-from app.models import Business, Owner, PageView, UserRole
+from app.models import Business, Owner, PageView, UserRole, LicenseKey
 from app.schemas import BusinessOut, LicenseUsageOut, OwnerOut, PlanCatalogItem
 from app.services import limits as limits_service
 from app.services.limits import (
     LICENSE_ACTIVE,
     PLAN_DEFAULTS,
     PLAN_FREE,
+    PLAN_PRO,
     apply_plan_defaults,
 )
 
@@ -105,6 +106,51 @@ class BusinessUpdatePlatform(BaseModel):
         description="Przy zmianie planu nadpisz limity wartościami katalogowymi",
     )
     clear_expiry: bool = False
+
+
+class GrantLicenseRequest(BaseModel):
+    email: str | None = None
+    business_id: UUID | None = None
+    plan: str = Field(default="pro", description="free, starter, pro, enterprise")
+    duration_days: int | None = Field(default=365, description="None = Lifetime / bez terminu")
+    custom_max_appointments: int | None = None
+    custom_max_messages: int | None = None
+    custom_max_seats: int | None = None
+    custom_channels: list[str] | None = None
+    notes: str | None = None
+
+
+class GrantLicenseResponse(BaseModel):
+    success: bool = True
+    message: str
+    business_id: UUID
+    business_name: str
+    owner_email: str
+    plan: str
+    license_status: str
+    license_expires_at: datetime | None = None
+    usage: LicenseUsageOut
+
+
+class LicenseKeyCreate(BaseModel):
+    plan: str = "pro"
+    duration_days: int | None = 365
+    max_uses: int = 1
+    custom_key: str | None = None
+    notes: str | None = None
+
+
+class LicenseKeyOut(BaseModel):
+    id: UUID
+    key: str
+    plan: str
+    duration_days: int | None
+    max_uses: int
+    times_used: int
+    is_active: bool
+    expires_at: datetime | None
+    notes: str | None
+    created_at: datetime
 
 
 class PlatformBusinessOut(BusinessOut):
@@ -442,6 +488,203 @@ async def update_business(
     return PlatformBusinessOut.model_validate(business).model_copy(
         update={"usage": usage}
     )
+
+
+# ---------------------------------------------------------------------------
+# Direct License Granting & License Keys Management
+# ---------------------------------------------------------------------------
+
+
+@router.post("/grant-license", response_model=GrantLicenseResponse)
+async def grant_license(
+    db: DbSession,
+    _admin: RequirePlatformAdmin,
+    body: GrantLicenseRequest,
+) -> GrantLicenseResponse:
+    """Directly assign or upgrade a plan/license for any user/business with instant limits unlock."""
+    business: Business | None = None
+    target_owner: Owner | None = None
+
+    if body.email:
+        email_clean = body.email.strip().lower()
+        res = await db.execute(
+            select(Owner)
+            .options(selectinload(Owner.business))
+            .where(func.lower(Owner.email) == email_clean)
+        )
+        target_owner = res.scalar_one_or_none()
+        if not target_owner or not target_owner.business:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Nie znaleziono konta lub firmy przypisanej do e-maila: {body.email}",
+            )
+        business = target_owner.business
+    elif body.business_id:
+        res = await db.execute(
+            select(Business).where(Business.id == body.business_id)
+        )
+        business = res.scalar_one_or_none()
+        if not business:
+            raise HTTPException(status_code=404, detail="Firma nie znaleziona")
+        owner_res = await db.execute(
+            select(Owner).where(Owner.business_id == business.id)
+        )
+        target_owner = owner_res.scalars().first()
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Podaj adres e-mail użytkownika lub identyfikator firmy",
+        )
+
+    plan_key = body.plan.strip().lower() if body.plan else "pro"
+    if plan_key not in PLAN_DEFAULTS:
+        plan_key = "pro"
+
+    apply_plan_defaults(business, plan_key, start_trial=False)
+    business.license_status = LICENSE_ACTIVE
+
+    now = datetime.now(timezone.utc)
+    if body.duration_days is not None and body.duration_days > 0:
+        business.license_expires_at = now + timedelta(days=body.duration_days)
+    else:
+        business.license_expires_at = None  # Lifetime!
+
+    # Optional custom limits overrides
+    if body.custom_max_appointments is not None:
+        business.max_appointments_month = body.custom_max_appointments
+    if body.custom_max_messages is not None:
+        business.max_messages_month = body.custom_max_messages
+    if body.custom_max_seats is not None:
+        business.max_seats = body.custom_max_seats
+    if body.custom_channels is not None:
+        business.enabled_channels = body.custom_channels
+
+    await db.flush()
+    await db.commit()
+    await db.refresh(business)
+
+    snap = await limits_service.usage_snapshot(db, business)
+    usage = LicenseUsageOut(
+        plan=snap.plan,
+        license_status=snap.license_status,
+        license_expires_at=snap.license_expires_at,
+        is_active=snap.is_active,
+        appointments_month=snap.appointments_month,
+        max_appointments_month=snap.max_appointments_month,
+        messages_month=snap.messages_month,
+        max_messages_month=snap.max_messages_month,
+        seats=snap.seats,
+        max_seats=snap.max_seats,
+        enabled_channels=snap.enabled_channels,
+        period_start=snap.period_start,
+        period_end=snap.period_end,
+    )
+
+    owner_email_str = target_owner.email if target_owner else "Brak e-maila"
+    exp_str = (
+        f"do {business.license_expires_at.strftime('%Y-%m-%d')}"
+        if business.license_expires_at
+        else "Dożywotnia VIP (Lifetime)"
+    )
+
+    return GrantLicenseResponse(
+        success=True,
+        message=f"Pomyślnie nadano licencję {plan_key.upper()} ({exp_str}) dla konta {owner_email_str} ({business.name}).",
+        business_id=business.id,
+        business_name=business.name,
+        owner_email=owner_email_str,
+        plan=business.plan,
+        license_status=business.license_status,
+        license_expires_at=business.license_expires_at,
+        usage=usage,
+    )
+
+
+@router.get("/license-keys", response_model=list[LicenseKeyOut])
+async def list_license_keys(
+    db: DbSession,
+    _admin: RequirePlatformAdmin,
+) -> list[LicenseKeyOut]:
+    result = await db.execute(
+        select(LicenseKey).order_by(LicenseKey.created_at.desc())
+    )
+    return [
+        LicenseKeyOut(
+            id=k.id,
+            key=k.key,
+            plan=k.plan,
+            duration_days=k.duration_days,
+            max_uses=k.max_uses,
+            times_used=k.times_used,
+            is_active=k.is_active,
+            expires_at=k.expires_at,
+            notes=k.notes,
+            created_at=k.created_at,
+        )
+        for k in result.scalars().all()
+    ]
+
+
+@router.post("/license-keys", response_model=LicenseKeyOut, status_code=status.HTTP_201_CREATED)
+async def create_license_key(
+    db: DbSession,
+    _admin: RequirePlatformAdmin,
+    body: LicenseKeyCreate,
+) -> LicenseKeyOut:
+    plan_key = body.plan.strip().lower() if body.plan in PLAN_DEFAULTS else "pro"
+    if body.custom_key and body.custom_key.strip():
+        generated_key = body.custom_key.strip().upper()
+    else:
+        prefix = "BIZ"
+        plan_tag = plan_key.upper()[:3]
+        rand1 = secrets.token_hex(2).upper()
+        rand2 = secrets.token_hex(2).upper()
+        generated_key = f"{prefix}-{plan_tag}-{rand1}-{rand2}"
+
+    # Verify uniqueness
+    existing = await db.execute(select(LicenseKey).where(LicenseKey.key == generated_key))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Klucz o takiej nazwie już istnieje")
+
+    row = LicenseKey(
+        key=generated_key,
+        plan=plan_key,
+        duration_days=body.duration_days,
+        max_uses=max(1, body.max_uses),
+        times_used=0,
+        is_active=True,
+        notes=body.notes.strip() if body.notes else None,
+    )
+    db.add(row)
+    await db.flush()
+    await db.commit()
+    await db.refresh(row)
+
+    return LicenseKeyOut(
+        id=row.id,
+        key=row.key,
+        plan=row.plan,
+        duration_days=row.duration_days,
+        max_uses=row.max_uses,
+        times_used=row.times_used,
+        is_active=row.is_active,
+        expires_at=row.expires_at,
+        notes=row.notes,
+        created_at=row.created_at,
+    )
+
+
+@router.delete("/license-keys/{key_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_license_key(
+    db: DbSession,
+    _admin: RequirePlatformAdmin,
+    key_id: UUID,
+) -> None:
+    row = await db.get(LicenseKey, key_id)
+    if row:
+        await db.delete(row)
+        await db.flush()
+        await db.commit()
 
 
 # ---------------------------------------------------------------------------
