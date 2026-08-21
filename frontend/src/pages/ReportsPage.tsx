@@ -126,7 +126,7 @@ export function ReportsPage() {
       {/* Top Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-glass-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center text-white shadow-lg shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[var(--primary-container)] flex items-center justify-center text-white shrink-0">
             <span className="material-symbols-outlined text-[24px]">analytics</span>
           </div>
           <div>
@@ -176,7 +176,7 @@ export function ReportsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* CARD 1: DAILY MORNING BRIEFING */}
-          <GlassCard className="border border-[var(--glass-border)] shadow-md flex flex-col justify-between">
+          <GlassCard className="flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ export function ReportsPage() {
           </GlassCard>
 
           {/* CARD 2: EXECUTIVE GRAPHIC PDF SUMMARY */}
-          <GlassCard className="border border-[var(--glass-border)] shadow-md flex flex-col justify-between">
+          <GlassCard className="flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -373,7 +373,7 @@ export function ReportsPage() {
               <div
                 key={st.staff_id}
                 onClick={() => setSelectedStaffStatsId(st.staff_id)}
-                className="glass-panel rounded-2xl p-4 border border-[var(--glass-border)] hover:border-[var(--primary)]/50 transition-all hover:scale-[1.01] cursor-pointer shadow-sm space-y-3 group"
+                className="glass-panel rounded-2xl p-4 border border-[var(--glass-border)] hover:border-[var(--primary)]/50 transition-colors cursor-pointer space-y-3 group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -454,7 +454,7 @@ export function ReportsPage() {
           {/* KPI 3-Column Bento Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
             {/* Stat 1 */}
-            <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-xl">
+            <div className="glass-panel rounded-xl p-5 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="material-symbols-outlined text-[var(--primary)] text-[28px]">
                   event_available
@@ -474,7 +474,7 @@ export function ReportsPage() {
             </div>
 
             {/* Stat 2 */}
-            <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-xl">
+            <div className="glass-panel rounded-xl p-5 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="material-symbols-outlined text-[var(--danger)] text-[28px]">
                   person_cancel
@@ -494,7 +494,7 @@ export function ReportsPage() {
             </div>
 
             {/* Stat 3 */}
-            <div className="glass-panel glass-panel-interactive rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-xl">
+            <div className="glass-panel rounded-xl p-5 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="material-symbols-outlined text-[var(--secondary)] text-[28px]">
                   event_busy
@@ -517,7 +517,7 @@ export function ReportsPage() {
           {/* 2-Column Section: Channel Performance & Daily Breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Channel Performance */}
-            <section className="lg:col-span-5 glass-panel rounded-xl p-6 shadow-2xl space-y-4">
+            <section className="lg:col-span-5 glass-panel rounded-xl p-6 space-y-4">
               <div className="border-b border-glass-border pb-3">
                 <h2 className="font-display text-base font-bold text-[var(--text-bright)] flex items-center gap-2">
                   <span className="material-symbols-outlined text-[var(--primary)] text-[20px]">
@@ -561,7 +561,7 @@ export function ReportsPage() {
             </section>
 
             {/* Daily History Table */}
-            <section className="lg:col-span-7 glass-panel rounded-xl p-6 shadow-2xl space-y-4">
+            <section className="lg:col-span-7 glass-panel rounded-xl p-6 space-y-4">
               <div className="border-b border-glass-border pb-3">
                 <h2 className="font-display text-base font-bold text-[var(--text-bright)] flex items-center gap-2">
                   <span className="material-symbols-outlined text-[var(--secondary)] text-[20px]">

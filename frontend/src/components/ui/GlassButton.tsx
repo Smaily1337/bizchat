@@ -9,13 +9,13 @@ type GlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<GlassButtonVariant, string> = {
   primary:
-    "rounded-control btn-primary text-white shadow-lg hover:scale-[1.02] active:scale-[0.98]",
+    "rounded-control btn-primary text-white hover:brightness-110 active:brightness-95",
   gradient:
-    "rounded-control btn-gradient text-white shadow-lg hover:scale-[1.02] active:scale-[0.98]",
+    "rounded-control btn-gradient text-white hover:brightness-110 active:brightness-95",
   ghost:
-    "rounded-control border border-glass-border bg-[var(--glass-fill-strong)] text-[var(--text-bright)] backdrop-blur-glass hover:border-[var(--accent)] hover:bg-[var(--glass-fill)]",
+    "rounded-control border border-glass-border bg-[var(--glass-fill-strong)] text-[var(--text-bright)] hover:border-[var(--accent)] hover:bg-[var(--surface-container)]",
   subtle:
-    "rounded-control border border-glass-border bg-[var(--glass-fill)] text-xs font-semibold uppercase tracking-[0.05em] text-[var(--muted)] backdrop-blur-glass hover:border-[var(--accent)] hover:text-[var(--accent)]",
+    "rounded-control border border-glass-border bg-[var(--glass-fill)] text-xs font-semibold uppercase tracking-[0.05em] text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]",
   danger:
     "rounded-control border border-red-500/30 bg-red-500/10 text-red-400 backdrop-blur-glass hover:bg-red-500/20 hover:border-red-500/50",
 };
