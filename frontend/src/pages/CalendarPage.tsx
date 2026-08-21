@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { appointmentsApi, customersApi, dashboardApi } from "@/api";
-import type { Appointment, Customer, DashboardAnalytics } from "@/api/types";
+import { appointmentsApi, customersApi, dashboardApi, hoursApi } from "@/api";
+import type { Appointment, Customer, TimeOff, WorkingHours } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassInput } from "@/components/ui/GlassInput";
 
 type CalendarView = "day" | "week";
 
@@ -19,6 +20,18 @@ type CalEvent = {
   status: string;
   startAt: string;
   endAt: string;
+};
+
+type TimeOffCalBlock = {
+  id: string;
+  dayIndex: number;
+  startHour: number;
+  durationHours: number;
+  reason: string;
+  startAt: string;
+  endAt: string;
+  isAllDay: boolean;
+  rawTimeOff: TimeOff;
 };
 
 const DEFAULT_FIRST = 8;
@@ -103,6 +116,68 @@ function toEvents(
     .filter(Boolean) as CalEvent[];
 }
 
+function toTimeOffBlocks(
+  timeOffList: TimeOff[],
+  rangeStart: Date,
+  view: CalendarView,
+  dayOffset: number,
+  firstHour: number,
+  lastHour: number,
+): TimeOffCalBlock[] {
+  const blocks: TimeOffCalBlock[] = [];
+  const daysCount = view === "week" ? 7 : 1;
+
+  for (let dIdx = 0; dIdx < daysCount; dIdx++) {
+    const currentDayDate = view === "week" ? addDays(rangeStart, dIdx) : addDays(rangeStart, dayOffset);
+    
+    // Day boundaries (local time)
+    const dayStart = new Date(currentDayDate.getFullYear(), currentDayDate.getMonth(), currentDayDate.getDate(), 0, 0, 0);
+    const dayEnd = new Date(currentDayDate.getFullYear(), currentDayDate.getMonth(), currentDayDate.getDate(), 23, 59, 59, 999);
+    const dayStartMs = dayStart.getTime();
+    const dayEndMs = dayEnd.getTime();
+
+    for (const to of timeOffList) {
+      const toStartMs = new Date(to.start_at).getTime();
+      const toEndMs = new Date(to.end_at).getTime();
+
+      // Check if time-off intersects this day
+      if (toStartMs <= dayEndMs && toEndMs >= dayStartMs) {
+        const effStartMs = Math.max(toStartMs, dayStartMs);
+        const effEndMs = Math.min(toEndMs, dayEndMs);
+
+        let startH = firstHour;
+        if (effStartMs > dayStartMs) {
+          const d = new Date(effStartMs);
+          startH = Math.max(firstHour, d.getHours() + d.getMinutes() / 60);
+        }
+
+        let endH = lastHour;
+        if (effEndMs < dayEndMs) {
+          const d = new Date(effEndMs);
+          endH = Math.min(lastHour, d.getHours() + d.getMinutes() / 60);
+        }
+
+        const durationH = Math.max(0.5, endH - startH);
+        if (durationH > 0) {
+          blocks.push({
+            id: to.id,
+            dayIndex: dIdx,
+            startHour: startH,
+            durationHours: durationH,
+            reason: to.reason || "Urlop / Przerwa salonu",
+            startAt: to.start_at,
+            endAt: to.end_at,
+            isAllDay: toStartMs <= dayStartMs && toEndMs >= dayEndMs,
+            rawTimeOff: to,
+          });
+        }
+      }
+    }
+  }
+
+  return blocks;
+}
+
 const STATUS_PL: Record<string, string> = {
   pending: "Oczekuje",
   confirmed: "Potwierdzona",
@@ -117,8 +192,21 @@ export function CalendarPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [dayOffset, setDayOffset] = useState(() => (new Date().getDay() + 6) % 7);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [timeOffList, setTimeOffList] = useState<TimeOff[]>([]);
+  const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CalEvent | null>(null);
+  const [selectedTimeOff, setSelectedTimeOff] = useState<TimeOff | null>(null);
+  
+  // Quick Add Time-off Modal
+  const [isTimeOffModalOpen, setIsTimeOffModalOpen] = useState(false);
+  const [timeOffForm, setTimeOffForm] = useState({
+    start_at: "",
+    end_at: "",
+    reason: "",
+  });
+  const [timeOffBusy, setTimeOffBusy] = useState(false);
+
   const [summary, setSummary] = useState({
     appointments_today: 0,
     pending_count: 0,
@@ -128,28 +216,27 @@ export function CalendarPage() {
     alerts_open: 0,
     avg_score: null as number | null,
   });
-  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const rangeStart = weekStart;
   const dayDate = addDays(weekStart, dayOffset);
 
-  useEffect(() => {
+  const reloadAll = async () => {
     const from = weekStart.toISOString();
     const to = addDays(weekStart, 7).toISOString();
-    void appointmentsApi
-      .list({ from_at: from, to_at: to })
-      .then((list) => {
-        setAppointments(list);
-        setError(null);
-      })
-      .catch((e: Error) => setError(e.message));
-
-    void customersApi.list().then(setCustomers).catch(() => undefined);
-
-    void dashboardApi
-      .summary()
-      .then((sum) => {
+    try {
+      const [appts, toList, wh, cust, sum] = await Promise.all([
+        appointmentsApi.list({ from_at: from, to_at: to }),
+        hoursApi.listTimeOff(),
+        hoursApi.list(),
+        customersApi.list().catch(() => []),
+        dashboardApi.summary().catch(() => null),
+      ]);
+      setAppointments(appts);
+      setTimeOffList(toList);
+      setWorkingHours(wh);
+      setCustomers(cust);
+      if (sum) {
         setSummary({
           appointments_today: sum.appointments_today,
           pending_count: sum.pending_count,
@@ -159,13 +246,15 @@ export function CalendarPage() {
           alerts_open: sum.alerts_open ?? 0,
           avg_score: sum.avg_score ?? null,
         });
-      })
-      .catch(() => undefined);
+      }
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Błąd ładowania danych kalendarza");
+    }
+  };
 
-    void dashboardApi
-      .analytics(7)
-      .then((anal) => setAnalytics(anal))
-      .catch(() => undefined);
+  useEffect(() => {
+    void reloadAll();
   }, [weekStart]);
 
   const events = useMemo(
@@ -182,6 +271,11 @@ export function CalendarPage() {
     }
     return { firstHour: first, lastHour: last };
   }, [events]);
+
+  const timeOffBlocks = useMemo(
+    () => toTimeOffBlocks(timeOffList, rangeStart, view, dayOffset, firstHour, lastHour),
+    [timeOffList, rangeStart, view, dayOffset, firstHour, lastHour],
+  );
 
   const hours = useMemo(
     () => Array.from({ length: lastHour - firstHour }, (_, i) => i + firstHour),
@@ -222,7 +316,46 @@ export function CalendarPage() {
     }
   }
 
+  async function handleCreateTimeOff(e: FormEvent) {
+    e.preventDefault();
+    if (!timeOffForm.start_at || !timeOffForm.end_at) {
+      alert("Proszę podać datę początkową i końcową urlopu/przerwy.");
+      return;
+    }
+    setTimeOffBusy(true);
+    try {
+      await hoursApi.createTimeOff({
+        start_at: new Date(timeOffForm.start_at).toISOString(),
+        end_at: new Date(timeOffForm.end_at).toISOString(),
+        reason: timeOffForm.reason.trim() || "Urlop wypoczynkowy",
+      });
+      setIsTimeOffModalOpen(false);
+      setTimeOffForm({ start_at: "", end_at: "", reason: "" });
+      await reloadAll();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Błąd dodawania urlopu");
+    } finally {
+      setTimeOffBusy(false);
+    }
+  }
+
+  async function handleDeleteTimeOff(id: string) {
+    if (!confirm("Czy na pewno chcesz usunąć ten urlop/przerwę z grafiku?")) return;
+    try {
+      await hoursApi.removeTimeOff(id);
+      setSelectedTimeOff(null);
+      await reloadAll();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Błąd usuwania przerwy");
+    }
+  }
+
   const HOUR_HEIGHT = 72;
+
+  // Working Hours map (0 = Mon, 6 = Sun)
+  const workingHoursMap = useMemo(() => {
+    return new Map(workingHours.map((wh) => [wh.weekday, wh]));
+  }, [workingHours]);
 
   return (
     <div className="space-y-6">
@@ -236,7 +369,7 @@ export function CalendarPage() {
               {formatRangeLabel(view === "week" ? weekStart : dayDate, view)}
             </h1>
             <p className="mt-0.5 text-xs text-[var(--muted)]">
-              {business?.name || "Salon"} · {events.length} zaplanowanych wizyt w widoku
+              {business?.name || "Salon"} · {events.length} zaplanowanych wizyt · {timeOffBlocks.length > 0 ? `${timeOffBlocks.length} zablokowanych przerw/urlopów` : "Brak przerw w widoku"}
             </p>
           </div>
         </div>
@@ -246,7 +379,7 @@ export function CalendarPage() {
             <button
               type="button"
               onClick={() => setView("day")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 view === "day"
                   ? "bg-[var(--primary-container)] text-white shadow"
                   : "text-[var(--muted)] hover:text-[var(--text-bright)]"
@@ -257,7 +390,7 @@ export function CalendarPage() {
             <button
               type="button"
               onClick={() => setView("week")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 view === "week"
                   ? "bg-[var(--primary-container)] text-white shadow"
                   : "text-[var(--muted)] hover:text-[var(--text-bright)]"
@@ -271,7 +404,7 @@ export function CalendarPage() {
             <button
               type="button"
               onClick={() => shift(-1)}
-              className="p-1 rounded text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors"
+              className="p-1 rounded text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors cursor-pointer"
               title="Poprzedni"
             >
               <span className="material-symbols-outlined text-[20px]">chevron_left</span>
@@ -282,19 +415,41 @@ export function CalendarPage() {
                 setWeekStart(startOfWeek(new Date()));
                 setDayOffset((new Date().getDay() + 6) % 7);
               }}
-              className="px-2 py-1 text-xs font-semibold text-[var(--text)] hover:text-[var(--text-bright)]"
+              className="px-2 py-1 text-xs font-semibold text-[var(--text)] hover:text-[var(--text-bright)] cursor-pointer"
             >
               Dziś
             </button>
             <button
               type="button"
               onClick={() => shift(1)}
-              className="p-1 rounded text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors"
+              className="p-1 rounded text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors cursor-pointer"
               title="Następny"
             >
               <span className="material-symbols-outlined text-[20px]">chevron_right</span>
             </button>
           </div>
+
+          {/* Quick Add Time-off Button */}
+          <GlassButton
+            variant="ghost"
+            className="!border-amber-500/30 !bg-amber-500/10 !text-amber-300 hover:!bg-amber-500/20"
+            onClick={() => {
+              // Pre-fill with today's 09:00 - 17:00
+              const now = new Date();
+              const yyyy = now.getFullYear();
+              const mm = String(now.getMonth() + 1).padStart(2, "0");
+              const dd = String(now.getDate()).padStart(2, "0");
+              setTimeOffForm({
+                start_at: `${yyyy}-${mm}-${dd}T09:00`,
+                end_at: `${yyyy}-${mm}-${dd}T17:00`,
+                reason: "Urlop wypoczynkowy",
+              });
+              setIsTimeOffModalOpen(true);
+            }}
+          >
+            <span className="material-symbols-outlined text-[18px]">beach_access</span>
+            Dodaj urlop / przerwę
+          </GlassButton>
 
           <Link to="/appointments">
             <GlassButton variant="primary">
@@ -306,20 +461,39 @@ export function CalendarPage() {
       </section>
 
       {error && (
-        <p className="text-sm text-[var(--danger)]">Błąd: {error}</p>
+        <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-lg">error</span>
+          <span>{error}</span>
+        </div>
       )}
 
-      <div className="animate-fade-up grid gap-4 lg:grid-cols-[1fr_260px]">
+      {/* Main Calendar Grid and Sidebar */}
+      <div className="animate-fade-up grid gap-4 lg:grid-cols-[1fr_280px]">
         <GlassCard padding="none" className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-glass-border px-5 py-4">
-            <div>
-              <p className="font-display text-lg font-semibold">
-                {formatRangeLabel(view === "week" ? weekStart : dayDate, view)}
-              </p>
-              <p className="text-xs text-[var(--muted)]">
-                {events.length} wizyt w widoku
-              </p>
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="font-display text-base font-semibold text-[var(--text-bright)]">
+                  {formatRangeLabel(view === "week" ? weekStart : dayDate, view)}
+                </p>
+                <p className="text-xs text-[var(--muted)]">
+                  {events.length} wizyt w widoku · {timeOffBlocks.length} zablokowanych okienek
+                </p>
+              </div>
+
+              {/* Legend */}
+              <div className="hidden sm:flex items-center gap-3 text-xs pl-4 border-l border-white/10">
+                <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+                  <span className="w-3 h-3 rounded bg-[var(--primary)] border border-white/20" />
+                  <span>Wizyta</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-amber-300">
+                  <span className="w-3 h-3 rounded bg-amber-500/40 border border-amber-400" />
+                  <span>Urlop / Przerwa (Zablokowane)</span>
+                </div>
+              </div>
             </div>
+
             <div className="flex gap-2">
               <GlassButton
                 variant="ghost"
@@ -352,15 +526,32 @@ export function CalendarPage() {
                   view === "week"
                     ? addDays(weekStart, WEEKDAYS.indexOf(day))
                     : dayDate;
+                const weekdayIndex = (d.getDay() + 6) % 7; // 0=Mon, 6=Sun
+                const whRow = workingHoursMap.get(weekdayIndex);
+                const isClosed = workingHours.length > 0 && !whRow;
+                const isToday = new Date().toDateString() === d.toDateString();
+
                 return (
                   <div
                     key={`${day}-${i}`}
-                    className="border-b border-l border-glass-border px-3 py-3 text-center"
+                    className={`border-b border-l border-glass-border px-3 py-3 text-center transition-colors ${
+                      isToday ? "bg-[var(--primary)]/10" : isClosed ? "bg-red-500/[0.03]" : ""
+                    }`}
                   >
-                    <p className="text-xs uppercase tracking-wider text-[var(--muted)]">
-                      {day}
-                    </p>
-                    <p className="mt-1 font-display text-sm font-semibold">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <p className={`text-xs uppercase tracking-wider font-semibold ${isToday ? "text-[var(--primary)] font-bold" : "text-[var(--muted)]"}`}>
+                        {day}
+                      </p>
+                      {isToday && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />
+                      )}
+                      {isClosed && (
+                        <span className="text-[9px] font-bold px-1 rounded bg-red-500/20 text-red-300">
+                          Zamknięte
+                        </span>
+                      )}
+                    </div>
+                    <p className={`mt-0.5 font-display text-sm font-bold ${isToday ? "text-[var(--text-bright)]" : ""}`}>
                       {d.getDate()}
                     </p>
                   </div>
@@ -372,52 +563,102 @@ export function CalendarPage() {
                 {hours.map((hour) => (
                   <div
                     key={hour}
-                    className="border-b border-glass-border px-2 text-right text-xs text-[var(--muted)]"
+                    className="border-b border-glass-border px-2 text-right text-xs text-[var(--muted)] flex items-center justify-end"
                     style={{ height: HOUR_HEIGHT }}
                   >
-                    <span className="relative -top-2">{formatHour(hour)}</span>
+                    <span className="relative -top-3 font-mono">{formatHour(hour)}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Day columns with absolutely positioned events */}
+              {/* Day columns with positioned events & Time Off blocks */}
               {visibleDays.map((day, dayIdx) => {
                 const colEvents = events.filter((e) => e.dayIndex === dayIdx);
+                const colTimeOff = timeOffBlocks.filter((to) => to.dayIndex === dayIdx);
+
                 return (
                   <div
                     key={`col-${day}-${dayIdx}`}
-                    className="relative border-l border-glass-border"
+                    className="relative border-l border-glass-border bg-black/[0.02]"
                     style={{ height: totalHours * HOUR_HEIGHT }}
                   >
                     {/* Hour grid lines */}
                     {hours.map((hour) => (
                       <div
                         key={hour}
-                        className="absolute inset-x-0 border-b border-glass-border"
+                        className="absolute inset-x-0 border-b border-glass-border/60"
                         style={{
                           top: (hour - firstHour) * HOUR_HEIGHT,
                           height: HOUR_HEIGHT,
                         }}
                       />
                     ))}
-                    {/* Events */}
+
+                    {/* TIME OFF / VACATION BLOCKED SLOTS */}
+                    {colTimeOff.map((block) => {
+                      const top = ((block.startHour - firstHour) / totalHours) * 100;
+                      const height = (block.durationHours / totalHours) * 100;
+                      const isSelected = selectedTimeOff?.id === block.id;
+
+                      return (
+                        <div
+                          key={`to-${block.id}-${block.dayIndex}`}
+                          onClick={() => {
+                            setSelectedEvent(null);
+                            setSelectedTimeOff(block.rawTimeOff);
+                          }}
+                          className={`absolute inset-x-1 rounded-xl border p-2 text-left cursor-pointer transition-all hover:scale-[1.01] hover:shadow-xl hover:z-30 z-20 group backdrop-blur-md ${
+                            isSelected
+                              ? "border-amber-400 ring-2 ring-amber-400/80 shadow-2xl shadow-amber-500/20"
+                              : "border-amber-500/50 hover:border-amber-300"
+                          }`}
+                          style={{
+                            top: `${top}%`,
+                            height: `calc(${height}% - 4px)`,
+                            minHeight: "2.75rem",
+                            background:
+                              "repeating-linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(245, 158, 11, 0.18) 12px, rgba(217, 119, 6, 0.28) 12px, rgba(217, 119, 6, 0.28) 24px)",
+                          }}
+                          title={`Urlop: ${block.reason} (${block.startAt.slice(0, 10)} - ${block.endAt.slice(0, 10)})`}
+                        >
+                          <div className="flex items-center gap-1.5 text-amber-300 font-bold text-xs truncate">
+                            <span className="material-symbols-outlined text-[16px] shrink-0 text-amber-400 animate-pulse">
+                              beach_access
+                            </span>
+                            <span className="truncate">{block.reason}</span>
+                          </div>
+                          <p className="text-[10px] text-amber-200/90 font-medium truncate mt-0.5">
+                            {block.isAllDay
+                              ? "🔒 Cały dzień zablokowany"
+                              : `🔒 ${formatHour(block.startHour)} – ${formatHour(block.startHour + block.durationHours)}`}
+                          </p>
+                        </div>
+                      );
+                    })}
+
+                    {/* APPOINTMENTS */}
                     {colEvents.map((event) => {
                       const top =
                         ((event.startHour - firstHour) / totalHours) * 100;
                       const height =
                         (event.durationHours / totalHours) * 100;
+                      const isSelected = selectedEvent?.id === event.id;
+
                       return (
                         <button
                           type="button"
                           key={event.id}
-                          onClick={() => setSelectedEvent(event)}
+                          onClick={() => {
+                            setSelectedTimeOff(null);
+                            setSelectedEvent(event);
+                          }}
                           className={[
-                            "absolute inset-x-1.5 rounded-control border px-2 py-1.5 text-left transition-shadow hover:shadow-lg hover:z-20 cursor-pointer",
+                            "absolute inset-x-1.5 rounded-xl border px-2.5 py-1.5 text-left transition-all hover:shadow-xl hover:z-30 cursor-pointer backdrop-blur-md",
                             event.tone === "canary"
-                              ? "border-[var(--accent)] bg-[var(--surface-solid)] text-[var(--text-bright)]"
-                              : "border-glass-border bg-[var(--surface-solid)] text-[var(--text-bright)]",
-                            selectedEvent?.id === event.id
-                              ? "ring-2 ring-[var(--accent)] z-30"
+                              ? "border-[var(--accent)]/50 bg-[var(--surface-solid)]/90 text-[var(--text-bright)]"
+                              : "border-glass-border bg-[var(--surface-solid)]/90 text-[var(--text-bright)]",
+                            isSelected
+                              ? "ring-2 ring-[var(--accent)] z-30 shadow-xl"
                               : "z-10",
                           ].join(" ")}
                           style={{
@@ -426,7 +667,7 @@ export function CalendarPage() {
                             minHeight: "2.25rem",
                           }}
                         >
-                          <p className="truncate text-xs font-semibold">
+                          <p className="truncate text-xs font-bold text-[var(--text-bright)]">
                             {event.title}
                           </p>
                           <p className="truncate text-[10px] text-[var(--muted)]">
@@ -443,23 +684,88 @@ export function CalendarPage() {
           </div>
         </GlassCard>
 
+        {/* Sidebar Details Panel */}
         <aside className="space-y-4">
-          {/* Event detail panel */}
+          {/* TIME OFF DETAIL CARD */}
+          {selectedTimeOff && (
+            <GlassCard className="animate-fade-up border border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-transparent shadow-xl">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                  <span className="material-symbols-outlined text-[20px]">beach_access</span>
+                  <span>Urlop / Przerwa</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTimeOff(null)}
+                  className="text-[var(--muted)] hover:text-white text-lg leading-none cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+
+              <p className="mt-2 text-sm font-bold text-[var(--text-bright)]">
+                {selectedTimeOff.reason || "Urlop wypoczynkowy"}
+              </p>
+
+              <div className="mt-3 p-3 rounded-xl bg-black/25 border border-white/10 text-xs space-y-1.5">
+                <p className="text-[var(--muted)]">
+                  Początek:{" "}
+                  <strong className="text-[var(--text-bright)]">
+                    {new Date(selectedTimeOff.start_at).toLocaleString("pl-PL", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </strong>
+                </p>
+                <p className="text-[var(--muted)]">
+                  Koniec:{" "}
+                  <strong className="text-[var(--text-bright)]">
+                    {new Date(selectedTimeOff.end_at).toLocaleString("pl-PL", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </strong>
+                </p>
+                <p className="text-amber-300 text-[10px] pt-1 flex items-center gap-1 font-medium">
+                  <span className="material-symbols-outlined text-[14px]">lock</span>
+                  Wszystkie terminy w tym czasie są zablokowane.
+                </p>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <GlassButton
+                  variant="danger"
+                  className="w-full justify-center text-xs !py-2"
+                  onClick={() => void handleDeleteTimeOff(selectedTimeOff.id)}
+                >
+                  <span className="material-symbols-outlined text-sm">delete</span>
+                  Usuń przerwę z grafiku
+                </GlassButton>
+                <Link to="/hours" className="block">
+                  <GlassButton variant="ghost" className="w-full justify-center text-xs !py-2">
+                    Zarządzaj w Godzinach pracy →
+                  </GlassButton>
+                </Link>
+              </div>
+            </GlassCard>
+          )}
+
+          {/* APPOINTMENT DETAIL CARD */}
           {selectedEvent && (
             <GlassCard className="animate-fade-up">
               <div className="flex items-start justify-between">
-                <p className="font-display text-base font-semibold">
+                <p className="font-display text-base font-semibold text-[var(--text-bright)]">
                   {selectedEvent.title}
                 </p>
                 <button
                   type="button"
                   onClick={() => setSelectedEvent(null)}
-                  className="text-[var(--muted)] hover:text-[var(--text-bright)] text-lg leading-none"
+                  className="text-[var(--muted)] hover:text-[var(--text-bright)] text-lg leading-none cursor-pointer"
                 >
                   ×
                 </button>
               </div>
-              <p className="mt-1 text-sm text-[var(--text-bright)]">
+              <p className="mt-1 text-sm text-[var(--text-bright)] font-medium">
                 {selectedEvent.client}
               </p>
               <p className="text-xs text-[var(--muted)]">
@@ -503,18 +809,6 @@ export function CalendarPage() {
                       </a>
                     </p>
                   )}
-                  {selectedCustomer.external_ids &&
-                    Object.entries(selectedCustomer.external_ids).map(
-                      ([k, v]) => (
-                        <p key={k}>
-                          <span className="text-[var(--muted)]">{k}:</span> {v}
-                        </p>
-                      ),
-                    )}
-                  {!selectedCustomer.phone &&
-                    !selectedCustomer.email && (
-                      <p className="text-[var(--muted)]">Brak danych kontaktowych</p>
-                    )}
                 </div>
               )}
 
@@ -554,11 +848,12 @@ export function CalendarPage() {
             </GlassCard>
           )}
 
+          {/* Dziś Widget */}
           <GlassCard>
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
               Dziś
             </p>
-            <p className="mt-2 font-display text-2xl font-bold">
+            <p className="mt-2 font-display text-2xl font-bold text-[var(--text-bright)]">
               {summary.appointments_today} wizyt
             </p>
             <p className="mt-1 text-sm text-[var(--muted)]">
@@ -568,14 +863,6 @@ export function CalendarPage() {
               7d: {summary.cancelled_7d} anul. · {summary.no_show_7d} no-show
               {summary.avg_score != null ? ` · ★ ${summary.avg_score}` : ""}
             </p>
-            {summary.alerts_open > 0 && (
-              <Link
-                to="/feedback"
-                className="mt-3 inline-block text-xs text-[var(--danger)]"
-              >
-                {summary.alerts_open} alertów opinii →
-              </Link>
-            )}
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--surface-solid)]">
               <div
                 className="h-full rounded-full bg-[var(--accent)] transition-all duration-500"
@@ -586,67 +873,14 @@ export function CalendarPage() {
             </div>
           </GlassCard>
 
+          {/* Next Appt Widget */}
           <GlassCard>
-            <p className="mb-2 font-display text-base font-semibold">
-              Luki dziś
-            </p>
-            <p className="font-display text-3xl font-bold text-canary">
-              {analytics?.gaps_today ?? "—"}
-            </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
-              szacowane wolne sloty (9–17)
-            </p>
-          </GlassCard>
-
-          <GlassCard>
-            <p className="mb-3 font-display text-base font-semibold">Kanały</p>
-            <ul className="space-y-2 text-sm">
-              {(
-                [
-                  ["Messenger", "messenger"],
-                  ["Telegram", "telegram"],
-                  ["Widget WWW", "widget"],
-                ] as const
-              ).map(([name, key]) => {
-                const enabledList = business?.enabled_channels;
-                const on =
-                  !enabledList ||
-                  enabledList.length === 0 ||
-                  enabledList.some(
-                    (c) =>
-                      c.toLowerCase() === key ||
-                      (key === "messenger" &&
-                        ["instagram", "meta"].includes(c.toLowerCase())),
-                  );
-                return (
-                  <li
-                    key={name}
-                    className="flex items-center justify-between rounded-soft border border-glass-border bg-glass-fill px-3 py-2"
-                  >
-                    <span>{name}</span>
-                    <span
-                      className={
-                        on ? "text-[var(--text-bright)]" : "text-[var(--muted)]"
-                      }
-                    >
-                      {on ? "w planie" : "poza planem"}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-            <Link to="/channels" className="mt-3 inline-block text-xs text-canary">
-              Szczegóły kanałów →
-            </Link>
-          </GlassCard>
-
-          <GlassCard>
-            <p className="mb-2 font-display text-base font-semibold">
+            <p className="mb-2 font-display text-base font-semibold text-[var(--text-bright)]">
               Następna wizyta
             </p>
             {nextAppt ? (
               <>
-                <p className="text-sm text-[var(--text-bright)]">
+                <p className="text-sm text-[var(--text-bright)] font-semibold">
                   {nextAppt.service_name || "Wizyta"}
                 </p>
                 <p className="mt-1 text-xs text-[var(--muted)]">
@@ -668,6 +902,92 @@ export function CalendarPage() {
           </GlassCard>
         </aside>
       </div>
+
+      {/* QUICK ADD TIME-OFF MODAL */}
+      {isTimeOffModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="glass-panel p-6 rounded-2xl max-w-md w-full border border-amber-500/30 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px]">beach_access</span>
+                </div>
+                <h3 className="font-display text-base font-bold text-[var(--text-bright)]">
+                  Dodaj Urlop / Przerwę
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTimeOffModalOpen(false)}
+                className="text-[var(--muted)] hover:text-white cursor-pointer text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateTimeOff} className="space-y-3.5">
+              <p className="text-xs text-[var(--muted)] leading-relaxed">
+                Wybrany okres zostanie zablokowany w kalendarzu. Klienci rezerwujący online nie będą mogli wybrać tych godzin.
+              </p>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-bright)] mb-1">
+                  Data i godzina rozpoczęcia
+                </label>
+                <GlassInput
+                  type="datetime-local"
+                  value={timeOffForm.start_at}
+                  onChange={(e) => setTimeOffForm({ ...timeOffForm, start_at: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-bright)] mb-1">
+                  Data i godzina zakończenia
+                </label>
+                <GlassInput
+                  type="datetime-local"
+                  value={timeOffForm.end_at}
+                  onChange={(e) => setTimeOffForm({ ...timeOffForm, end_at: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-bright)] mb-1">
+                  Powód przerwy (opcjonalnie)
+                </label>
+                <GlassInput
+                  placeholder="np. Urlop wypoczynkowy, Szkolenie, Remont"
+                  value={timeOffForm.reason}
+                  onChange={(e) => setTimeOffForm({ ...timeOffForm, reason: e.target.value })}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
+                <GlassButton
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsTimeOffModalOpen(false)}
+                  disabled={timeOffBusy}
+                >
+                  Anuluj
+                </GlassButton>
+                <GlassButton
+                  type="submit"
+                  variant="primary"
+                  disabled={timeOffBusy}
+                  className="!border-amber-500/50 !bg-gradient-to-r from-amber-500 to-amber-600 !text-white"
+                >
+                  <span className="material-symbols-outlined text-[18px]">lock</span>
+                  {timeOffBusy ? "Zapisywanie..." : "Zablokuj termin"}
+                </GlassButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

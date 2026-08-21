@@ -60,6 +60,7 @@ async def replace_working_hours(
         db.add(row)
         created.append(row)
     await db.flush()
+    await db.commit()
     return created
 
 
@@ -89,6 +90,8 @@ async def create_time_off(
     )
     db.add(row)
     await db.flush()
+    await db.commit()
+    await db.refresh(row)
     return row
 
 
@@ -103,4 +106,5 @@ async def delete_time_off(
         raise HTTPException(status_code=404, detail="Time off not found")
     await db.delete(row)
     await db.flush()
+    await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
