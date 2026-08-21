@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
@@ -679,12 +679,13 @@ async def delete_license_key(
     db: DbSession,
     _admin: RequirePlatformAdmin,
     key_id: UUID,
-) -> None:
+) -> Response:
     row = await db.get(LicenseKey, key_id)
     if row:
         await db.delete(row)
         await db.flush()
         await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------
