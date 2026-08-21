@@ -89,9 +89,9 @@ export function CommandPalette() {
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black/50 px-4 pt-[15vh]" onClick={() => setOpen(false)}>
+    <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black/40 px-4 pt-[15vh] backdrop-blur-md" onClick={() => setOpen(false)}>
       <div
-        className="w-full max-w-lg overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl"
+        className="glass-panel w-full max-w-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <GlassInput

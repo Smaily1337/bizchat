@@ -1,44 +1,48 @@
 :root,
 [data-theme="dark"] {
-  --bg: #0b1110;
-  --bg-elevated: #101817;
-  --surface: #141c1b;
-  --surface-hover: #1b2624;
+  --bg: #070b0a;
+  --bg-elevated: rgba(12, 22, 20, 0.55);
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.09);
   --text: #ecf3f1;
   --text-bright: #f7fffc;
-  --muted: #8aa09b;
-  --border: rgba(45, 212, 191, 0.12);
-  --glass-border: rgba(45, 212, 191, 0.12);
-  --glass-fill: #141c1b;
-  --glass-fill-strong: #1b2624;
+  --muted: #9bb5b0;
+  --border: rgba(255, 255, 255, 0.14);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-fill: rgba(255, 255, 255, 0.055);
+  --glass-fill-strong: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.28);
   --ink: #2dd4bf;
   --on-ink: #042f2e;
   --accent: #2dd4bf;
-  --accent-soft: rgba(45, 212, 191, 0.14);
+  --accent-soft: rgba(45, 212, 191, 0.16);
   --danger: #fb7185;
   --success: #4ade80;
   --focus: #2dd4bf;
+  --blur: 22px;
 }
 
 [data-theme="light"] {
-  --bg: #f3f7f6;
-  --bg-elevated: #ffffff;
-  --surface: #ffffff;
-  --surface-hover: #eef6f4;
+  --bg: #e7eeec;
+  --bg-elevated: rgba(255, 255, 255, 0.5);
+  --surface: rgba(255, 255, 255, 0.58);
+  --surface-hover: rgba(255, 255, 255, 0.78);
   --text: #132422;
   --text-bright: #042f2e;
   --muted: #5b716d;
-  --border: rgba(13, 148, 136, 0.16);
-  --glass-border: rgba(13, 148, 136, 0.16);
-  --glass-fill: #ffffff;
-  --glass-fill-strong: #eef6f4;
+  --border: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-fill: rgba(255, 255, 255, 0.5);
+  --glass-fill-strong: rgba(255, 255, 255, 0.72);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
   --ink: #0f766e;
   --on-ink: #f0fdfa;
   --accent: #0d9488;
-  --accent-soft: rgba(13, 148, 136, 0.12);
+  --accent-soft: rgba(13, 148, 136, 0.14);
   --danger: #e11d48;
   --success: #15803d;
   --focus: #0d9488;
+  --blur: 18px;
 }
 
 *,
@@ -65,12 +69,21 @@ body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(ellipse 80% 50% at 0% -10%, var(--accent-soft), transparent 55%),
-    var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 45% at 8% -8%, rgba(45, 212, 191, 0.22), transparent 58%),
+    radial-gradient(ellipse 50% 40% at 92% 8%, rgba(255, 255, 255, 0.08), transparent 50%),
+    radial-gradient(ellipse 40% 30% at 70% 100%, rgba(45, 212, 191, 0.08), transparent 55%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme="light"] body {
+  background-image:
+    radial-gradient(ellipse 70% 45% at 8% -8%, rgba(13, 148, 136, 0.18), transparent 58%),
+    radial-gradient(ellipse 50% 40% at 92% 8%, rgba(255, 255, 255, 0.7), transparent 50%),
+    radial-gradient(ellipse 40% 30% at 70% 100%, rgba(13, 148, 136, 0.1), transparent 55%);
 }
 
 .material-symbols-outlined {

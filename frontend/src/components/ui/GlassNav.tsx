@@ -40,9 +40,9 @@ export function GlassNav() {
 
   return (
     <>
-      <aside className="sticky top-0 z-40 hidden h-screen w-[248px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-elevated)] lg:flex">
+      <aside className="glass-nav sticky top-0 z-40 hidden h-screen w-[248px] shrink-0 flex-col border-r lg:flex">
         <NavLink to="/" className="flex items-center gap-2.5 px-4 py-5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--on-ink)]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass-fill)] text-[var(--accent)] shadow-glass backdrop-blur-glass">
             <Icon name="auto_awesome" className="!text-[18px]" />
           </span>
           <span className="min-w-0">
@@ -122,7 +122,7 @@ export function GlassNav() {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg-elevated)] lg:hidden">
+      <header className="glass-nav sticky top-0 z-40 border-b lg:hidden">
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <NavLink to="/" className="flex items-center gap-2 text-sm font-semibold">
             <Icon name="auto_awesome" className="text-[var(--accent)]" />

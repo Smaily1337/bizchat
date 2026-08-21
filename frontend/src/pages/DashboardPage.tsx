@@ -526,7 +526,7 @@ function DayColumn({
           type="button"
           data-event="1"
           onClick={() => onSelect(event)}
-          className="absolute left-1 right-1 z-20 overflow-hidden rounded-md border border-[var(--border)] border-l-[3px] border-l-[var(--accent)] bg-[var(--surface-hover)] px-1.5 py-1 text-left transition duration-150 hover:-translate-y-0.5 hover:border-[var(--accent)]"
+          className="absolute left-1 right-1 z-20 overflow-hidden rounded-lg border border-[var(--glass-border)] border-l-[3px] border-l-[var(--accent)] bg-[var(--glass-fill-strong)] px-1.5 py-1 text-left shadow-glass backdrop-blur-sm transition duration-150 hover:-translate-y-0.5 hover:border-[var(--accent)]"
           style={{
             top: (event.startHour - 8) * HOUR_H,
             height: Math.max(28, event.durationHours * HOUR_H - 4),

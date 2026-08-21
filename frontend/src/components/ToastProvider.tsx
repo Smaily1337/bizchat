@@ -58,10 +58,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             type="button"
             onClick={() => dismiss(t.id)}
             className={[
-              "pointer-events-auto rounded-lg border px-4 py-3 text-left transition",
-              t.tone === "danger"
-                ? "border-[var(--danger)] bg-[var(--surface)]"
-                : "border-[var(--border)] bg-[var(--surface)]",
+              "glass-panel pointer-events-auto px-4 py-3 text-left",
+              t.tone === "danger" ? "border-[var(--danger)]" : "",
             ].join(" ")}
           >
             <p className="text-sm font-medium text-[var(--text)]">
