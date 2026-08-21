@@ -1,0 +1,64 @@
+# BIZCHAT (AUTOMOVIA) — CURSOR AI SYSTEM CONTEXT & RULES
+
+## 1. Project Overview
+BizChat is an enterprise-grade AI-powered SaaS platform for beauty salons, barbershops, and service businesses.
+It automates:
+- **Omnichannel AI Chatbot**: Messenger (Meta Graph API), Instagram Direct, Telegram, WhatsApp Cloud API, and embeddable WWW Widget.
+- **Smart Booking & Scheduling**: Real-time calendar (week/day views), appointment management, staff vacation/time-off blocks, FIFO waitlist automation.
+- **Staff Performance & Commissions**: Revenue tracking, appointment logs, commission calculator (slider & custom rates), KPI bento grid, CSV export, accessible globally from calendar, appointments, staff list, and reports.
+- **Executive AI Reporting**: Automated daily 08:00 morning briefing messages to salon owners, weekly/monthly PDF executive graphic reports (ReportLab).
+- **Enterprise Superadmin & Licensing**: B2B license key generation, tiered limits (trial, starter, pro, enterprise), custom overrides, multi-tenant database.
+
+---
+
+## 2. Technology Stack & Architecture
+
+### Backend (`/backend`)
+- **Language & Framework**: Python 3.12+, FastAPI, Uvicorn, Pydantic v2.
+- **Database & ORM**: SQLAlchemy 2.0 (AsyncSession), `aiosqlite` (SQLite on persistent volume) / PostgreSQL, Alembic migrations.
+- **AI & Integrations**:
+  - Google Gemini API (`google-genai` / `gemini-1.5-flash` & `gemini-2.0-flash`) for conversational booking & salon FAQ.
+  - Meta Graph API v21.0 (Facebook Page & Instagram Direct Webhooks & Messaging API).
+  - Telegram Bot API, WhatsApp Cloud API.
+  - ReportLab for high-resolution vector PDF business reports.
+- **Realtime Events**: In-memory WebSocket `EventHub` (`/ws/events`) broadcasting live notifications (`chat.message`, `appointment.created`, etc.) with 20s keep-alive ping.
+
+### Frontend (`/frontend`)
+- **Language & Framework**: React 19, TypeScript, Vite, React Router v6.
+- **Styling**: Tailwind CSS, Glassmorphism UI tokens (`var(--surface-container)`, `var(--text-bright)`, `var(--glass-border)`, `var(--primary)`), Material Symbols Icons.
+- **State & Realtime**: Custom API client (`/src/api`), `useRealtimeEvents` WebSocket hook with auto-reconnection and active fallback polling (1.5s).
+- **Theme**: High-contrast support for both Dark and Light themes.
+
+### Widget (`/widget`)
+- Standalone vanilla JS embeddable chat widget script communicating via JWT session tokens.
+
+### Cloud & Deployment
+- **Provider**: Google Cloud Platform (Project: `bizchat-504420`, Region: `europe-central2`).
+- **Services**:
+  - API backend: Cloud Run service `bizchat-api`
+  - Frontend panel: Cloud Run service `bizchat-panel`
+- **Deploy Script**: `./scripts/deploy-local.sh` (executes Cloud Build & Cloud Run deployment in 1 command using `$HOME/google-cloud-sdk/bin/gcloud`).
+
+---
+
+## 3. Key Rules & Coding Standards
+
+1. **FastAPI HTTP 204 Return Type**:
+   - Any endpoint with `status_code=status.HTTP_204_NO_CONTENT` MUST return `Response(status_code=status.HTTP_204_NO_CONTENT)` with `-> Response` return type. Never return `None` or a Pydantic object for 204.
+
+2. **Database Commits & Flushing**:
+   - When creating/updating messages, appointments, or staff records, always ensure `await db.commit()` or proper session lifecycle is executed so changes persist immediately.
+
+3. **Inbound Webhook Routing**:
+   - Always route inbound messages through `resolve_meta_business_id` (in `backend/app/services/webhook_business.py`). Never drop an incoming message if `page_id` is unrecognized; fallback to the primary salon and auto-associate.
+
+4. **UI Design & Color Theme**:
+   - Never use raw harsh colors (e.g. bright yellow `text-amber-300` on white backgrounds) that break contrast in Light mode.
+   - Use CSS semantic tokens: `text-[var(--text-bright)]`, `text-[var(--muted)]`, `bg-[var(--surface-container)]`, `border-[var(--glass-border)]`.
+   - Ensure avatar images have strict sizing (`w-12 h-12 min-w-[48px] max-w-[48px] rounded-2xl object-cover shrink-0`).
+
+5. **Testing & Verification**:
+   - Before completing tasks, always run `npm run build` inside `frontend/` to verify zero TypeScript errors.
+
+6. **Deployment**:
+   - Run `./scripts/deploy-local.sh` from the repository root to deploy updates directly to production Cloud Run.
