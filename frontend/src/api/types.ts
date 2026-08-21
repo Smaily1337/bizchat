@@ -242,6 +242,29 @@ export type DashboardAnalytics = {
   cancel_rate?: number | null;
 };
 
+export type MorningSummaryPreview = {
+  ok: boolean;
+  summary_text: string;
+  appointments_count: number;
+  total_revenue: number;
+  date_label: string;
+  time_offs_count: number;
+};
+
+export type MorningSummarySendResponse = {
+  ok: boolean;
+  recipient: string | null;
+  message: string;
+  summary: Record<string, unknown>;
+};
+
+export type PdfReportSendResponse = {
+  ok: boolean;
+  recipient: string | null;
+  filename: string;
+  message: string;
+};
+
 export type NotificationChannel =
   | "sms"
   | "email"

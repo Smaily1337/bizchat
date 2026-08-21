@@ -15,10 +15,13 @@ import type {
   KnowledgeItem,
   LicenseKey,
   LicenseUsage,
+  MorningSummaryPreview,
+  MorningSummarySendResponse,
   NotificationLogEntry,
   NotificationSettings,
   NotificationTemplate,
   Owner,
+  PdfReportSendResponse,
   PlanCatalogItem,
   PlatformAccount,
   PlatformBusiness,
@@ -439,6 +442,22 @@ export const dashboardApi = {
   summary: () => apiFetch<DashboardSummary>("/api/dashboard/summary"),
   analytics: (days = 7) =>
     apiFetch<DashboardAnalytics>(`/api/dashboard/analytics?days=${days}`),
+};
+
+export const reportsApi = {
+  previewMorningSummary: () =>
+    apiFetch<MorningSummaryPreview>("/api/reports/morning-summary/preview"),
+  sendMorningSummary: () =>
+    apiFetch<MorningSummarySendResponse>("/api/reports/morning-summary/send", {
+      method: "POST",
+    }),
+  sendPdfReport: (body: { period: "week" | "month"; target_email?: string }) =>
+    apiFetch<PdfReportSendResponse>("/api/reports/pdf/send", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  downloadPdfUrl: (period: "week" | "month" = "week") =>
+    `/api/reports/pdf?period=${period}`,
 };
 
 export const notificationsApi = {

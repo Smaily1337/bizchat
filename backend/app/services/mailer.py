@@ -11,19 +11,27 @@ from app.config import settings
 logger = logging.getLogger("bizchat.mailer")
 
 
-def send_email(*, to: str, subject: str, body: str) -> None:
+def send_email(
+    *,
+    to: str,
+    subject: str,
+    body: str,
+    attachment_bytes: bytes | None = None,
+    attachment_filename: str | None = None,
+) -> None:
     if not settings.smtp_host:
         logger.info(
             "\n========== BIZCHAT MAIL (console) ==========\n"
-            "To: %s\nSubject: %s\n\n%s\n"
+            "To: %s\nSubject: %s\nAttachment: %s\n\n%s\n"
             "============================================",
             to,
             subject,
+            attachment_filename or "None",
             body,
         )
         print(
             f"\n========== BIZCHAT MAIL (console) ==========\n"
-            f"To: {to}\nSubject: {subject}\n\n{body}\n"
+            f"To: {to}\nSubject: {subject}\nAttachment: {attachment_filename or 'None'}\n\n{body}\n"
             f"============================================\n",
             flush=True,
         )
@@ -34,6 +42,14 @@ def send_email(*, to: str, subject: str, body: str) -> None:
     msg["To"] = to
     msg["Subject"] = subject
     msg.set_content(body)
+
+    if attachment_bytes and attachment_filename:
+        msg.add_attachment(
+            attachment_bytes,
+            maintype="application",
+            subtype="pdf",
+            filename=attachment_filename,
+        )
 
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as smtp:
         if settings.smtp_tls:

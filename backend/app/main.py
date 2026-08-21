@@ -28,6 +28,7 @@ from app.api import (
     payments,
     platform,
     public_booking,
+    reports,
     services,
     staff,
     tags,
@@ -79,6 +80,7 @@ app.include_router(analytics.router)
 app.include_router(appointments.router)
 app.include_router(calendar.router)
 app.include_router(dashboard.router)
+app.include_router(reports.router)
 app.include_router(business.router)
 app.include_router(services.router)
 app.include_router(staff.router)
