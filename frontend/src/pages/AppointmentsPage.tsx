@@ -8,6 +8,7 @@ import {
   staffApi,
 } from "@/api";
 import type { Appointment, Customer, Service, StaffMember } from "@/api/types";
+import { StaffProfileModal } from "@/components/StaffProfileModal";
 import { useToast } from "@/components/ToastProvider";
 import { GlassButton, GlassTableSkeleton } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
@@ -53,33 +54,35 @@ function StatusBadge({ status }: { status: string }) {
           Zakończona
         </span>
       );
-    default:
+    case "no_show":
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-[var(--muted)] font-medium text-xs border border-white/10">
-          {STATUS_LABEL[status] || status}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 font-medium text-xs border border-purple-500/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+          Nieobecność
         </span>
       );
+    default:
+      return null;
   }
 }
 
 function getInitials(name?: string | null) {
   if (!name) return "KL";
   const parts = name.trim().split(" ");
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   return name.slice(0, 2).toUpperCase();
 }
 
 export function AppointmentsPage() {
-  const [searchParams] = useSearchParams();
   const { push } = useToast();
-  const [notifyingId, setNotifyingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState<Appointment[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [selectedStaffModalId, setSelectedStaffModalId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
@@ -643,9 +646,39 @@ export function AppointmentsPage() {
                           </p>
                         </td>
                         <td className="py-4 px-6">
-                          <p className="text-xs text-[var(--muted)]">
-                            {st?.name || a.staff_name || "Dowolny pracownik"}
-                          </p>
+                          {st ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedStaffModalId(st.id)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 text-left transition-all border border-white/10 hover:border-amber-400/40 cursor-pointer group/staff"
+                              title="Kliknij, aby otworzyć profil, statystyki i historię zleceń"
+                            >
+                              {st.avatar_url ? (
+                                <img
+                                  src={st.avatar_url}
+                                  alt={st.name}
+                                  className="w-5 h-5 rounded-full object-cover border border-white/20 shrink-0"
+                                />
+                              ) : (
+                                <span
+                                  style={{ backgroundColor: st.color || "#3e63dd" }}
+                                  className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                                >
+                                  {st.name[0]}
+                                </span>
+                              )}
+                              <span className="text-xs font-semibold text-[var(--text-bright)] group-hover/staff:text-amber-300">
+                                {st.name}
+                              </span>
+                              <span className="material-symbols-outlined text-[13px] text-amber-400 opacity-60 group-hover/staff:opacity-100 transition-opacity">
+                                bar_chart
+                              </span>
+                            </button>
+                          ) : (
+                            <p className="text-xs text-[var(--muted)]">
+                              {a.staff_name || "Dowolny pracownik"}
+                            </p>
+                          )}
                         </td>
                         <td className="py-4 px-6">
                           <StatusBadge status={a.status} />
@@ -695,6 +728,13 @@ export function AppointmentsPage() {
           </div>
         </section>
       )}
+
+      {/* UNIVERSAL STAFF PROFILE & STATS MODAL */}
+      <StaffProfileModal
+        staffId={selectedStaffModalId}
+        initialStaff={selectedStaffModalId ? staff.find((s) => s.id === selectedStaffModalId) : null}
+        onClose={() => setSelectedStaffModalId(null)}
+      />
     </div>
   );
 }

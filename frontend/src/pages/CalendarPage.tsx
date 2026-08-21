@@ -1,8 +1,9 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { appointmentsApi, customersApi, dashboardApi, hoursApi } from "@/api";
-import type { Appointment, Customer, TimeOff, WorkingHours } from "@/api/types";
+import { appointmentsApi, customersApi, dashboardApi, hoursApi, staffApi } from "@/api";
+import type { Appointment, Customer, StaffMember, TimeOff, WorkingHours } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
+import { StaffProfileModal } from "@/components/StaffProfileModal";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 
@@ -13,6 +14,7 @@ type CalEvent = {
   title: string;
   client: string;
   customerId: string;
+  staffId?: string | null;
   dayIndex: number;
   startHour: number;
   durationHours: number;
@@ -79,9 +81,14 @@ function toEvents(
   rangeStart: Date,
   view: CalendarView,
   dayOffset: number,
+  staffFilter = "all",
 ): CalEvent[] {
   return appointments
-    .filter((a) => a.status !== "cancelled")
+    .filter(
+      (a) =>
+        a.status !== "cancelled" &&
+        (staffFilter === "all" || a.staff_id === staffFilter),
+    )
     .map((a) => {
       const start = new Date(a.start_at);
       const end = new Date(a.end_at);
@@ -104,6 +111,7 @@ function toEvents(
         title: a.service_name || "Wizyta",
         client: a.customer_name || "Klient",
         customerId: a.customer_id,
+        staffId: a.staff_id,
         dayIndex,
         startHour,
         durationHours,
@@ -195,6 +203,9 @@ export function CalendarPage() {
   const [timeOffList, setTimeOffList] = useState<TimeOff[]>([]);
   const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [selectedStaffFilter, setSelectedStaffFilter] = useState<string>("all");
+  const [profileModalStaffId, setProfileModalStaffId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalEvent | null>(null);
   const [selectedTimeOff, setSelectedTimeOff] = useState<TimeOff | null>(null);
   
@@ -225,17 +236,19 @@ export function CalendarPage() {
     const from = weekStart.toISOString();
     const to = addDays(weekStart, 7).toISOString();
     try {
-      const [appts, toList, wh, cust, sum] = await Promise.all([
+      const [appts, toList, wh, cust, sum, stList] = await Promise.all([
         appointmentsApi.list({ from_at: from, to_at: to }),
         hoursApi.listTimeOff(),
         hoursApi.list(),
         customersApi.list().catch(() => []),
         dashboardApi.summary().catch(() => null),
+        staffApi.list().catch(() => []),
       ]);
       setAppointments(appts);
       setTimeOffList(toList);
       setWorkingHours(wh);
       setCustomers(cust);
+      setStaffList(stList);
       if (sum) {
         setSummary({
           appointments_today: sum.appointments_today,
@@ -257,9 +270,14 @@ export function CalendarPage() {
     void reloadAll();
   }, [weekStart]);
 
+  const staffMap = useMemo(
+    () => new Map(staffList.map((s) => [s.id, s])),
+    [staffList],
+  );
+
   const events = useMemo(
-    () => toEvents(appointments, rangeStart, view, dayOffset),
-    [appointments, rangeStart, view, dayOffset],
+    () => toEvents(appointments, rangeStart, view, dayOffset, selectedStaffFilter),
+    [appointments, rangeStart, view, dayOffset, selectedStaffFilter],
   );
 
   const { firstHour, lastHour } = useMemo(() => {
@@ -459,6 +477,68 @@ export function CalendarPage() {
           </Link>
         </div>
       </section>
+
+      {/* STAFF / TEAM BAR (CLICKABLE PROFILES & FILTER) */}
+      {staffList.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-black/25 border border-white/10 shadow-lg animate-fade-in">
+          <span className="text-xs font-bold text-[var(--muted)] flex items-center gap-1.5 pl-1 pr-1">
+            <span className="material-symbols-outlined text-amber-400 text-base">badge</span>
+            Zespół & Specjaliści:
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedStaffFilter("all")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              selectedStaffFilter === "all"
+                ? "bg-[var(--primary-container)] text-white shadow-md ring-1 ring-white/20"
+                : "bg-white/5 text-[var(--muted)] hover:text-white"
+            }`}
+          >
+            Wszyscy ({staffList.length})
+          </button>
+          {staffList.map((s) => (
+            <div
+              key={s.id}
+              className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-xl border text-xs transition-all ${
+                selectedStaffFilter === s.id
+                  ? "border-amber-400/80 bg-amber-500/20 text-amber-300 shadow-md ring-1 ring-amber-400/40"
+                  : "border-white/10 bg-white/5 text-[var(--muted)] hover:border-white/20 hover:text-white"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedStaffFilter(s.id === selectedStaffFilter ? "all" : s.id)}
+                className="flex items-center gap-1.5 cursor-pointer"
+                title={`Filtruj kalendarz dla pracownika: ${s.name}`}
+              >
+                {s.avatar_url ? (
+                  <img src={s.avatar_url} alt={s.name} className="w-5 h-5 rounded-full object-cover border border-white/20" />
+                ) : (
+                  <span
+                    style={{ backgroundColor: s.color || "#3e63dd" }}
+                    className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                  >
+                    {s.name[0]}
+                  </span>
+                )}
+                <span className="font-semibold text-white">{s.name}</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setProfileModalStaffId(s.id);
+                }}
+                className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 transition-colors cursor-pointer flex items-center gap-0.5 text-[10px] font-bold"
+                title="Otwórz profil, statystyki i historię zleceń pracownika"
+              >
+                <span className="material-symbols-outlined text-[13px]">bar_chart</span>
+                Profil
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {error && (
         <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm flex items-center gap-2">
@@ -667,9 +747,20 @@ export function CalendarPage() {
                             minHeight: "2.25rem",
                           }}
                         >
-                          <p className="truncate text-xs font-bold text-[var(--text-bright)]">
-                            {event.title}
-                          </p>
+                          <div className="flex items-center justify-between gap-1">
+                            <p className="truncate text-xs font-bold text-[var(--text-bright)]">
+                              {event.title}
+                            </p>
+                            {event.staffId && staffMap.has(event.staffId) && (
+                              <span
+                                style={{ backgroundColor: staffMap.get(event.staffId)?.color || "#3e63dd" }}
+                                className="w-3.5 h-3.5 rounded-full shrink-0 text-[8px] font-bold text-white flex items-center justify-center border border-white/20"
+                                title={`Specjalista: ${staffMap.get(event.staffId)?.name}`}
+                              >
+                                {staffMap.get(event.staffId)?.name[0]}
+                              </span>
+                            )}
+                          </div>
                           <p className="truncate text-[10px] text-[var(--muted)]">
                             {event.client} · {formatHour(event.startHour)}–
                             {formatHour(event.startHour + event.durationHours)}
@@ -781,6 +872,45 @@ export function CalendarPage() {
               <p className="mt-1 text-xs text-[var(--muted)]">
                 Status: {STATUS_PL[selectedEvent.status] ?? selectedEvent.status}
               </p>
+
+              {/* Staff Member in Event Card */}
+              {selectedEvent.staffId && staffMap.has(selectedEvent.staffId) && (
+                (() => {
+                  const evStaff = staffMap.get(selectedEvent.staffId)!;
+                  return (
+                    <div className="mt-3 p-3 rounded-xl bg-black/30 border border-white/10 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {evStaff.avatar_url ? (
+                          <img
+                            src={evStaff.avatar_url}
+                            alt={evStaff.name}
+                            className="w-8 h-8 rounded-lg object-cover border border-white/20 shrink-0"
+                          />
+                        ) : (
+                          <div
+                            style={{ backgroundColor: evStaff.color || "#3e63dd" }}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0"
+                          >
+                            {evStaff.name[0]}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[10px] text-[var(--muted)]">Pracownik:</p>
+                          <p className="text-xs font-bold text-white truncate">{evStaff.name}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setProfileModalStaffId(evStaff.id)}
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
+                      >
+                        <span className="material-symbols-outlined text-xs">bar_chart</span>
+                        Profil & Statystyki
+                      </button>
+                    </div>
+                  );
+                })()
+              )}
 
               {selectedCustomer && (
                 <div className="mt-3 space-y-1 rounded-soft border border-glass-border bg-glass-fill p-3 text-xs">
@@ -988,6 +1118,13 @@ export function CalendarPage() {
           </div>
         </div>
       )}
+
+      {/* UNIVERSAL STAFF PROFILE & STATS MODAL */}
+      <StaffProfileModal
+        staffId={profileModalStaffId}
+        initialStaff={profileModalStaffId ? staffMap.get(profileModalStaffId) : null}
+        onClose={() => setProfileModalStaffId(null)}
+      />
     </div>
   );
 }
