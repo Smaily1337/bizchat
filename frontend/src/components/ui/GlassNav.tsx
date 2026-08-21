@@ -5,7 +5,14 @@ import { clerkEnabled } from "@/auth/ClerkProvider";
 import { useTheme } from "@/theme";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const NAV_LINKS = [
+type NavItem = {
+  to: string;
+  label: string;
+  icon: string;
+  end?: boolean;
+};
+
+const NAV_LINKS: NavItem[] = [
   { to: "/", label: "Dziś", icon: "today", end: true },
   { to: "/calendar", label: "Kalendarz", icon: "calendar_month" },
   { to: "/appointments", label: "Wizyty", icon: "event_note" },
@@ -16,6 +23,37 @@ const NAV_LINKS = [
   { to: "/hours", label: "Godziny", icon: "schedule" },
   { to: "/reports", label: "Raporty & Statystyki", icon: "analytics" },
   { to: "/settings", label: "Ustawienia", icon: "settings" },
+];
+
+const MOBILE_TABS: NavItem[] = [
+  { to: "/", label: "Dziś", icon: "today", end: true },
+  { to: "/calendar", label: "Kalendarz", icon: "calendar_month" },
+  { to: "/inbox", label: "Czat", icon: "chat" },
+  { to: "/appointments", label: "Wizyty", icon: "event_note" },
+];
+
+const MORE_LINKS: NavItem[] = [
+  { to: "/customers", label: "Klienci", icon: "group" },
+  { to: "/staff", label: "Zespół", icon: "badge" },
+  { to: "/channels", label: "Kanały", icon: "hub" },
+  { to: "/hours", label: "Godziny", icon: "schedule" },
+  { to: "/reports", label: "Raporty", icon: "analytics" },
+  { to: "/notifications", label: "Powiadomienia", icon: "notifications" },
+  { to: "/settings", label: "Ustawienia", icon: "settings" },
+];
+
+const MORE_PREFIXES = [
+  "/customers",
+  "/staff",
+  "/channels",
+  "/hours",
+  "/reports",
+  "/notifications",
+  "/settings",
+  "/platform",
+  "/users",
+  "/feedback",
+  "/account",
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -36,15 +74,31 @@ const PAGE_TITLES: Record<string, string> = {
   "/platform": "Platform Admin",
 };
 
+function isMoreRoute(pathname: string) {
+  return MORE_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
+function navClass(isActive: boolean) {
+  return `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-colors duration-150 ${
+    isActive
+      ? "bg-[var(--accent-soft)] text-[var(--text-bright)] font-bold"
+      : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-[var(--surface-container)]"
+  }`;
+}
+
 export function GlassNav() {
   const { business, owner, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setProfileOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -57,6 +111,15 @@ export function GlassNav() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
+  useEffect(() => {
+    if (!moreOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMoreOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [moreOpen]);
+
   function handleLogout() {
     logout();
     if (clerkEnabled() && typeof window !== "undefined" && (window as unknown as { Clerk?: { signOut?: () => void } }).Clerk?.signOut) {
@@ -66,6 +129,7 @@ export function GlassNav() {
 
   const currentPath = "/" + (location.pathname.split("/")[1] || "");
   const pageTitle = PAGE_TITLES[location.pathname] || PAGE_TITLES[currentPath] || "Automovia";
+  const moreActive = isMoreRoute(location.pathname);
   const userInitials = (owner?.name || owner?.email || "AD")
     .split(" ")
     .map((p) => p[0])
@@ -74,81 +138,67 @@ export function GlassNav() {
     .toUpperCase();
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-[var(--bg)] text-[var(--text)] font-sans relative select-none">
-      {/* Permanent Left Sidebar Navigation */}
-      <aside className="w-64 h-full shrink-0 flex flex-col bg-[var(--surface-solid)] border-r border-[var(--glass-border)] shadow-2xl z-30">
-        {/* Brand / Salon Header */}
-        <div className="p-5 pb-4 flex items-center gap-3 border-b border-white/5 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 text-white">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-[var(--bg)] font-sans text-[var(--text)]">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-[var(--glass-border)] bg-[var(--surface-solid)] lg:flex">
+        <div className="flex shrink-0 items-center gap-3 border-b border-[var(--glass-border)] p-5 pb-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-container)] text-white">
             <span className="material-symbols-outlined text-[22px]">hub</span>
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-base font-bold tracking-tight text-[var(--text-bright)] truncate">
+            <h1 className="truncate text-base font-bold tracking-tight text-[var(--text-bright)]">
               {business?.name || "Automovia"}
             </h1>
-            <p className="text-[11px] font-medium text-[var(--muted)] truncate">
+            <p className="truncate text-[11px] font-medium text-[var(--muted)]">
               Panel zarządzania
             </p>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <div className="flex flex-col gap-1 p-3 flex-1 overflow-y-auto">
+        <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {NAV_LINKS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-200 group relative ${
-                  isActive
-                    ? "bg-gradient-to-r from-[var(--primary-container)] to-[var(--secondary-container)] text-white shadow-lg shadow-blue-500/25 font-bold"
-                    : "text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 hover:translate-x-1"
-                }`
-              }
+              className={({ isActive }) => navClass(isActive)}
             >
               {({ isActive }) => (
                 <>
                   <span
-                    className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${
-                      isActive ? "text-white" : "text-[var(--muted)] group-hover:text-[var(--primary)]"
+                    className={`material-symbols-outlined text-[20px] ${
+                      isActive ? "text-[var(--accent)]" : "text-[var(--muted)]"
                     }`}
                   >
                     {item.icon}
                   </span>
                   <span className="truncate">{item.label}</span>
-                  {isActive && (
-                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
-                  )}
                 </>
               )}
             </NavLink>
           ))}
 
-          {/* Superadmin & License Hub for Platform Admins */}
           {owner?.is_platform_admin && (
             <NavLink
               to="/platform"
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all duration-200 group relative mt-3 border ${
+                `mt-3 flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-xs font-bold ${
                   isActive
-                    ? "bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-lg shadow-amber-500/25 border-amber-400"
-                    : "text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                    ? "border-amber-500/50 bg-amber-500/20 text-amber-200"
+                    : "border-amber-500/25 bg-amber-500/10 text-amber-400"
                 }`
               }
             >
-              <span className="material-symbols-outlined text-[20px] text-amber-300">verified_user</span>
+              <span className="material-symbols-outlined text-[20px]">verified_user</span>
               <span className="truncate">Superadmin & Licencje</span>
             </NavLink>
           )}
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="p-3 border-t border-white/5 space-y-2 bg-black/10 shrink-0">
+        <div className="shrink-0 space-y-2 border-t border-[var(--glass-border)] p-3">
           <button
             type="button"
             onClick={toggleTheme}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--glass-border)] bg-white/5 hover:bg-white/10 text-[var(--text-bright)] text-xs font-medium transition-all cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-container)] px-3 py-2 text-xs font-medium text-[var(--text-bright)]"
           >
             <span className="material-symbols-outlined text-sm">
               {theme === "dark" ? "light_mode" : "dark_mode"}
@@ -158,7 +208,7 @@ export function GlassNav() {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400"
           >
             <span className="material-symbols-outlined text-sm">logout</span>
             <span>Wyloguj się</span>
@@ -166,59 +216,59 @@ export function GlassNav() {
         </div>
       </aside>
 
-      {/* Main Content View with Top Header */}
-      <div className="flex-1 h-full flex flex-col overflow-hidden relative min-w-0 bg-[var(--bg)]">
-        {/* Top Header */}
-        <header className="h-16 px-6 sm:px-8 flex items-center justify-between border-b border-[var(--glass-border)] bg-[var(--surface-solid)]/60 backdrop-blur-xl shrink-0 z-20">
-          <div>
-            <h2 className="text-lg font-bold text-[var(--text-bright)]">{pageTitle}</h2>
+      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
+        <header className="z-20 flex h-14 shrink-0 items-center justify-between border-b border-[var(--glass-border)] bg-[var(--surface-solid)] px-4 lg:h-16 lg:px-8">
+          <div className="min-w-0">
+            <p className="truncate text-[11px] font-medium text-[var(--muted)] lg:hidden">
+              {business?.name || "Automovia"}
+            </p>
+            <h2 className="truncate text-base font-bold text-[var(--text-bright)] lg:text-lg">
+              {pageTitle}
+            </h2>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Search Input */}
+          <div className="flex items-center gap-2 sm:gap-4">
             <div className="relative hidden md:block">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--muted)]">
                 search
               </span>
               <input
-                className="bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-full py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-[var(--primary)] transition-all text-[var(--text-bright)] placeholder:text-[var(--muted)] w-60"
+                className="w-60 rounded-full border border-[var(--glass-border)] bg-[var(--surface-container)] py-1.5 pl-9 pr-4 text-xs text-[var(--text-bright)] placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:outline-none"
                 placeholder="Szukaj..."
                 type="text"
               />
             </div>
 
-            {/* Notifications */}
             <Link
               to="/notifications"
-              className="p-2 rounded-xl text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 transition-colors relative"
+              className="relative hidden rounded-xl p-2 text-[var(--muted)] hover:bg-[var(--surface-container)] hover:text-[var(--text-bright)] lg:inline-flex"
               title="Powiadomienia"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
             </Link>
 
-            {/* Profile Dropdown */}
             <div className="relative" ref={profileRef}>
               <button
                 type="button"
                 onClick={() => setProfileOpen((v) => !v)}
-                className="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--primary-container)] to-[var(--secondary-container)] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity border border-white/20 text-white font-bold text-xs shadow-md"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--primary-container)] text-xs font-bold text-white"
               >
                 {userInitials}
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-56 glass-panel rounded-xl p-2 shadow-2xl border border-[var(--glass-border)] text-xs z-50 animate-fade-in space-y-1">
-                  <p className="px-3 py-1.5 font-bold text-[var(--text-bright)] truncate">
+                <div className="glass-panel absolute right-0 z-50 mt-2 w-56 space-y-1 rounded-xl p-2 text-xs">
+                  <p className="truncate px-3 py-1.5 font-bold text-[var(--text-bright)]">
                     {owner?.name || owner?.email}
                   </p>
-                  <p className="px-3 pb-1 text-[11px] text-[var(--muted)] truncate">
+                  <p className="truncate px-3 pb-1 text-[11px] text-[var(--muted)]">
                     {owner?.role || "Właściciel"}
                   </p>
-                  <div className="h-px bg-white/5 my-1" />
+                  <div className="my-1 h-px bg-[var(--glass-border)]" />
                   {owner?.is_platform_admin && (
                     <Link
                       to="/platform"
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-amber-300 font-bold hover:bg-amber-500/10"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 font-bold text-amber-300"
                     >
                       <span className="material-symbols-outlined text-[16px]">verified_user</span>
                       Superadmin & Licencje
@@ -226,14 +276,14 @@ export function GlassNav() {
                   )}
                   <Link
                     to="/settings/account"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--text)] hover:bg-[var(--surface-container)]"
                   >
                     <span className="material-symbols-outlined text-[16px]">account_circle</span>
                     Konto
                   </Link>
                   <Link
                     to="/settings"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--text)] hover:text-[var(--text-bright)] hover:bg-white/5"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--text)] hover:bg-[var(--surface-container)]"
                   >
                     <span className="material-symbols-outlined text-[16px]">settings</span>
                     Ustawienia
@@ -241,7 +291,7 @@ export function GlassNav() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 text-left cursor-pointer"
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-red-400"
                   >
                     <span className="material-symbols-outlined text-[16px]">logout</span>
                     Wyloguj się
@@ -252,15 +302,135 @@ export function GlassNav() {
           </div>
         </header>
 
-        {/* Scrollable Main Outlet */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:p-8 lg:pb-8">
+          <div className="mx-auto max-w-7xl">
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>
           </div>
         </main>
       </div>
+
+      {moreOpen && (
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          <button
+            type="button"
+            aria-label="Zamknij menu"
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMoreOpen(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto rounded-t-2xl border-t border-[var(--glass-border)] bg-[var(--surface-solid)] pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_32px_rgba(0,0,0,0.35)]">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--muted)]/40" />
+            <p className="px-5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+              Więcej
+            </p>
+            <nav className="grid grid-cols-3 gap-2 px-4 pb-4">
+              {MORE_LINKS.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-3 text-center ${
+                      isActive
+                        ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--text-bright)]"
+                        : "border-[var(--glass-border)] bg-[var(--surface-container)] text-[var(--text)]"
+                    }`
+                  }
+                >
+                  <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
+                  <span className="text-[11px] font-semibold leading-tight">{item.label}</span>
+                </NavLink>
+              ))}
+              {owner?.is_platform_admin && (
+                <NavLink
+                  to="/platform"
+                  className={({ isActive }) =>
+                    `flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-3 text-center ${
+                      isActive
+                        ? "border-amber-400 bg-amber-500/20 text-amber-200"
+                        : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                    }`
+                  }
+                >
+                  <span className="material-symbols-outlined text-[22px]">verified_user</span>
+                  <span className="text-[11px] font-semibold leading-tight">Licencje</span>
+                </NavLink>
+              )}
+            </nav>
+            <div className="flex gap-2 border-t border-[var(--glass-border)] px-4 py-3">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-container)] text-xs font-medium text-[var(--text-bright)]"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {theme === "dark" ? "light_mode" : "dark_mode"}
+                </span>
+                {theme === "dark" ? "Jasny" : "Ciemny"}
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 text-xs font-medium text-red-400"
+              >
+                <span className="material-symbols-outlined text-[18px]">logout</span>
+                Wyloguj
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-[70] grid grid-cols-5 border-t border-[var(--glass-border)] bg-[var(--surface-solid)] px-1 pt-1 lg:hidden"
+        style={{ paddingBottom: "max(0.35rem, env(safe-area-inset-bottom))" }}
+      >
+        {MOBILE_TABS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-semibold ${
+                isActive
+                  ? "text-[var(--accent)]"
+                  : "text-[var(--muted)]"
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`material-symbols-outlined text-[22px] ${
+                    isActive ? "filled-icon" : ""
+                  }`}
+                  style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+        <button
+          type="button"
+          onClick={() => setMoreOpen((v) => !v)}
+          className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-semibold ${
+            moreOpen || moreActive ? "text-[var(--accent)]" : "text-[var(--muted)]"
+          }`}
+        >
+          <span
+            className="material-symbols-outlined text-[22px]"
+            style={
+              moreOpen || moreActive ? { fontVariationSettings: "'FILL' 1" } : undefined
+            }
+          >
+            {moreOpen ? "expand_more" : "menu"}
+          </span>
+          <span>Więcej</span>
+        </button>
+      </nav>
     </div>
   );
 }

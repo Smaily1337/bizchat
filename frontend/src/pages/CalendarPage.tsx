@@ -196,7 +196,11 @@ const STATUS_PL: Record<string, string> = {
 export function CalendarPage() {
   const { business } = useAuth();
   const navigate = useNavigate();
-  const [view, setView] = useState<CalendarView>("week");
+  const [view, setView] = useState<CalendarView>(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches
+      ? "day"
+      : "week",
+  );
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [dayOffset, setDayOffset] = useState(() => (new Date().getDay() + 6) % 7);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -594,7 +598,7 @@ export function CalendarPage() {
 
           <div className="overflow-x-auto">
             <div
-              className="min-w-[640px] grid"
+              className={`grid ${view === "week" ? "min-w-[640px]" : "min-w-0"}`}
               style={{
                 gridTemplateColumns: `64px repeat(${visibleDays.length}, minmax(0, 1fr))`,
               }}
