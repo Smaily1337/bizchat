@@ -383,7 +383,7 @@ async def reply_as_owner(
     )
     db.add(msg)
     conv.updated_at = utc_now()
-    await db.flush()
+    await db.commit()
     await db.refresh(msg)
 
     # Deliver owner reply to the customer on the original channel

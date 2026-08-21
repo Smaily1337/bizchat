@@ -20,13 +20,14 @@ async def resolve_meta_business_id(
     query_business_id: UUID | None,
     page_id: str | None = None,
 ) -> UUID | None:
-    """Pick salon for Messenger/IG/WhatsApp inbound.
+    """Pick salon for Messenger/IG/WhatsApp inbound without dropping webhook messages.
 
     Order:
     1. ?business_id= on the webhook URL
     2. META_DEFAULT_BUSINESS_ID env
-    3. Business.settings.meta_page_id matching payload page id
-    4. Sole business in the database (typical single-salon Cloud Run)
+    3. Business.settings matching payload page id or instagram account id
+    4. Business with connected Meta/Facebook tokens
+    5. Sole / primary business in the database
     """
     if query_business_id is not None:
         return query_business_id
@@ -40,49 +41,55 @@ async def resolve_meta_business_id(
                 settings.meta_default_business_id,
             )
 
+    all_businesses = (await db.execute(select(Business))).scalars().all()
+    if not all_businesses:
+        logger.error("Meta webhook: no business records found in database.")
+        return None
+
+    # Exact page ID or Instagram ID match in settings
     if page_id:
-        result = await db.execute(select(Business))
-        for biz in result.scalars().all():
+        norm_page_id = str(page_id).strip()
+        for biz in all_businesses:
             settings_map = biz.settings if isinstance(biz.settings, dict) else {}
-            stored = str(
-                settings_map.get("meta_page_id")
-                or settings_map.get("facebook_page_id")
-                or ""
-            ).strip()
-            if stored and stored == str(page_id).strip():
-                return biz.id
+            for key in ("meta_page_id", "facebook_page_id", "instagram_account_id", "instagram_id", "page_id"):
+                val = str(settings_map.get(key) or "").strip()
+                if val and val == norm_page_id:
+                    return biz.id
 
-    count = (
-        await db.execute(select(func.count()).select_from(Business))
-    ).scalar_one()
-    if count == 1:
-        sole = (await db.execute(select(Business))).scalar_one()
-        logger.info(
-            "Meta webhook: using sole business_id=%s (no query/env page map)",
-            sole.id,
-        )
-        return sole.id
+    # Fallback to business with active Meta connection tokens
+    for biz in all_businesses:
+        settings_map = biz.settings if isinstance(biz.settings, dict) else {}
+        if (
+            settings_map.get("meta_page_access_token")
+            or settings_map.get("facebook_page_access_token")
+            or settings_map.get("meta_access_token")
+            or settings_map.get("meta_connected")
+        ):
+            logger.info("Meta webhook: resolving to business %s with connected Meta token", biz.id)
+            return biz.id
 
-    logger.warning(
-        "Meta webhook: cannot resolve business_id (query=%s page_id=%s businesses=%s)",
-        query_business_id,
+    # Fallback: single business or first primary business in the database
+    primary_biz = all_businesses[0]
+    logger.info(
+        "Meta webhook: falling back to primary business %s (%s) for page_id=%s",
+        primary_biz.id,
+        primary_biz.name,
         page_id,
-        count,
     )
-    return None
+    return primary_biz.id
 
 
 async def remember_meta_page_id(
     db: AsyncSession, business_id: UUID, page_id: str | None
 ) -> None:
-    """Persist Facebook page id on the salon so later webhooks resolve without query."""
+    """Persist Facebook page id on the salon so later webhooks resolve immediately."""
     if not page_id:
         return
     biz = await db.get(Business, business_id)
     if biz is None:
         return
     settings_map = dict(biz.settings or {})
-    if settings_map.get("meta_page_id") == page_id:
+    if settings_map.get("meta_page_id") == str(page_id):
         return
     settings_map["meta_page_id"] = str(page_id)
     biz.settings = settings_map

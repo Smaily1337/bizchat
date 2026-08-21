@@ -90,7 +90,7 @@ export function InboxPage() {
     el.scrollTop = el.scrollHeight;
   }, [messages, selectedId]);
 
-  // Periodic background refresh (polling fallback every 2.5s) to guarantee instant message delivery
+  // Fast periodic background refresh (1.5s polling fallback) to guarantee instant message delivery
   useEffect(() => {
     const timer = setInterval(() => {
       if (document.visibilityState === "visible") {
@@ -99,8 +99,26 @@ export function InboxPage() {
           void reloadMessages(selectedId).catch(() => undefined);
         }
       }
-    }, 2500);
+    }, 1500);
     return () => clearInterval(timer);
+  }, [selectedId]);
+
+  // Immediate refresh when tab/window becomes active
+  useEffect(() => {
+    const handleActive = () => {
+      if (document.visibilityState === "visible") {
+        void reloadList().catch(() => undefined);
+        if (selectedId) {
+          void reloadMessages(selectedId).catch(() => undefined);
+        }
+      }
+    };
+    window.addEventListener("focus", handleActive);
+    document.addEventListener("visibilitychange", handleActive);
+    return () => {
+      window.removeEventListener("focus", handleActive);
+      document.removeEventListener("visibilitychange", handleActive);
+    };
   }, [selectedId]);
 
   useRealtimeEvents(
@@ -108,15 +126,12 @@ export function InboxPage() {
     (ev) => {
       if (ev.type === "chat.message" || ev.type === "appointment.created") {
         void reloadList().catch(() => undefined);
-        if (
-          selectedId &&
-          (!ev.payload?.conversation_id || String(ev.payload.conversation_id) === selectedId)
-        ) {
+        if (selectedId) {
           void reloadMessages(selectedId).catch(() => undefined);
           setTimeout(() => {
             void reloadMessages(selectedId).catch(() => undefined);
             void reloadList().catch(() => undefined);
-          }, 1200);
+          }, 600);
         }
       }
     },

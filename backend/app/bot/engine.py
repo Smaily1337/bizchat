@@ -593,23 +593,36 @@ class CoreBotEngine:
         self, inbound: InboundMessage, business_id: UUID
     ) -> Customer:
         channel_key = inbound.channel.value
+        user_id = str(inbound.external_user_id or "").strip()
         result = await self.db.execute(
             select(Customer).where(Customer.business_id == business_id)
         )
         for customer in result.scalars().all():
             ext = customer.external_ids or {}
-            if ext.get(channel_key) == inbound.external_user_id:
+            # Match current channel or common aliases
+            matching_keys = [channel_key]
+            if inbound.channel == Channel.messenger:
+                matching_keys.extend(["facebook", "psid"])
+            elif inbound.channel == Channel.instagram:
+                matching_keys.extend(["ig", "instagram_id"])
+
+            if any(str(ext.get(k) or "").strip() == user_id for k in matching_keys if user_id):
                 if inbound.display_name and (
                     not customer.name
-                    or customer.name.strip().lower() in {"klient", "client", "user"}
+                    or customer.name.strip().lower() in {"klient", "client", "user", "gość"}
                 ):
                     customer.name = inbound.display_name
+                # Ensure the primary channel key is saved
+                if user_id and ext.get(channel_key) != user_id:
+                    ext_copy = dict(ext)
+                    ext_copy[channel_key] = user_id
+                    customer.external_ids = ext_copy
                 return customer
 
         customer = Customer(
             business_id=business_id,
-            name=inbound.display_name,
-            external_ids={channel_key: inbound.external_user_id},
+            name=inbound.display_name or "Klient",
+            external_ids={channel_key: user_id} if user_id else {},
         )
         self.db.add(customer)
         await self.db.flush()
@@ -618,6 +631,7 @@ class CoreBotEngine:
     async def _get_or_create_conversation(
         self, inbound: InboundMessage, customer_id: UUID
     ) -> Conversation:
+        # 1. Exact match with thread ID
         result = await self.db.execute(
             select(Conversation).where(
                 Conversation.customer_id == customer_id,
@@ -629,6 +643,22 @@ class CoreBotEngine:
         if conversation:
             return conversation
 
+        # 2. Match active conversation for this customer & channel
+        result = await self.db.execute(
+            select(Conversation)
+            .where(
+                Conversation.customer_id == customer_id,
+                Conversation.channel == inbound.channel,
+            )
+            .order_by(Conversation.updated_at.desc())
+        )
+        existing = result.scalars().first()
+        if existing:
+            if inbound.external_thread_id and not existing.external_thread_id:
+                existing.external_thread_id = inbound.external_thread_id
+            return existing
+
+        # 3. Create fresh thread
         conversation = Conversation(
             customer_id=customer_id,
             channel=inbound.channel,

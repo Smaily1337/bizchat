@@ -44,13 +44,28 @@ export function useRealtimeEvents(
     let retry = 0;
     let timer: number | undefined;
 
+    let pingTimer: number | undefined;
+
     const connect = () => {
       if (closed) return;
+      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        return;
+      }
       ws = new WebSocket(
         `${wsBase}/ws/events?token=${encodeURIComponent(token)}`,
       );
       ws.onopen = () => {
         retry = 0;
+        if (pingTimer) clearInterval(pingTimer);
+        pingTimer = window.setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            try {
+              ws.send("ping");
+            } catch {
+              /* ignore */
+            }
+          }
+        }, 20000);
       };
       ws.onmessage = (msg) => {
         try {
@@ -84,17 +99,29 @@ export function useRealtimeEvents(
         }
       };
       ws.onclose = () => {
+        if (pingTimer) clearInterval(pingTimer);
         if (closed) return;
         retry += 1;
-        timer = window.setTimeout(connect, Math.min(8000, 800 * retry));
+        timer = window.setTimeout(connect, Math.min(6000, 500 * retry));
       };
       ws.onerror = () => ws?.close();
     };
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+          connect();
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     connect();
     return () => {
       closed = true;
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       if (timer) window.clearTimeout(timer);
+      if (pingTimer) window.clearInterval(pingTimer);
       ws?.close();
     };
   }, [enabled, push, showToasts]);
