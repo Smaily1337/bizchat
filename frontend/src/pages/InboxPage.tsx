@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { inboxApi } from "@/api";
 import type { Conversation, InboxMessage } from "@/api/types";
 import { GlassButton, GlassCard } from "@/components/ui";
@@ -14,6 +15,7 @@ const CHANNEL_LABEL: Record<string, string> = {
 };
 
 export function InboxPage() {
+  const [params] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<InboxMessage[]>([]);
@@ -24,7 +26,11 @@ export function InboxPage() {
   async function reloadList() {
     const list = await inboxApi.conversations();
     setConversations(list);
-    setSelectedId((prev) => prev || list[0]?.id || null);
+    const customer = params.get("customer");
+    const fromCustomer = customer
+      ? list.find((c) => c.customer_id === customer)?.id
+      : undefined;
+    setSelectedId((prev) => fromCustomer || prev || list[0]?.id || null);
   }
 
   async function reloadMessages(id: string) {
@@ -82,7 +88,7 @@ export function InboxPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Inbox</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Inbox</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Rozmowy z botem na żywo · odpowiedź ręczna właściciela
         </p>
@@ -107,17 +113,17 @@ export function InboxPage() {
                   type="button"
                   onClick={() => setSelectedId(c.id)}
                   className={[
-                    "w-full border-b border-glass-border px-4 py-3 text-left transition",
+                    "w-full border-b border-[var(--border)] px-4 py-3 text-left transition",
                     selectedId === c.id
-                      ? "bg-canary/10"
-                      : "hover:bg-glass-fill",
+                      ? "bg-[var(--ink)]/10"
+                      : "hover:bg-[var(--surface)]",
                   ].join(" ")}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate font-display text-sm font-semibold">
                       {c.customer_name || "Klient"}
                     </p>
-                    <span className="shrink-0 text-[10px] uppercase tracking-wider text-canary">
+                    <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--text)]">
                       {CHANNEL_LABEL[c.channel] || c.channel}
                     </span>
                   </div>
@@ -133,7 +139,7 @@ export function InboxPage() {
         <GlassCard className="flex min-h-[70vh] flex-col">
           {selected ? (
             <>
-              <div className="mb-4 border-b border-glass-border pb-3">
+              <div className="mb-4 border-b border-[var(--border)] pb-3">
                 <p className="font-display text-lg font-semibold">
                   {selected.customer_name || "Klient"}
                 </p>
@@ -148,10 +154,10 @@ export function InboxPage() {
                     className={[
                       "max-w-[85%] rounded-2xl border px-3 py-2 text-sm",
                       m.role === "customer"
-                        ? "ml-0 border-glass-border bg-glass-fill"
+                        ? "ml-0 border-[var(--border)] bg-[var(--surface)]"
                         : m.role === "owner"
-                          ? "ml-auto border-canary/40 bg-canary/15"
-                          : "ml-auto border-glass-border bg-glass-fillStrong",
+                          ? "ml-auto border-[var(--border)] bg-[var(--surface-hover)]"
+                          : "ml-auto border-[var(--border)] bg-[var(--surface)]Strong",
                     ].join(" ")}
                   >
                     <p className="mb-1 text-[10px] uppercase tracking-wider text-[var(--muted)]">
@@ -161,7 +167,7 @@ export function InboxPage() {
                           ? "Ty"
                           : "Bot"}
                     </p>
-                    <p className="whitespace-pre-wrap text-white">{m.content}</p>
+                    <p className="whitespace-pre-wrap text-[var(--text)]">{m.content}</p>
                     <p className="mt-1 text-[10px] text-[var(--muted)]">
                       {new Date(m.created_at).toLocaleString("pl-PL", {
                         dateStyle: "short",

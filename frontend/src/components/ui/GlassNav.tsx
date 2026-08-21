@@ -1,22 +1,25 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
+import { useTheme } from "@/theme/ThemeProvider";
 import { GlassButton } from "./GlassButton";
 
 const baseNavItems = [
-  { to: "/", label: "Kalendarz", end: true },
-  { to: "/appointments", label: "Wizyty" },
-  { to: "/inbox", label: "Inbox" },
-  { to: "/hours", label: "Godziny" },
-  { to: "/settings", label: "Ustawienia" },
-  { to: "/users", label: "Użytkownicy", roles: ["owner", "admin"] as const },
-  { to: "/platform", label: "Platforma", platformAdmin: true },
-  { to: "/feedback", label: "Feedback" },
-  { to: "/notifications", label: "Powiadomienia" },
-  { to: "/channels", label: "Kanały" },
+  { to: "/", label: "Kalendarz", end: true, group: "Praca" },
+  { to: "/appointments", label: "Wizyty", group: "Praca" },
+  { to: "/inbox", label: "Inbox", group: "Praca" },
+  { to: "/customers", label: "Klienci", group: "Praca" },
+  { to: "/hours", label: "Godziny", group: "Salon" },
+  { to: "/notifications", label: "Powiadomienia", group: "Salon" },
+  { to: "/channels", label: "Kanały", group: "Salon" },
+  { to: "/feedback", label: "Opinie", group: "Salon" },
+  { to: "/settings", label: "Ustawienia", group: "Salon" },
+  { to: "/users", label: "Zespół", group: "Admin", roles: ["owner", "admin"] as const },
+  { to: "/platform", label: "Platforma", group: "Admin", platformAdmin: true },
 ] as const;
 
 export function GlassNav() {
   const { business, owner, logout, resendVerification } = useAuth();
+  const { theme, toggle } = useTheme();
   const navItems = baseNavItems.filter((item) => {
     if ("platformAdmin" in item && item.platformAdmin) {
       return Boolean(owner?.is_platform_admin);
@@ -25,29 +28,113 @@ export function GlassNav() {
     return owner?.role && (item.roles as readonly string[]).includes(owner.role);
   });
 
+  const groups = ["Praca", "Salon", "Admin"] as const;
+  const grouped = groups
+    .map((group) => ({
+      group,
+      items: navItems.filter((item) => item.group === group),
+    }))
+    .filter((g) => g.items.length > 0);
+
   return (
-    <header className="sticky top-0 z-40 animate-fade-in border-b border-glass-border bg-[rgba(18,20,23,0.55)] backdrop-blur-glass">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <NavLink to="/" className="group flex items-center gap-3">
-          <div className="animate-glow-pulse flex h-11 w-11 items-center justify-center rounded-xl border border-glass-border bg-glass-fill transition group-hover:border-canary/40">
-            <span className="font-display text-base font-extrabold text-canary">
-              B
+    <>
+      <aside className="sticky top-0 z-40 hidden h-screen w-[232px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-elevated)] lg:flex">
+        <NavLink to="/" className="flex items-center gap-2.5 px-4 py-5">
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--ink)] text-[11px] font-semibold text-[var(--on-ink)]">
+            A
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold tracking-tight">Automovia</span>
+            <span className="block truncate text-[11px] text-[var(--muted)]">
+              {business?.name || "Panel"}
             </span>
-          </div>
-          <div>
-            <p className="font-display text-2xl font-extrabold tracking-tight text-white transition group-hover:text-canary">
-              BizChat
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">
-              {business?.name || "Admin"}
-            </p>
-          </div>
+          </span>
         </NavLink>
 
-        <nav
-          className="hidden items-center gap-1 lg:flex"
-          aria-label="Główna nawigacja"
-        >
+        <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label="Główna nawigacja">
+          {grouped.map(({ group, items }) => (
+            <div key={group} className="mb-4">
+              <p className="px-2 pb-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--muted)]">
+                {group}
+              </p>
+              <div className="space-y-0.5">
+                {items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={"end" in item ? item.end : false}
+                    className={({ isActive }) =>
+                      [
+                        "block rounded-md px-2 py-1.5 text-[13px] transition",
+                        isActive
+                          ? "bg-[var(--surface-hover)] font-medium text-[var(--text-bright)]"
+                          : "text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--text)]",
+                      ].join(" ")
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <div className="border-t border-[var(--border)] p-3">
+          {owner && !owner.email_verified ? (
+            <p className="mb-2 px-2 text-[11px] text-[var(--muted)]">
+              Potwierdź e-mail.{" "}
+              <button type="button" className="underline" onClick={() => void resendVerification()}>
+                Wyślij
+              </button>
+            </p>
+          ) : null}
+          <p className="truncate px-2 text-[11px] text-[var(--muted)]">
+            {owner?.email}
+          </p>
+          <div className="mt-2 flex gap-1">
+            <GlassButton
+              variant="ghost"
+              className="!flex-1 !px-2 !py-1.5 !text-xs"
+              onClick={toggle}
+            >
+              {theme === "dark" ? "Jasny" : "Ciemny"}
+            </GlassButton>
+            <GlassButton
+              variant="ghost"
+              className="!flex-1 !px-2 !py-1.5 !text-xs"
+              onClick={logout}
+            >
+              Wyloguj
+            </GlassButton>
+          </div>
+          <p className="mt-2 px-2 text-[10px] text-[var(--muted)]">⌘K paleta poleceń</p>
+        </div>
+      </aside>
+
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg-elevated)] lg:hidden">
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <NavLink to="/" className="text-sm font-semibold">
+            Automovia
+          </NavLink>
+          <div className="flex items-center gap-2">
+            <GlassButton variant="ghost" className="!px-2 !py-1 !text-xs" onClick={toggle}>
+              {theme === "dark" ? "Jasny" : "Ciemny"}
+            </GlassButton>
+            <GlassButton variant="ghost" className="!px-2 !py-1 !text-xs" onClick={logout}>
+              Wyloguj
+            </GlassButton>
+          </div>
+        </div>
+        {owner && !owner.email_verified && (
+          <div className="border-t border-[var(--border)] px-4 py-2 text-center text-xs text-[var(--muted)]">
+            Potwierdź e-mail.{" "}
+            <button type="button" className="underline" onClick={() => void resendVerification()}>
+              Wyślij ponownie
+            </button>
+          </div>
+        )}
+        <nav className="flex gap-1 overflow-x-auto px-3 pb-2" aria-label="Nawigacja mobilna">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -55,10 +142,10 @@ export function GlassNav() {
               end={"end" in item ? item.end : false}
               className={({ isActive }) =>
                 [
-                  "rounded-xl px-3 py-2 text-sm font-medium transition duration-200",
+                  "shrink-0 rounded-md px-2.5 py-1 text-xs",
                   isActive
-                    ? "bg-glass-fillStrong text-canary"
-                    : "text-[var(--muted)] hover:bg-glass-fill hover:text-white",
+                    ? "bg-[var(--surface-hover)] font-medium"
+                    : "text-[var(--muted)]",
                 ].join(" ")
               }
             >
@@ -66,57 +153,7 @@ export function GlassNav() {
             </NavLink>
           ))}
         </nav>
-
-        <div className="flex items-center gap-3">
-          <span className="hidden max-w-[160px] truncate text-xs text-[var(--muted)] sm:inline">
-            {owner?.email}
-            {owner?.is_platform_admin
-              ? " · platforma"
-              : owner?.role
-                ? ` · ${owner.role}`
-                : ""}
-          </span>
-          <GlassButton variant="ghost" className="!px-3 !py-1.5" onClick={logout}>
-            Wyloguj
-          </GlassButton>
-        </div>
-      </div>
-
-      {owner && !owner.email_verified && (
-        <div className="border-t border-glass-border bg-[rgba(244,224,77,0.08)] px-4 py-2 text-center text-xs text-canary sm:px-6">
-          Potwierdź e-mail — link jest w logach API (console mailer) albo SMTP.{" "}
-          <button
-            type="button"
-            className="underline underline-offset-2"
-            onClick={() => void resendVerification()}
-          >
-            Wyślij ponownie
-          </button>
-        </div>
-      )}
-
-      <nav
-        className="flex gap-1 overflow-x-auto border-t border-glass-border px-4 py-2 lg:hidden"
-        aria-label="Nawigacja mobilna"
-      >
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={"end" in item ? item.end : false}
-            className={({ isActive }) =>
-              [
-                "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium",
-                isActive
-                  ? "bg-glass-fillStrong text-canary"
-                  : "text-[var(--muted)]",
-              ].join(" ")
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
-    </header>
+      </header>
+    </>
   );
 }

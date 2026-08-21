@@ -76,7 +76,7 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Ustawienia</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Ustawienia</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Salon, usługi i baza FAQ bota
         </p>
@@ -113,7 +113,7 @@ export function SettingsPage() {
           {services.map((s) => (
             <li
               key={s.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
             >
               <span>
                 {s.name} · {s.duration_min} min · {s.price} zł
@@ -165,7 +165,7 @@ export function SettingsPage() {
           {knowledge.map((k) => (
             <li
               key={k.id}
-              className="rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
             >
               <div className="flex justify-between gap-2">
                 <p className="font-medium">{k.question}</p>

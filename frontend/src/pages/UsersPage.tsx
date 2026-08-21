@@ -37,7 +37,7 @@ export function UsersPage() {
   if (!canManage) {
     return (
       <div className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Użytkownicy</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Użytkownicy</h1>
         <p className="mt-3 text-sm text-[var(--muted)]">
           Brak uprawnień — tylko właściciel i admin mogą zarządzać kontami.
         </p>
@@ -114,7 +114,7 @@ export function UsersPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Użytkownicy</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Użytkownicy</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Role: właściciel, admin, pracownik — z kontrolą uprawnień na backendzie
         </p>
@@ -155,7 +155,7 @@ export function UsersPage() {
           <label className="space-y-1 text-sm">
             <span className="text-[var(--muted)]">Rola</span>
             <select
-              className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white outline-none focus:border-canary/50"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--focus)]"
               value={form.role}
               onChange={(e) =>
                 setForm({ ...form, role: e.target.value as UserRole })
@@ -191,7 +191,7 @@ export function UsersPage() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <select
-                  className="rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-xs text-white"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text)]"
                   value={user.role}
                   onChange={(e) =>
                     void changeRole(user, e.target.value as UserRole)

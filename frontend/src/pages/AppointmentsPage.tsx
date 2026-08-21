@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   appointmentsApi,
   customersApi,
@@ -23,11 +24,13 @@ const FALLBACK_REMINDER =
 
 export function AppointmentsPage() {
   const { push } = useToast();
+  const [params, setParams] = useSearchParams();
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
   const [items, setItems] = useState<Appointment[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
   const [clientMode, setClientMode] = useState<"existing" | "new">("existing");
@@ -59,6 +62,29 @@ export function AppointmentsPage() {
   useEffect(() => {
     void reload().catch((e: Error) => setError(e.message));
   }, []);
+
+  useEffect(() => {
+    if (!items.length && !services.length) return;
+    const editId = params.get("edit");
+    const isNew = params.get("new") === "1";
+    const start = params.get("start");
+    const customer = params.get("customer");
+    if (editId) {
+      const found = items.find((a) => a.id === editId);
+      if (found) openEdit(found);
+      setParams({}, { replace: true });
+    } else if (isNew) {
+      openCreate();
+      setForm((f) => ({
+        ...f,
+        start_at: start || f.start_at,
+        customer_id: customer || f.customer_id,
+      }));
+      if (customer) setClientMode("existing");
+      setParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, services, customers]);
 
   function openCreate() {
     setEditing(null);
@@ -189,14 +215,22 @@ export function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up flex flex-wrap items-end justify-between gap-4">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold">Wizyty</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Wizyty</h1>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            Lista, dodawanie, edycja i anulowanie wizyt
+            Lista, dodawanie, edycja i anulowanie
           </p>
         </div>
-        <GlassButton onClick={openCreate}>+ Nowa wizyta</GlassButton>
+        <div className="flex flex-wrap items-center gap-2">
+          <GlassInput
+            placeholder="Szukaj klienta lub usługi"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-56"
+          />
+          <GlassButton onClick={openCreate}>Nowa wizyta</GlassButton>
+        </div>
       </header>
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
@@ -373,12 +407,20 @@ export function AppointmentsPage() {
       )}
 
       <div className="space-y-3">
-        {items.length === 0 && (
+        {items.filter((a) => {
+          const blob = `${a.customer_name || ""} ${a.service_name || ""} ${a.status}`.toLowerCase();
+          return blob.includes(query.trim().toLowerCase());
+        }).length === 0 && (
           <GlassCard>
             <p className="text-sm text-[var(--muted)]">Brak wizyt.</p>
           </GlassCard>
         )}
-        {items.map((a) => (
+        {items
+          .filter((a) => {
+            const blob = `${a.customer_name || ""} ${a.service_name || ""} ${a.status}`.toLowerCase();
+            return blob.includes(query.trim().toLowerCase());
+          })
+          .map((a) => (
           <GlassCard
             key={a.id}
             className="animate-fade-up flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
@@ -395,7 +437,7 @@ export function AppointmentsPage() {
                   minute: "2-digit",
                 })}
               </p>
-              <p className="mt-1 text-xs text-canary/90">
+              <p className="mt-1 text-xs text-[var(--muted)]">
                 {STATUS_LABEL[a.status] || a.status} · {a.channel}
               </p>
             </div>

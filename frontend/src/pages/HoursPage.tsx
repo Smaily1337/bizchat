@@ -114,7 +114,7 @@ export function HoursPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Godziny otwarcia</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Godziny otwarcia</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Harmonogram tygodnia oraz urlopy / przerwy
         </p>
@@ -128,7 +128,7 @@ export function HoursPage() {
           {days.map((d, idx) => (
             <div
               key={d.weekday}
-              className="grid items-center gap-2 rounded-xl border border-glass-border bg-glass-fill px-3 py-3 sm:grid-cols-[1.2fr_1fr_1fr_auto]"
+              className="grid items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-3 sm:grid-cols-[1.2fr_1fr_1fr_auto]"
             >
               <p className="font-medium">{DAY_NAMES[d.weekday]}</p>
               <GlassInput
@@ -219,7 +219,7 @@ export function HoursPage() {
           {timeOff.map((t) => (
             <li
               key={t.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
             >
               <span>
                 {new Date(t.start_at).toLocaleString("pl-PL")} –{" "}

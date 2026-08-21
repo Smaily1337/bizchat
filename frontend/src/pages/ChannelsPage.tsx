@@ -7,7 +7,7 @@ export function ChannelsPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Kanały</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Kanały</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Konfiguracja webhooków — tokeny w zmiennych środowiskowych
         </p>
@@ -31,7 +31,7 @@ export function ChannelsPage() {
           <GlassCard key={ch.name} className="animate-fade-up">
             <p className="font-display text-lg font-semibold">{ch.name}</p>
             <p className="mt-2 text-sm text-[var(--muted)]">{ch.hint}</p>
-            <p className="mt-4 text-xs text-canary">
+            <p className="mt-4 font-mono text-xs text-[var(--muted)]">
               business_id: {business?.id || "—"}
             </p>
           </GlassCard>
@@ -40,13 +40,13 @@ export function ChannelsPage() {
 
       <GlassCard>
         <p className="font-display text-base font-semibold">Snippet widgetu</p>
-        <pre className="mt-3 overflow-x-auto rounded-xl border border-glass-border bg-black/30 p-4 text-xs text-[var(--muted)]">
+        <pre className="mt-3 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/30 p-4 text-xs text-[var(--muted)]">
 {`<script src="https://YOUR_CDN/bizchat-widget.js"
   data-api="http://localhost:8000"
   data-business-id="${business?.id || "BUSINESS_UUID"}"></script>`}
         </pre>
         <p className="mt-3 text-sm text-[var(--muted)]">
-          Lokalnie otwórz <code className="text-canary">widget/index.html</code> i
+          Lokalnie otwórz <code className="text-[var(--text)]">widget/index.html</code> i
           wklej business_id z seeda / panelu.
         </p>
       </GlassCard>

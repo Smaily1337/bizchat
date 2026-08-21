@@ -148,6 +148,14 @@ export const customersApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  update: (
+    id: string,
+    body: Partial<{ name: string | null; phone: string | null; email: string | null }>,
+  ) =>
+    apiFetch<Customer>(`/api/customers/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
 };
 
 export const hoursApi = {

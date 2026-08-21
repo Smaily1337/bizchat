@@ -77,7 +77,7 @@ export function PlatformPage() {
   if (!canAccess) {
     return (
       <div className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Platforma</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Platforma</h1>
         <p className="mt-3 text-sm text-[var(--muted)]">
           Brak uprawnień — ten panel jest tylko dla administratora platformy
           BizChat.
@@ -158,7 +158,7 @@ export function PlatformPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold">Platforma</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Platforma</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Superadmin BizChat — konta właścicieli, firmy i ruch na landingu
         </p>
@@ -177,8 +177,8 @@ export function PlatformPage() {
             className={[
               "rounded-xl px-4 py-2 text-sm font-medium transition",
               tab === t.id
-                ? "bg-glass-fillStrong text-canary"
-                : "bg-glass-fill text-[var(--muted)] hover:text-white",
+                ? "bg-[var(--surface)]Strong text-[var(--text)]"
+                : "bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--text)]",
             ].join(" ")}
           >
             {t.label}
@@ -232,7 +232,7 @@ export function PlatformPage() {
               <label className="space-y-1 text-sm">
                 <span className="text-[var(--muted)]">Rola w firmie</span>
                 <select
-                  className="w-full rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm text-white outline-none focus:border-canary/50"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--focus)]"
                   value={form.role}
                   onChange={(e) =>
                     setForm({ ...form, role: e.target.value as UserRole })
@@ -259,7 +259,7 @@ export function PlatformPage() {
                     <p className="font-display text-lg font-semibold">
                       {account.name || account.email}
                       {account.is_platform_admin ? (
-                        <span className="ml-2 text-xs font-medium text-canary">
+                        <span className="ml-2 text-xs font-medium text-[var(--text)]">
                           platform admin
                         </span>
                       ) : null}
@@ -346,12 +346,12 @@ export function PlatformPage() {
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-xl border border-glass-border bg-glass-fill px-4 py-3"
+                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
               >
                 <p className="text-xs uppercase tracking-wider text-[var(--muted)]">
                   {item.label}
                 </p>
-                <p className="mt-1 font-display text-3xl font-bold text-canary">
+                <p className="mt-1 text-xl font-semibold tracking-tight text-[var(--text)]">
                   {item.value}
                 </p>
               </div>
@@ -373,7 +373,7 @@ export function PlatformPage() {
                     title={`${d.day}: ${d.count}`}
                   >
                     <div
-                      className="w-full max-w-[18px] rounded-t bg-canary/80 transition group-hover:bg-canary"
+                      className="w-full max-w-[18px] rounded-t bg-[var(--text)] transition group-hover:bg-[var(--ink)]"
                       style={{
                         height: `${Math.max(4, (d.count / maxDay) * 100)}%`,
                       }}
@@ -391,12 +391,12 @@ export function PlatformPage() {
                 {stats.top_paths.map((p) => (
                   <li
                     key={p.path}
-                    className="flex justify-between gap-3 border-b border-glass-border/60 pb-2"
+                    className="flex justify-between gap-3 border-b border-[var(--border)]/60 pb-2"
                   >
                     <span className="truncate text-[var(--muted)]">
                       {p.path}
                     </span>
-                    <span className="text-canary">{p.count}</span>
+                    <span className="text-[var(--text)]">{p.count}</span>
                   </li>
                 ))}
                 {stats.top_paths.length === 0 && (
@@ -413,9 +413,9 @@ export function PlatformPage() {
                 {stats.recent.map((r) => (
                   <li
                     key={r.id}
-                    className="border-b border-glass-border/60 pb-2"
+                    className="border-b border-[var(--border)]/60 pb-2"
                   >
-                    <p className="text-white">
+                    <p className="text-[var(--text)]">
                       {r.path}{" "}
                       <span className="text-xs text-[var(--muted)]">
                         {formatWhen(r.created_at)}

@@ -54,7 +54,7 @@ export function FeedbackPage() {
     <div className="space-y-6">
       <header className="animate-fade-up flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold">Feedback i kolejka</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Feedback i kolejka</h1>
           <p className="mt-1 text-sm text-[var(--muted)]">
             Opinie po wizycie (alerty ≤2) oraz lista oczekujących FIFO
           </p>
@@ -120,13 +120,13 @@ export function FeedbackPage() {
           {items.map((f) => (
             <div
               key={f.id}
-              className="rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
             >
               <p className="font-medium">
                 {f.score}/5 · {f.customer_name || "Klient"} ·{" "}
                 <span
                   className={
-                    f.routed_to === "alert" ? "text-[var(--danger)]" : "text-canary"
+                    f.routed_to === "alert" ? "text-[var(--danger)]" : "text-[var(--text)]"
                   }
                 >
                   {f.routed_to}
@@ -147,7 +147,7 @@ export function FeedbackPage() {
           {waitlist.map((w) => (
             <div
               key={w.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border bg-glass-fill px-3 py-2 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
             >
               <div>
                 <p className="font-medium">

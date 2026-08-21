@@ -58,15 +58,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             type="button"
             onClick={() => dismiss(t.id)}
             className={[
-              "pointer-events-auto animate-fade-up rounded-2xl border px-4 py-3 text-left shadow-glass backdrop-blur-glass transition hover:brightness-110",
+              "pointer-events-auto rounded-lg border px-4 py-3 text-left transition",
               t.tone === "danger"
-                ? "border-red-400/40 bg-[rgba(80,20,20,0.75)]"
-                : t.tone === "canary"
-                  ? "border-canary/40 bg-[rgba(18,20,23,0.85)]"
-                  : "border-glass-border bg-glass-fillStrong",
+                ? "border-[var(--danger)] bg-[var(--surface)]"
+                : "border-[var(--border)] bg-[var(--surface)]",
             ].join(" ")}
           >
-            <p className="font-display text-sm font-semibold text-white">
+            <p className="text-sm font-medium text-[var(--text)]">
               {t.title}
             </p>
             {t.message && (

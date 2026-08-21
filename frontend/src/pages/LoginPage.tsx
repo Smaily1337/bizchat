@@ -121,11 +121,9 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <GlassCard className="animate-fade-up w-full max-w-md">
-        <p className="font-display text-4xl font-extrabold tracking-tight">
-          BizChat
-        </p>
-        <h1 className="mt-2 font-display text-xl font-semibold text-canary">
-          {mode === "login" ? "Panel admina" : "Rejestracja"}
+        <p className="text-2xl font-semibold tracking-tight">Automovia</p>
+        <h1 className="mt-2 text-lg font-medium text-[var(--muted)]">
+          {mode === "login" ? "Panel salonu" : "Rejestracja"}
         </h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           {mode === "login"
@@ -220,13 +218,13 @@ export function LoginPage() {
         {googleEnabled ? (
           <div className="mt-4 space-y-3">
             <div className="flex items-center gap-3 text-xs text-[var(--muted)]">
-              <span className="h-px flex-1 bg-glass-border" />
+              <span className="h-px flex-1 bg-[var(--border)]" />
               lub
-              <span className="h-px flex-1 bg-glass-border" />
+              <span className="h-px flex-1 bg-[var(--border)]" />
             </div>
             <a
               href={`${API_BASE}/api/auth/google/start`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-canary px-4 py-2.5 text-sm font-semibold tracking-wide text-graphite shadow-canary transition duration-200 ease-out hover:-translate-y-px hover:brightness-105 active:translate-y-0 active:brightness-95"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--ink)] px-4 py-2.5 text-sm font-medium text-[var(--on-ink)] hover:opacity-90"
             >
               <GoogleMark />
               Zaloguj przez Google

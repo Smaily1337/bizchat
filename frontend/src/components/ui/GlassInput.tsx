@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 const fieldClass =
-  "w-full rounded-xl border border-glass-border bg-glass-fill px-3.5 py-2.5 text-sm text-white outline-none transition placeholder:text-[var(--muted)] focus:border-canary/50 focus:bg-glass-fillStrong";
+  "w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--focus)]";
 
 export function GlassInput(props: InputHTMLAttributes<HTMLInputElement>) {
   const { className = "", ...rest } = props;

@@ -9,11 +9,11 @@ type GlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<GlassButtonVariant, string> = {
   primary:
-    "bg-canary text-graphite shadow-canary hover:brightness-105 active:brightness-95",
+    "bg-[var(--ink)] text-[var(--on-ink)] hover:opacity-90 active:opacity-80",
   ghost:
-    "border border-glass-border bg-transparent text-white hover:bg-glass-fill active:bg-glass-fillStrong",
+    "border border-[var(--border)] bg-transparent text-[var(--text)] hover:bg-[var(--surface-hover)]",
   subtle:
-    "border border-glass-border bg-glass-fill text-white backdrop-blur-glass hover:bg-glass-fillStrong",
+    "bg-[var(--surface-hover)] text-[var(--text)] hover:bg-[var(--border)]",
 };
 
 export function GlassButton({
@@ -26,7 +26,7 @@ export function GlassButton({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold tracking-wide transition duration-200 ease-out will-change-transform hover:-translate-y-px active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${variantClasses[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${variantClasses[variant]} ${className}`}
       {...props}
     >
       {children}
