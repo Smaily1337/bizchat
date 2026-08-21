@@ -501,7 +501,7 @@ export function StaffPage() {
             return (
               <div
                 key={s.id}
-                className="glass-panel rounded-2xl p-5 flex flex-col justify-between border border-[var(--glass-border)] hover:border-white/20 transition-all hover:scale-[1.01] shadow-xl group"
+                className="glass-panel rounded-2xl p-5 flex flex-col justify-between border border-[var(--glass-border)] hover:border-[var(--primary)]/40 transition-all hover:scale-[1.01] shadow-md group"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-4">
@@ -514,34 +514,36 @@ export function StaffPage() {
                         <img
                           src={s.avatar_url}
                           alt={s.name}
-                          className="w-13 h-13 rounded-2xl object-cover border-2 border-white/20 shadow-md shrink-0 group-hover/profile:border-amber-400/60 transition-colors"
+                          className="w-12 h-12 min-w-[48px] max-w-[48px] min-h-[48px] max-h-[48px] rounded-2xl object-cover border border-[var(--glass-border)] shadow-sm shrink-0 group-hover/profile:border-[var(--primary)] transition-colors"
                         />
                       ) : (
                         <div
                           style={{ backgroundColor: s.color || "#3e63dd" }}
-                          className="w-13 h-13 rounded-2xl flex items-center justify-center text-base font-bold text-white shadow-md shrink-0 border border-white/20 group-hover/profile:border-amber-400/60 transition-colors"
+                          className="w-12 h-12 min-w-[48px] max-w-[48px] min-h-[48px] max-h-[48px] rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-sm shrink-0 border border-white/20 group-hover/profile:border-[var(--primary)] transition-colors"
                         >
                           {initials(s.name)}
                         </div>
                       )}
 
-                      <div>
+                      <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <h3 className="text-base font-bold text-[var(--text-bright)] group-hover/profile:text-amber-300 transition-colors">{s.name}</h3>
+                          <h3 className="text-sm font-bold text-[var(--text-bright)] group-hover/profile:text-[var(--primary)] transition-colors truncate">
+                            {s.name}
+                          </h3>
                           {leadItem && leadItem.rank === 1 && leadItem.total_revenue > 0 && (
-                            <span className="material-symbols-outlined text-amber-400 text-sm" title="Najlepszy wynik w zespole">
+                            <span className="material-symbols-outlined text-amber-500 text-sm shrink-0" title="Najlepszy wynik w zespole">
                               emoji_events
                             </span>
                           )}
                         </div>
                         <span
                           className={`inline-flex items-center gap-1 text-[11px] font-semibold mt-0.5 ${
-                            s.is_active ? "text-green-400" : "text-[var(--muted)]"
+                            s.is_active ? "text-emerald-600 dark:text-emerald-400" : "text-[var(--muted)]"
                           }`}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              s.is_active ? "bg-green-400" : "bg-gray-500"
+                              s.is_active ? "bg-emerald-500" : "bg-gray-400"
                             }`}
                           />
                           {s.is_active ? "Aktywny w grafiku" : "Nieaktywny"}
@@ -549,7 +551,7 @@ export function StaffPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => {
@@ -559,7 +561,7 @@ export function StaffPage() {
                           setEditColor(s.color || STAFF_COLORS[0]);
                           setShowAdd(false);
                         }}
-                        className="p-1.5 text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-[var(--muted)] hover:text-[var(--text-bright)] hover:bg-[var(--surface-container)] rounded-lg transition-colors cursor-pointer"
                         title="Edytuj pracownika i zdjęcie"
                       >
                         <span className="material-symbols-outlined text-[18px]">edit</span>
@@ -581,7 +583,7 @@ export function StaffPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-black/20 border border-white/5 text-xs mb-3">
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-[var(--surface-container)] border border-[var(--glass-border)] text-xs mb-3">
                     <div>
                       <p className="text-[10px] text-[var(--muted)]">Obrót (30d)</p>
                       <p className="font-bold text-[var(--text-bright)]">
@@ -597,10 +599,10 @@ export function StaffPage() {
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-white/5">
+                <div className="pt-2 border-t border-[var(--glass-border)]">
                   <GlassButton
                     variant="primary"
-                    className="w-full justify-center text-xs !py-2 !bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
+                    className="w-full justify-center text-xs !py-2"
                     onClick={() => setStatsModalStaff(s)}
                   >
                     <span className="material-symbols-outlined text-[16px]">bar_chart</span>

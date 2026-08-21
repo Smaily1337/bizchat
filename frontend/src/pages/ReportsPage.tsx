@@ -168,7 +168,7 @@ export function ReportsPage() {
       {/* EXECUTIVE AI BOT REPORTS SECTION */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-amber-400 text-[22px]">smart_toy</span>
+          <span className="material-symbols-outlined text-[var(--primary)] text-[22px]">smart_toy</span>
           <h2 className="font-display text-lg font-bold text-[var(--text-bright)]">
             Centrum Raportów Automatycznych Bota AI
           </h2>
@@ -176,23 +176,23 @@ export function ReportsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* CARD 1: DAILY MORNING BRIEFING */}
-          <GlassCard className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-[var(--surface-solid)] to-transparent shadow-xl flex flex-col justify-between">
+          <GlassCard className="border border-[var(--glass-border)] shadow-md flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[22px]">wb_sunny</span>
+                  <div className="w-9 h-9 rounded-xl bg-[var(--surface-container)] text-[var(--text-bright)] flex items-center justify-center border border-[var(--glass-border)]">
+                    <span className="material-symbols-outlined text-[20px]">wb_sunny</span>
                   </div>
                   <div>
                     <h3 className="font-display text-base font-bold text-[var(--text-bright)]">
-                      ☀️ Poranny Briefing Dnia
+                      Poranny Briefing Dnia
                     </h3>
                     <p className="text-[11px] text-[var(--muted)]">
                       Codziennie o 08:00 rano bot wysyła podsumowanie dnia
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                   Bot Aktywny
                 </span>
               </div>
@@ -202,31 +202,31 @@ export function ReportsPage() {
               </p>
 
               {morningResultMsg && (
-                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-xs flex items-center gap-2">
                   <span className="material-symbols-outlined text-base">check_circle</span>
                   <span>{morningResultMsg}</span>
                 </div>
               )}
 
               {morningPreview && (
-                <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-2 animate-fade-in">
-                  <div className="flex items-center justify-between text-xs border-b border-white/10 pb-2">
-                    <span className="font-semibold text-amber-300 flex items-center gap-1">
+                <div className="p-4 rounded-xl bg-[var(--surface-container)] border border-[var(--glass-border)] space-y-2 animate-fade-in">
+                  <div className="flex items-center justify-between text-xs border-b border-[var(--glass-border)] pb-2">
+                    <span className="font-semibold text-[var(--text-bright)] flex items-center gap-1">
                       <span className="material-symbols-outlined text-sm">visibility</span>
-                      Podgląd dzisiejszej wiadomości bota:
+                      Podgląd wiadomości bota:
                     </span>
                     <span className="text-[10px] text-[var(--muted)] font-mono">
                       {morningPreview.appointments_count} wizyt · {morningPreview.total_revenue.toFixed(2)} zł
                     </span>
                   </div>
-                  <pre className="text-[11px] text-gray-200 font-sans whitespace-pre-wrap leading-relaxed">
+                  <pre className="text-[11px] text-[var(--text-bright)] font-sans whitespace-pre-wrap leading-relaxed">
                     {morningPreview.summary_text}
                   </pre>
                 </div>
               )}
             </div>
 
-            <div className="pt-4 mt-4 border-t border-white/10 flex flex-wrap items-center gap-2.5">
+            <div className="pt-4 mt-4 border-t border-[var(--glass-border)] flex flex-wrap items-center gap-2.5">
               <GlassButton
                 variant="ghost"
                 className="text-xs !py-2"
@@ -238,7 +238,7 @@ export function ReportsPage() {
               </GlassButton>
               <GlassButton
                 variant="primary"
-                className="text-xs !py-2 !border-amber-500/50 !bg-gradient-to-r from-amber-500 to-amber-600 !text-white"
+                className="text-xs !py-2"
                 onClick={handleSendMorningTest}
                 disabled={sendingMorning}
               >
@@ -249,23 +249,23 @@ export function ReportsPage() {
           </GlassCard>
 
           {/* CARD 2: EXECUTIVE GRAPHIC PDF SUMMARY */}
-          <GlassCard className="border border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 via-[var(--surface-solid)] to-transparent shadow-xl flex flex-col justify-between">
+          <GlassCard className="border border-[var(--glass-border)] shadow-md flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[22px]">picture_as_pdf</span>
+                  <div className="w-9 h-9 rounded-xl bg-[var(--surface-container)] text-[var(--text-bright)] flex items-center justify-center border border-[var(--glass-border)]">
+                    <span className="material-symbols-outlined text-[20px]">picture_as_pdf</span>
                   </div>
                   <div>
                     <h3 className="font-display text-base font-bold text-[var(--text-bright)]">
-                      📊 Graficzny Raport PDF
+                      Graficzny Raport PDF
                     </h3>
                     <p className="text-[11px] text-[var(--muted)]">
                       Elegancki raport biznesowy z wykresami i zestawieniem KPI
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
                   PDF Generator
                 </span>
               </div>
@@ -275,7 +275,7 @@ export function ReportsPage() {
               </p>
 
               {pdfResultMsg && (
-                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-xs flex items-center gap-2">
                   <span className="material-symbols-outlined text-base">check_circle</span>
                   <span>{pdfResultMsg}</span>
                 </div>
@@ -288,8 +288,8 @@ export function ReportsPage() {
                   onClick={() => setPdfPeriod("week")}
                   className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     pdfPeriod === "week"
-                      ? "border-indigo-500/80 bg-indigo-500/20 text-white shadow"
-                      : "border-white/10 bg-black/20 text-[var(--muted)] hover:border-white/20"
+                      ? "border-[var(--primary)] bg-[var(--primary-container)] text-white shadow-sm"
+                      : "border-[var(--glass-border)] bg-[var(--surface-container)] text-[var(--muted)] hover:text-[var(--text-bright)]"
                   }`}
                 >
                   <span className="material-symbols-outlined text-base">date_range</span>
@@ -300,8 +300,8 @@ export function ReportsPage() {
                   onClick={() => setPdfPeriod("month")}
                   className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     pdfPeriod === "month"
-                      ? "border-indigo-500/80 bg-indigo-500/20 text-white shadow"
-                      : "border-white/10 bg-black/20 text-[var(--muted)] hover:border-white/20"
+                      ? "border-[var(--primary)] bg-[var(--primary-container)] text-white shadow-sm"
+                      : "border-[var(--glass-border)] bg-[var(--surface-container)] text-[var(--muted)] hover:text-[var(--text-bright)]"
                   }`}
                 >
                   <span className="material-symbols-outlined text-base">calendar_month</span>
@@ -323,7 +323,7 @@ export function ReportsPage() {
               </div>
             </div>
 
-            <div className="pt-4 mt-4 border-t border-white/10 flex flex-wrap items-center gap-2.5">
+            <div className="pt-4 mt-4 border-t border-[var(--glass-border)] flex flex-wrap items-center gap-2.5">
               <a
                 href={reportsApi.downloadPdfUrl(pdfPeriod)}
                 target="_blank"
@@ -337,7 +337,7 @@ export function ReportsPage() {
               </a>
               <GlassButton
                 variant="primary"
-                className="text-xs !py-2 !border-indigo-500/50 !bg-gradient-to-r from-indigo-500 to-indigo-600 !text-white"
+                className="text-xs !py-2"
                 onClick={handleSendPdfTest}
                 disabled={sendingPdf}
               >
@@ -355,7 +355,7 @@ export function ReportsPage() {
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[var(--primary)] text-[22px]">badge</span>
             <h2 className="font-display text-lg font-bold text-[var(--text-bright)]">
-              👥 Wyniki & Ranking Pracowników ({days} dni)
+              Wyniki & Ranking Pracowników ({days} dni)
             </h2>
           </div>
           <p className="text-xs text-[var(--muted)] hidden sm:block">
@@ -373,7 +373,7 @@ export function ReportsPage() {
               <div
                 key={st.staff_id}
                 onClick={() => setSelectedStaffStatsId(st.staff_id)}
-                className="glass-panel rounded-2xl p-4 border border-[var(--glass-border)] hover:border-amber-400/50 transition-all hover:scale-[1.01] cursor-pointer shadow-lg space-y-3 group"
+                className="glass-panel rounded-2xl p-4 border border-[var(--glass-border)] hover:border-[var(--primary)]/50 transition-all hover:scale-[1.01] cursor-pointer shadow-sm space-y-3 group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -381,23 +381,23 @@ export function ReportsPage() {
                       <img
                         src={st.avatar_url}
                         alt={st.name}
-                        className="w-11 h-11 rounded-xl object-cover border border-white/20 shadow shrink-0"
+                        className="w-11 h-11 min-w-[44px] max-w-[44px] min-h-[44px] max-h-[44px] rounded-xl object-cover border border-[var(--glass-border)] shadow-sm shrink-0"
                       />
                     ) : (
                       <div
                         style={{ backgroundColor: st.color || "#3e63dd" }}
-                        className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow shrink-0"
+                        className="w-11 h-11 min-w-[44px] max-w-[44px] min-h-[44px] max-h-[44px] rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-sm shrink-0 border border-white/20"
                       >
                         {initials(st.name)}
                       </div>
                     )}
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <h4 className="font-bold text-sm text-[var(--text-bright)] group-hover:text-amber-300 transition-colors">
+                        <h4 className="font-bold text-sm text-[var(--text-bright)] group-hover:text-[var(--primary)] transition-colors">
                           {st.name}
                         </h4>
                         {st.rank === 1 && st.total_revenue > 0 && (
-                          <span className="material-symbols-outlined text-amber-400 text-sm">emoji_events</span>
+                          <span className="material-symbols-outlined text-amber-500 text-sm">emoji_events</span>
                         )}
                       </div>
                       <p className="text-[10px] text-[var(--muted)]">
@@ -406,21 +406,21 @@ export function ReportsPage() {
                     </div>
                   </div>
 
-                  <span className="text-xs font-mono font-bold text-amber-300 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <span className="text-xs font-mono font-bold text-[var(--text-bright)] px-2 py-1 rounded-lg bg-[var(--surface-container)] border border-[var(--glass-border)]">
                     #{st.rank}
                   </span>
                 </div>
 
-                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs">
+                <div className="pt-2 border-t border-[var(--glass-border)] flex items-center justify-between text-xs">
                   <span className="text-[var(--muted)]">Wygenerowany obrót:</span>
-                  <strong className="font-mono text-amber-300 text-sm">
+                  <strong className="font-mono font-bold text-[var(--text-bright)] text-sm">
                     {st.total_revenue.toFixed(2)} zł
                   </strong>
                 </div>
 
                 <button
                   type="button"
-                  className="w-full py-1.5 rounded-lg bg-white/5 group-hover:bg-amber-500/20 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full py-2 rounded-xl bg-[var(--surface-container)] group-hover:bg-[var(--primary-container)] group-hover:text-white text-[var(--text-bright)] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-[var(--glass-border)] cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-sm">bar_chart</span>
                   Zobacz szczegółowe statystyki →

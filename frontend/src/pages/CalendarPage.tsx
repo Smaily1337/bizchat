@@ -480,9 +480,9 @@ export function CalendarPage() {
 
       {/* STAFF / TEAM BAR (CLICKABLE PROFILES & FILTER) */}
       {staffList.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-black/25 border border-white/10 shadow-lg animate-fade-in">
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-[var(--surface-container)] border border-[var(--glass-border)] shadow-sm animate-fade-in">
           <span className="text-xs font-bold text-[var(--muted)] flex items-center gap-1.5 pl-1 pr-1">
-            <span className="material-symbols-outlined text-amber-400 text-base">badge</span>
+            <span className="material-symbols-outlined text-[var(--primary)] text-base">badge</span>
             Zespół & Specjaliści:
           </span>
           <button
@@ -490,8 +490,8 @@ export function CalendarPage() {
             onClick={() => setSelectedStaffFilter("all")}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               selectedStaffFilter === "all"
-                ? "bg-[var(--primary-container)] text-white shadow-md ring-1 ring-white/20"
-                : "bg-white/5 text-[var(--muted)] hover:text-white"
+                ? "bg-[var(--primary-container)] text-white shadow-sm ring-1 ring-white/20"
+                : "bg-[var(--surface-container-high)] text-[var(--muted)] hover:text-[var(--text-bright)]"
             }`}
           >
             Wszyscy ({staffList.length})
@@ -501,8 +501,8 @@ export function CalendarPage() {
               key={s.id}
               className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-xl border text-xs transition-all ${
                 selectedStaffFilter === s.id
-                  ? "border-amber-400/80 bg-amber-500/20 text-amber-300 shadow-md ring-1 ring-amber-400/40"
-                  : "border-white/10 bg-white/5 text-[var(--muted)] hover:border-white/20 hover:text-white"
+                  ? "border-[var(--primary)] bg-[var(--primary-container)] text-white shadow-sm ring-1 ring-[var(--primary)]/40"
+                  : "border-[var(--glass-border)] bg-[var(--surface-container-low)] text-[var(--muted)] hover:border-[var(--primary)]/40 hover:text-[var(--text-bright)]"
               }`}
             >
               <button
@@ -512,16 +512,16 @@ export function CalendarPage() {
                 title={`Filtruj kalendarz dla pracownika: ${s.name}`}
               >
                 {s.avatar_url ? (
-                  <img src={s.avatar_url} alt={s.name} className="w-5 h-5 rounded-full object-cover border border-white/20" />
+                  <img src={s.avatar_url} alt={s.name} className="w-5 h-5 min-w-[20px] max-w-[20px] min-h-[20px] max-h-[20px] rounded-full object-cover border border-white/20" />
                 ) : (
                   <span
                     style={{ backgroundColor: s.color || "#3e63dd" }}
-                    className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                    className="w-5 h-5 min-w-[20px] max-w-[20px] min-h-[20px] max-h-[20px] rounded-full flex items-center justify-center text-[9px] font-bold text-white"
                   >
                     {s.name[0]}
                   </span>
                 )}
-                <span className="font-semibold text-white">{s.name}</span>
+                <span className="font-semibold text-[var(--text-bright)]">{s.name}</span>
               </button>
               <button
                 type="button"
@@ -529,7 +529,7 @@ export function CalendarPage() {
                   e.stopPropagation();
                   setProfileModalStaffId(s.id);
                 }}
-                className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 transition-colors cursor-pointer flex items-center gap-0.5 text-[10px] font-bold"
+                className="px-1.5 py-0.5 rounded-md bg-[var(--surface-container-high)] text-[var(--text-bright)] hover:bg-[var(--primary-container)] hover:text-white transition-colors cursor-pointer flex items-center gap-0.5 text-[10px] font-bold border border-[var(--glass-border)]"
                 title="Otwórz profil, statystyki i historię zleceń pracownika"
               >
                 <span className="material-symbols-outlined text-[13px]">bar_chart</span>

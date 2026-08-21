@@ -174,51 +174,51 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
           <div className="space-y-6">
             {/* 4-KPI Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-4 rounded-2xl bg-black/25 border border-white/10 space-y-1">
+              <div className="p-4 rounded-2xl bg-[var(--surface-container)] border border-[var(--glass-border)] space-y-1">
                 <p className="text-[11px] text-[var(--muted)] font-medium">Wygenerowany Obrót</p>
-                <p className="text-xl sm:text-2xl font-bold text-amber-300">
+                <p className="text-xl sm:text-2xl font-bold text-[var(--text-bright)]">
                   {stats.total_revenue.toFixed(2)} zł
                 </p>
-                <p className="text-[10px] text-amber-200/70">Łącznie za usługi</p>
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Łącznie za usługi</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/25 border border-white/10 space-y-1">
+              <div className="p-4 rounded-2xl bg-[var(--surface-container)] border border-[var(--glass-border)] space-y-1">
                 <p className="text-[11px] text-[var(--muted)] font-medium">Zrealizowane Wizyty</p>
                 <p className="text-xl sm:text-2xl font-bold text-[var(--text-bright)]">
                   {stats.completed_count + stats.confirmed_count}{" "}
                   <span className="text-xs font-normal text-[var(--muted)]">/ {stats.total_appointments}</span>
                 </p>
-                <p className="text-[10px] text-green-400">
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
                   {stats.total_appointments > 0
                     ? `${Math.round(((stats.completed_count + stats.confirmed_count) / stats.total_appointments) * 100)}% realizacji`
                     : "Brak wizyt"}
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/25 border border-white/10 space-y-1">
+              <div className="p-4 rounded-2xl bg-[var(--surface-container)] border border-[var(--glass-border)] space-y-1">
                 <p className="text-[11px] text-[var(--muted)] font-medium">Średni Koszyk (AOV)</p>
-                <p className="text-xl sm:text-2xl font-bold text-blue-300">
+                <p className="text-xl sm:text-2xl font-bold text-[var(--text-bright)]">
                   {stats.avg_ticket.toFixed(2)} zł
                 </p>
-                <p className="text-[10px] text-blue-200/70">Średnio na wizycie</p>
+                <p className="text-[10px] text-[var(--primary)] font-medium">Średnio na wizycie</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/25 border border-white/10 space-y-1">
+              <div className="p-4 rounded-2xl bg-[var(--surface-container)] border border-[var(--glass-border)] space-y-1">
                 <p className="text-[11px] text-[var(--muted)] font-medium">Czas Zabiegów</p>
-                <p className="text-xl sm:text-2xl font-bold text-purple-300">
+                <p className="text-xl sm:text-2xl font-bold text-[var(--text-bright)]">
                   {stats.total_hours_worked} godz.
                 </p>
-                <p className="text-[10px] text-purple-200/70">
+                <p className="text-[10px] text-[var(--muted)]">
                   {stats.unique_customers_count} unikalnych klientów
                 </p>
               </div>
             </div>
 
             {/* COMMISSION CALCULATOR */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/30 space-y-3">
+            <div className="p-5 rounded-2xl bg-[var(--surface-container)] border border-[var(--glass-border)] space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
-                  <span className="material-symbols-outlined text-[20px]">calculate</span>
+                <div className="flex items-center gap-2 text-[var(--text-bright)] font-bold text-sm">
+                  <span className="material-symbols-outlined text-[20px] text-[var(--primary)]">calculate</span>
                   <span>Kalkulator Prowizji i Wypłaty Pracownika</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -227,10 +227,10 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                       key={rate}
                       type="button"
                       onClick={() => setCommissionRate(rate)}
-                      className={`px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all ${
                         commissionRate === rate
-                          ? "bg-amber-500 text-black font-bold"
-                          : "bg-white/5 text-[var(--muted)] hover:text-white"
+                          ? "bg-[var(--primary-container)] text-white font-bold shadow-sm"
+                          : "bg-[var(--surface-container-high)] text-[var(--muted)] hover:text-[var(--text-bright)]"
                       }`}
                     >
                       {rate}%
@@ -247,29 +247,29 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                   step="5"
                   value={commissionRate}
                   onChange={(e) => setCommissionRate(Number(e.target.value))}
-                  className="w-full accent-amber-400 cursor-pointer"
+                  className="w-full accent-[var(--primary)] cursor-pointer"
                 />
-                <span className="font-mono font-bold text-amber-300 text-sm shrink-0 w-12 text-right">
+                <span className="font-mono font-bold text-[var(--text-bright)] text-sm shrink-0 w-12 text-right">
                   {commissionRate}%
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 text-xs">
-                <div className="p-2.5 rounded-xl bg-black/30 border border-white/10">
-                  <span className="text-[var(--muted)] block">Obrót brutto:</span>
-                  <strong className="text-sm font-bold text-white">
+                <div className="p-3 rounded-xl bg-[var(--surface-container-low)] border border-[var(--glass-border)]">
+                  <span className="text-[var(--muted)] block text-[10px]">Obrót brutto:</span>
+                  <strong className="text-sm font-bold text-[var(--text-bright)]">
                     {stats.total_revenue.toFixed(2)} zł
                   </strong>
                 </div>
-                <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30">
-                  <span className="text-emerald-300/80 block">Wypłata dla pracownika ({commissionRate}%):</span>
-                  <strong className="text-sm font-bold text-emerald-300">
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <span className="text-emerald-700 dark:text-emerald-300 text-[10px] block font-medium">Wypłata dla pracownika ({commissionRate}%):</span>
+                  <strong className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
                     {((stats.total_revenue * commissionRate) / 100).toFixed(2)} zł
                   </strong>
                 </div>
-                <div className="p-2.5 rounded-xl bg-indigo-500/15 border border-indigo-500/30 col-span-2 sm:col-span-1">
-                  <span className="text-indigo-300/80 block">Zysk salonu po prowizji:</span>
-                  <strong className="text-sm font-bold text-indigo-300">
+                <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 col-span-2 sm:col-span-1">
+                  <span className="text-indigo-700 dark:text-indigo-300 text-[10px] block font-medium">Zysk salonu po prowizji:</span>
+                  <strong className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
                     {((stats.total_revenue * (100 - commissionRate)) / 100).toFixed(2)} zł
                   </strong>
                 </div>
@@ -296,13 +296,13 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                     return (
                       <div
                         key={svc.service_name}
-                        className="p-3 rounded-xl bg-black/20 border border-white/10 space-y-1.5"
+                        className="p-3 rounded-xl bg-[var(--surface-container)] border border-[var(--glass-border)] space-y-1.5"
                       >
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-bold text-[var(--text-bright)] truncate pr-2">
                             {svc.service_name}
                           </span>
-                          <span className="font-mono text-amber-300 shrink-0">
+                          <span className="font-mono font-bold text-[var(--text-bright)] shrink-0">
                             {svc.total_revenue.toFixed(2)} zł
                           </span>
                         </div>
@@ -310,9 +310,9 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                           <span>Wykonano: {svc.count} razy</span>
                           <span>Średnio: {svc.avg_price.toFixed(2)} zł / zabieg</span>
                         </div>
-                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-[var(--surface-container-high)] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
+                            className="h-full bg-[var(--primary-container)] rounded-full"
                             style={{ width: `${Math.max(pct, 5)}%` }}
                           />
                         </div>
@@ -327,7 +327,7 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
             <div className="space-y-3 pt-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <h3 className="font-display text-sm font-bold text-[var(--text-bright)] flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-[var(--secondary)]">
+                  <span className="material-symbols-outlined text-[18px] text-[var(--primary)]">
                     history
                   </span>
                   Dziennik Aktywności & Historia Wizyt ({filteredAppointments.length})
@@ -339,12 +339,12 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                     placeholder="Szukaj klienta / usługi..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="bg-[var(--surface-container)] border border-glass-border rounded-lg px-2.5 py-1 text-xs text-[var(--text-bright)] placeholder:text-[var(--muted)] focus:outline-none"
+                    className="bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-lg px-2.5 py-1 text-xs text-[var(--text-bright)] placeholder:text-[var(--muted)] focus:outline-none"
                   />
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="bg-[var(--surface-container)] border border-glass-border rounded-lg px-2.5 py-1 text-xs text-[var(--text-bright)] focus:outline-none"
+                    className="bg-[var(--surface-container)] border border-[var(--glass-border)] rounded-lg px-2.5 py-1 text-xs text-[var(--text-bright)] focus:outline-none"
                   >
                     <option value="all">Wszystkie statusy</option>
                     <option value="completed">Zakończone</option>
@@ -365,9 +365,9 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                 </div>
               </div>
 
-              <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-white/10">
+              <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-[var(--glass-border)]">
                 <table className="w-full text-left border-collapse text-xs">
-                  <thead className="sticky top-0 bg-[var(--surface-container-low)] border-b border-white/10 text-[var(--muted)] uppercase font-semibold">
+                  <thead className="sticky top-0 bg-[var(--surface-container)] border-b border-[var(--glass-border)] text-[var(--muted)] uppercase font-semibold">
                     <tr>
                       <th className="py-2.5 px-3">Data i Czas</th>
                       <th className="py-2.5 px-3">Klient</th>
@@ -377,7 +377,7 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                       <th className="py-2.5 px-3">Notatki</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-[var(--glass-border)]">
                     {filteredAppointments.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-6 text-center text-[var(--muted)]">
@@ -390,10 +390,10 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                         const st = STATUS_MAP[a.status] || {
                           label: a.status,
                           bg: "bg-white/5",
-                          text: "text-white border-white/10",
+                          text: "text-[var(--text-bright)] border-[var(--glass-border)]",
                         };
                         return (
-                          <tr key={a.id} className="hover:bg-white/[0.02]">
+                          <tr key={a.id} className="hover:bg-[var(--surface-container-high)]/30">
                             <td className="py-2.5 px-3 font-mono font-medium text-[var(--text-bright)] whitespace-nowrap">
                               {d.toLocaleDateString("pl-PL")}{" "}
                               <span className="text-[var(--muted)]">
@@ -405,7 +405,7 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                               {a.customer_phone && (
                                 <a
                                   href={`tel:${a.customer_phone}`}
-                                  className="text-[10px] text-canary hover:underline"
+                                  className="text-[10px] text-[var(--primary)] hover:underline"
                                 >
                                   {a.customer_phone}
                                 </a>
@@ -414,7 +414,7 @@ export function StaffProfileModal({ staffId, initialStaff, onClose }: StaffProfi
                             <td className="py-2.5 px-3 font-semibold text-[var(--text-bright)]">
                               {a.service_name}
                             </td>
-                            <td className="py-2.5 px-3 font-mono font-bold text-amber-300 whitespace-nowrap">
+                            <td className="py-2.5 px-3 font-mono font-bold text-[var(--text-bright)] whitespace-nowrap">
                               {a.service_price.toFixed(2)} zł
                             </td>
                             <td className="py-2.5 px-3 whitespace-nowrap">
