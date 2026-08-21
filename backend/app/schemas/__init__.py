@@ -45,6 +45,7 @@ class OwnerOut(ORMModel):
     email_verified: bool = False
     is_active: bool = True
     is_platform_admin: bool = False
+    avatar_url: Optional[str] = None
     created_at: Optional[datetime] = None
 
 

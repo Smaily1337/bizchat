@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { hoursApi } from "@/api";
 import type { TimeOff, WorkingHours } from "@/api/types";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton, GlassCard, PageHeader } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 
 const DAY_NAMES = [
@@ -113,12 +113,11 @@ export function HoursPage() {
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up">
-        <h1 className="text-xl font-semibold tracking-tight">Godziny otwarcia</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Harmonogram tygodnia oraz urlopy / przerwy
-        </p>
-      </header>
+      <PageHeader
+        icon="schedule"
+        title="Godziny otwarcia"
+        subtitle="Harmonogram tygodnia oraz urlopy / przerwy"
+      />
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}

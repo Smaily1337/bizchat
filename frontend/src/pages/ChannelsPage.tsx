@@ -1,17 +1,16 @@
 import { useAuth } from "@/auth/AuthContext";
-import { GlassCard } from "@/components/ui";
+import { GlassCard, PageHeader } from "@/components/ui";
 
 export function ChannelsPage() {
   const { business } = useAuth();
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up">
-        <h1 className="text-xl font-semibold tracking-tight">Kanały</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Konfiguracja webhooków — tokeny w zmiennych środowiskowych
-        </p>
-      </header>
+      <PageHeader
+        icon="hub"
+        title="Kanały"
+        subtitle="Konfiguracja webhooków — tokeny w zmiennych środowiskowych"
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         {[

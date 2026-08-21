@@ -153,6 +153,26 @@ async def me(owner: CurrentOwner) -> Owner:
     return owner
 
 
+class MeUpdate(BaseModel):
+    name: str | None = None
+    avatar_url: str | None = None
+
+
+@router.patch("/me", response_model=OwnerOut)
+async def update_me(db: DbSession, owner: CurrentOwner, body: MeUpdate) -> Owner:
+    if body.name is not None:
+        owner.name = body.name.strip() or None
+    if body.avatar_url is not None:
+        url = body.avatar_url.strip()
+        if url and len(url) > 450_000:
+            raise HTTPException(status_code=400, detail="Zdjęcie jest za duże")
+        if url and not (url.startswith("data:image/") or url.startswith("https://")):
+            raise HTTPException(status_code=400, detail="Nieprawidłowe zdjęcie")
+        owner.avatar_url = url or None
+    await db.flush()
+    return owner
+
+
 @router.get("/google/start")
 async def google_oauth_start() -> RedirectResponse:
     if not settings.google_oauth_configured:

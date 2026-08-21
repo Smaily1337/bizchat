@@ -69,6 +69,7 @@ class Owner(Base, TimestampMixin):
     google_sub: Mapped[Optional[str]] = mapped_column(String(255), unique=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_platform_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    avatar_url: Mapped[Optional[str]] = mapped_column(Text)
     business_id: Mapped[uuid.UUID] = mapped_column(
         GUID, ForeignKey("businesses.id", ondelete="CASCADE")
     )

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { appointmentsApi, dashboardApi, notificationsApi } from "@/api";
-import type { Appointment, DashboardAnalytics } from "@/api/types";
+import { appointmentsApi, dashboardApi, notificationsApi, usersApi } from "@/api";
+import type { Appointment, DashboardAnalytics, Owner } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { useToast } from "@/components/ToastProvider";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { Avatar, GlassButton, GlassCard, Icon, PageHeader } from "@/components/ui";
 
 type CalendarView = "day" | "week";
 
@@ -124,6 +124,7 @@ export function DashboardPage() {
     avg_score: null as number | null,
   });
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [team, setTeam] = useState<Owner[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const dayDate = addDays(weekStart, dayOffset);
@@ -155,6 +156,7 @@ export function DashboardPage() {
       .catch(() => undefined);
 
     void dashboardApi.analytics(7).then(setAnalytics).catch(() => undefined);
+    void usersApi.list().then(setTeam).catch(() => undefined);
   }, [weekStart]);
 
   useEffect(() => {
@@ -262,12 +264,11 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Kalendarz</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            {business?.name || "Salon"} · {business?.timezone || "Europe/Warsaw"}
-          </p>
-        </div>
+        <PageHeader
+          icon="calendar_month"
+          title="Kalendarz"
+          subtitle={`${business?.name || "Salon"} · ${business?.timezone || "Europe/Warsaw"}`}
+        />
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-lg border border-[var(--border)] p-0.5">
             <GlassButton
@@ -432,7 +433,28 @@ export function DashboardPage() {
           )}
 
           <GlassCard>
-            <p className="text-sm font-medium">Następna wizyta</p>
+            <div className="flex items-center justify-between">
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <Icon name="badge" className="text-[var(--accent)]" />
+                Zespół
+              </p>
+              <Link to="/users" className="text-xs text-[var(--accent)]">
+                Zdjęcia
+              </Link>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {team.filter((m) => m.is_active).map((m) => (
+                <Link key={m.id} to="/users" className="animate-pop" title={m.name || m.email}>
+                  <Avatar src={m.avatar_url} name={m.name || m.email} size="lg" />
+                </Link>
+              ))}
+              {team.length === 0 ? (
+                <p className="text-xs text-[var(--muted)]">Dodaj zdjęcia w Zespole.</p>
+              ) : null}
+            </div>
+          </GlassCard>
+
+          <GlassCard>
             {nextAppt ? (
               <>
                 <p className="mt-2 text-sm">{nextAppt.service_name || "Wizyta"}</p>
@@ -494,7 +516,7 @@ function DayColumn({
       ))}
       {showNow ? (
         <div
-          className="pointer-events-none absolute left-0 right-0 z-10 h-px bg-[var(--danger)]"
+          className="pointer-events-none absolute left-0 right-0 z-10 h-px bg-[var(--accent)]"
           style={{ top: (nowHour - 8) * HOUR_H }}
         />
       ) : null}
@@ -504,7 +526,7 @@ function DayColumn({
           type="button"
           data-event="1"
           onClick={() => onSelect(event)}
-          className="absolute left-1 right-1 z-20 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-hover)] px-1.5 py-1 text-left hover:border-[var(--text)]"
+          className="absolute left-1 right-1 z-20 overflow-hidden rounded-md border border-[var(--border)] border-l-[3px] border-l-[var(--accent)] bg-[var(--surface-hover)] px-1.5 py-1 text-left transition duration-150 hover:-translate-y-0.5 hover:border-[var(--accent)]"
           style={{
             top: (event.startHour - 8) * HOUR_H,
             height: Math.max(28, event.durationHours * HOUR_H - 4),

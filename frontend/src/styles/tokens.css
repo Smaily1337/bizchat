@@ -1,44 +1,44 @@
 :root,
 [data-theme="dark"] {
-  --bg: #09090b;
-  --bg-elevated: #0c0c0e;
-  --surface: #111113;
-  --surface-hover: #18181b;
-  --text: #f4f4f5;
-  --text-bright: #fafafa;
-  --muted: #a1a1aa;
-  --border: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-fill: #111113;
-  --glass-fill-strong: #18181b;
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --ink: #fafafa;
-  --on-ink: #09090b;
-  --accent: #fafafa;
-  --danger: #f87171;
+  --bg: #0b1110;
+  --bg-elevated: #101817;
+  --surface: #141c1b;
+  --surface-hover: #1b2624;
+  --text: #ecf3f1;
+  --text-bright: #f7fffc;
+  --muted: #8aa09b;
+  --border: rgba(45, 212, 191, 0.12);
+  --glass-border: rgba(45, 212, 191, 0.12);
+  --glass-fill: #141c1b;
+  --glass-fill-strong: #1b2624;
+  --ink: #2dd4bf;
+  --on-ink: #042f2e;
+  --accent: #2dd4bf;
+  --accent-soft: rgba(45, 212, 191, 0.14);
+  --danger: #fb7185;
   --success: #4ade80;
-  --focus: #818cf8;
+  --focus: #2dd4bf;
 }
 
 [data-theme="light"] {
-  --bg: #f6f6f4;
+  --bg: #f3f7f6;
   --bg-elevated: #ffffff;
   --surface: #ffffff;
-  --surface-hover: #f4f4f5;
-  --text: #18181b;
-  --text-bright: #09090b;
-  --muted: #71717a;
-  --border: rgba(24, 24, 27, 0.1);
-  --glass-border: rgba(24, 24, 27, 0.1);
+  --surface-hover: #eef6f4;
+  --text: #132422;
+  --text-bright: #042f2e;
+  --muted: #5b716d;
+  --border: rgba(13, 148, 136, 0.16);
+  --glass-border: rgba(13, 148, 136, 0.16);
   --glass-fill: #ffffff;
-  --glass-fill-strong: #f4f4f5;
-  --glass-highlight: rgba(24, 24, 27, 0.12);
-  --ink: #18181b;
-  --on-ink: #fafafa;
-  --accent: #18181b;
-  --danger: #dc2626;
-  --success: #16a34a;
-  --focus: #4f46e5;
+  --glass-fill-strong: #eef6f4;
+  --ink: #0f766e;
+  --on-ink: #f0fdfa;
+  --accent: #0d9488;
+  --accent-soft: rgba(13, 148, 136, 0.12);
+  --danger: #e11d48;
+  --success: #15803d;
+  --focus: #0d9488;
 }
 
 *,
@@ -65,13 +65,30 @@ body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 80% 50% at 0% -10%, var(--accent-soft), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 20;
+  user-select: none;
+}
+
 ::selection {
-  background: color-mix(in srgb, var(--focus) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
   color: var(--text-bright);
 }
 

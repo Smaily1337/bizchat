@@ -10,7 +10,7 @@ import type {
   NotificationTemplate,
 } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton, GlassCard, PageHeader } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 const CHANNEL_LABEL: Record<NotificationChannel, string> = {
@@ -267,13 +267,11 @@ export function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up">
-        <h1 className="text-xl font-semibold tracking-tight">Powiadomienia</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Ręczne wiadomości do klientów, automatyczne przypomnienia, szablony i
-          log wysyłek
-        </p>
-      </header>
+      <PageHeader
+        icon="notifications"
+        title="Powiadomienia"
+        subtitle="Ręczne wiadomości do klientów, automatyczne przypomnienia, szablony i log wysyłek"
+      />
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 

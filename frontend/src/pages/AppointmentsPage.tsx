@@ -8,7 +8,7 @@ import {
 } from "@/api";
 import type { Appointment, Customer, Service } from "@/api/types";
 import { useToast } from "@/components/ToastProvider";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton, GlassCard, PageHeader } from "@/components/ui";
 import { GlassInput, GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -216,12 +216,11 @@ export function AppointmentsPage() {
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Wizyty</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Lista, dodawanie, edycja i anulowanie
-          </p>
-        </div>
+        <PageHeader
+          icon="event"
+          title="Wizyty"
+          subtitle="Lista, dodawanie, edycja i anulowanie"
+        />
         <div className="flex flex-wrap items-center gap-2">
           <GlassInput
             placeholder="Szukaj klienta lub usługi"

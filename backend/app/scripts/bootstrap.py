@@ -59,6 +59,8 @@ async def _sqlite_prepare() -> None:
             alters.append(
                 "ALTER TABLE owners ADD COLUMN is_platform_admin BOOLEAN DEFAULT 0"
             )
+        if "avatar_url" not in existing:
+            alters.append("ALTER TABLE owners ADD COLUMN avatar_url TEXT")
         for stmt in alters:
             await conn.execute(text(stmt))
 
@@ -79,6 +81,7 @@ async def _ensure_owner_columns_pg() -> None:
         "ALTER TABLE owners ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255)",
         "ALTER TABLE owners ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE",
         "ALTER TABLE owners ADD COLUMN IF NOT EXISTS is_platform_admin BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE owners ADD COLUMN IF NOT EXISTS avatar_url TEXT",
     ]
     async with engine.begin() as conn:
         for stmt in stmts:

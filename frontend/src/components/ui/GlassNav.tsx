@@ -1,20 +1,22 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { useTheme } from "@/theme/ThemeProvider";
+import { Avatar } from "./Avatar";
 import { GlassButton } from "./GlassButton";
+import { Icon } from "./Icon";
 
 const baseNavItems = [
-  { to: "/", label: "Kalendarz", end: true, group: "Praca" },
-  { to: "/appointments", label: "Wizyty", group: "Praca" },
-  { to: "/inbox", label: "Inbox", group: "Praca" },
-  { to: "/customers", label: "Klienci", group: "Praca" },
-  { to: "/hours", label: "Godziny", group: "Salon" },
-  { to: "/notifications", label: "Powiadomienia", group: "Salon" },
-  { to: "/channels", label: "Kanały", group: "Salon" },
-  { to: "/feedback", label: "Opinie", group: "Salon" },
-  { to: "/settings", label: "Ustawienia", group: "Salon" },
-  { to: "/users", label: "Zespół", group: "Admin", roles: ["owner", "admin"] as const },
-  { to: "/platform", label: "Platforma", group: "Admin", platformAdmin: true },
+  { to: "/", label: "Kalendarz", icon: "calendar_month", end: true, group: "Praca" },
+  { to: "/appointments", label: "Wizyty", icon: "event", group: "Praca" },
+  { to: "/inbox", label: "Inbox", icon: "chat", group: "Praca" },
+  { to: "/customers", label: "Klienci", icon: "group", group: "Praca" },
+  { to: "/hours", label: "Godziny", icon: "schedule", group: "Salon" },
+  { to: "/notifications", label: "Powiadomienia", icon: "notifications", group: "Salon" },
+  { to: "/channels", label: "Kanały", icon: "hub", group: "Salon" },
+  { to: "/feedback", label: "Opinie", icon: "star", group: "Salon" },
+  { to: "/settings", label: "Ustawienia", icon: "settings", group: "Salon" },
+  { to: "/users", label: "Zespół", icon: "badge", group: "Admin" },
+  { to: "/platform", label: "Platforma", icon: "admin_panel_settings", group: "Admin", platformAdmin: true },
 ] as const;
 
 export function GlassNav() {
@@ -38,10 +40,10 @@ export function GlassNav() {
 
   return (
     <>
-      <aside className="sticky top-0 z-40 hidden h-screen w-[232px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-elevated)] lg:flex">
+      <aside className="sticky top-0 z-40 hidden h-screen w-[248px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-elevated)] lg:flex">
         <NavLink to="/" className="flex items-center gap-2.5 px-4 py-5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--ink)] text-[11px] font-semibold text-[var(--on-ink)]">
-            A
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--on-ink)]">
+            <Icon name="auto_awesome" className="!text-[18px]" />
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-semibold tracking-tight">Automovia</span>
@@ -65,14 +67,19 @@ export function GlassNav() {
                     end={"end" in item ? item.end : false}
                     className={({ isActive }) =>
                       [
-                        "block rounded-md px-2 py-1.5 text-[13px] transition",
+                        "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] transition duration-200",
                         isActive
-                          ? "bg-[var(--surface-hover)] font-medium text-[var(--text-bright)]"
+                          ? "bg-[var(--accent-soft)] font-medium text-[var(--accent)]"
                           : "text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--text)]",
                       ].join(" ")
                     }
                   >
-                    {item.label}
+                    {({ isActive }) => (
+                      <>
+                        <Icon name={item.icon} filled={isActive} />
+                        {item.label}
+                      </>
+                    )}
                   </NavLink>
                 ))}
               </div>
@@ -89,15 +96,17 @@ export function GlassNav() {
               </button>
             </p>
           ) : null}
-          <p className="truncate px-2 text-[11px] text-[var(--muted)]">
-            {owner?.email}
-          </p>
-          <div className="mt-2 flex gap-1">
+          <div className="mb-2 flex items-center gap-2 px-1">
+            <Avatar src={owner?.avatar_url} name={owner?.name || owner?.email} size="sm" />
+            <p className="min-w-0 truncate text-[11px] text-[var(--muted)]">{owner?.email}</p>
+          </div>
+          <div className="flex gap-1">
             <GlassButton
               variant="ghost"
               className="!flex-1 !px-2 !py-1.5 !text-xs"
               onClick={toggle}
             >
+              <Icon name={theme === "dark" ? "light_mode" : "dark_mode"} className="!text-sm" />
               {theme === "dark" ? "Jasny" : "Ciemny"}
             </GlassButton>
             <GlassButton
@@ -105,6 +114,7 @@ export function GlassNav() {
               className="!flex-1 !px-2 !py-1.5 !text-xs"
               onClick={logout}
             >
+              <Icon name="logout" className="!text-sm" />
               Wyloguj
             </GlassButton>
           </div>
@@ -114,10 +124,12 @@ export function GlassNav() {
 
       <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg-elevated)] lg:hidden">
         <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <NavLink to="/" className="text-sm font-semibold">
+          <NavLink to="/" className="flex items-center gap-2 text-sm font-semibold">
+            <Icon name="auto_awesome" className="text-[var(--accent)]" />
             Automovia
           </NavLink>
           <div className="flex items-center gap-2">
+            <Avatar src={owner?.avatar_url} name={owner?.name || owner?.email} size="sm" />
             <GlassButton variant="ghost" className="!px-2 !py-1 !text-xs" onClick={toggle}>
               {theme === "dark" ? "Jasny" : "Ciemny"}
             </GlassButton>
@@ -142,13 +154,14 @@ export function GlassNav() {
               end={"end" in item ? item.end : false}
               className={({ isActive }) =>
                 [
-                  "shrink-0 rounded-md px-2.5 py-1 text-xs",
+                  "flex shrink-0 items-center gap-1 rounded-md px-2.5 py-1 text-xs",
                   isActive
-                    ? "bg-[var(--surface-hover)] font-medium"
+                    ? "bg-[var(--accent-soft)] font-medium text-[var(--accent)]"
                     : "text-[var(--muted)]",
                 ].join(" ")
               }
             >
+              <Icon name={item.icon} className="!text-[16px]" />
               {item.label}
             </NavLink>
           ))}

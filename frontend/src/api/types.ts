@@ -31,6 +31,7 @@ export type Owner = {
   email_verified: boolean;
   is_active: boolean;
   is_platform_admin?: boolean;
+  avatar_url?: string | null;
   created_at?: string | null;
 };
 

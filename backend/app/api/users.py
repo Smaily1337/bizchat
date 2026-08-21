@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 
 from app.api.deps import (
+    CurrentOwner,
     DbSession,
     RequireOwnerOrAdmin,
     hash_password,
@@ -44,6 +45,7 @@ class UserUpdate(BaseModel):
     name: str | None = None
     role: UserRole | None = None
     is_active: bool | None = None
+    avatar_url: str | None = None
 
     @field_validator("email")
     @classmethod
@@ -83,7 +85,7 @@ async def _count_owners(db: DbSession, business_id: UUID) -> int:
 
 
 @router.get("", response_model=list[OwnerOut])
-async def list_users(db: DbSession, actor: RequireOwnerOrAdmin) -> list[Owner]:
+async def list_users(db: DbSession, actor: CurrentOwner) -> list[Owner]:
     result = await db.execute(
         select(Owner)
         .where(Owner.business_id == actor.business_id)
@@ -168,9 +170,6 @@ async def update_user(
             )
         user.email = email
 
-    if body.name is not None:
-        user.name = body.name.strip() or None
-
     if body.is_active is not None:
         if user.id == actor.id and not body.is_active:
             raise HTTPException(
@@ -187,6 +186,20 @@ async def update_user(
                 detail="Nie można dezaktywować jedynego właściciela",
             )
         user.is_active = body.is_active
+
+    if body.avatar_url is not None:
+        url = body.avatar_url.strip()
+        if url and len(url) > 450_000:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Zdjęcie jest za duże",
+            )
+        if url and not (url.startswith("data:image/") or url.startswith("https://")):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Nieprawidłowe zdjęcie",
+            )
+        user.avatar_url = url or None
 
     await db.flush()
     return user

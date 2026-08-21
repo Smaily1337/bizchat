@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { appointmentsApi, feedbackApi, waitlistApi } from "@/api";
 import type { Appointment, Feedback, WaitlistEntry } from "@/api/types";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton, GlassCard, PageHeader } from "@/components/ui";
 import { GlassSelect, GlassTextarea } from "@/components/ui/GlassInput";
 
 export function FeedbackPage() {
@@ -53,12 +53,11 @@ export function FeedbackPage() {
   return (
     <div className="space-y-6">
       <header className="animate-fade-up flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Feedback i kolejka</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Opinie po wizycie (alerty ≤2) oraz lista oczekujących FIFO
-          </p>
-        </div>
+        <PageHeader
+          icon="star"
+          title="Feedback i kolejka"
+          subtitle="Opinie po wizycie (alerty ≤2) oraz lista oczekujących FIFO"
+        />
         <GlassButton
           variant={alertsOnly ? "primary" : "subtle"}
           onClick={() => {

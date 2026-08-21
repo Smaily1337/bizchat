@@ -20,6 +20,7 @@ type AuthState = {
   acceptToken: (token: string) => Promise<void>;
   logout: () => void;
   refreshBusiness: () => Promise<void>;
+  refreshOwner: () => Promise<void>;
   resendVerification: () => Promise<void>;
 };
 
@@ -85,6 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBusiness(biz);
   }, []);
 
+  const refreshOwner = useCallback(async () => {
+    const me = await authApi.me();
+    setOwner(me);
+  }, []);
+
   const resendVerification = useCallback(async () => {
     await authApi.resendVerification();
   }, []);
@@ -99,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       acceptToken,
       logout,
       refreshBusiness,
+      refreshOwner,
       resendVerification,
     }),
     [
@@ -110,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       acceptToken,
       logout,
       refreshBusiness,
+      refreshOwner,
       resendVerification,
     ],
   );

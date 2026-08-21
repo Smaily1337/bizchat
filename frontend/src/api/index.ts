@@ -51,6 +51,11 @@ export const authApi = {
     apiFetch<{ message: string }>("/api/auth/resend-verification", {
       method: "POST",
     }),
+  updateMe: (body: { name?: string | null; avatar_url?: string | null }) =>
+    apiFetch<Owner>("/api/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
 };
 
 export const usersApi = {
@@ -72,6 +77,7 @@ export const usersApi = {
       name: string | null;
       role: string;
       is_active: boolean;
+      avatar_url: string | null;
     }>,
   ) =>
     apiFetch<Owner>(`/api/users/${id}`, {

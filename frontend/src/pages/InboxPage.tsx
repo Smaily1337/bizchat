@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { inboxApi } from "@/api";
 import type { Conversation, InboxMessage } from "@/api/types";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton, GlassCard, PageHeader } from "@/components/ui";
 import { GlassTextarea } from "@/components/ui/GlassInput";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 
@@ -87,12 +87,11 @@ export function InboxPage() {
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up">
-        <h1 className="text-xl font-semibold tracking-tight">Inbox</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Rozmowy z botem na żywo · odpowiedź ręczna właściciela
-        </p>
-      </header>
+      <PageHeader
+        icon="chat"
+        title="Inbox"
+        subtitle="Rozmowy z botem na żywo · odpowiedź ręczna właściciela"
+      />
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {loading && (

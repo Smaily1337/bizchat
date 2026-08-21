@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { appointmentsApi, customersApi } from "@/api";
 import type { Appointment, Customer } from "@/api/types";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton, GlassCard, PageHeader } from "@/components/ui";
 import { GlassInput } from "@/components/ui/GlassInput";
 
 export function CustomersPage() {
@@ -67,20 +67,17 @@ export function CustomersPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Klienci</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Kontakty, historia wizyt, szybkie umówienie
-          </p>
-        </div>
+      <PageHeader
+        icon="group"
+        title="Klienci"
+        subtitle="Kontakty, historia wizyt, szybkie umówienie"
+      >
         <GlassInput
           placeholder="Szukaj po imieniu, telefonie, mailu"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="max-w-xs"
         />
-      </header>
+      </PageHeader>
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 

@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { businessApi, knowledgeApi, servicesApi } from "@/api";
 import type { KnowledgeItem, Service } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton, GlassCard, PageHeader } from "@/components/ui";
 import { GlassInput, GlassTextarea } from "@/components/ui/GlassInput";
 
 export function SettingsPage() {
@@ -75,12 +75,11 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="animate-fade-up">
-        <h1 className="text-xl font-semibold tracking-tight">Ustawienia</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Salon, usługi i baza FAQ bota
-        </p>
-      </header>
+      <PageHeader
+        icon="settings"
+        title="Ustawienia"
+        subtitle="Salon, usługi i baza FAQ bota"
+      />
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {msg && <p className="text-sm text-[var(--success)]">{msg}</p>}
